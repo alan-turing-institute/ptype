@@ -18,12 +18,12 @@ ptype.run_all_columns()
 ```
 
 ## Summarizing the Results
-
+Once the inference is carried out, we can check the results by printing a human-readable description for the predictions. For each data column, we print the posterior distribution of the column type, the most likely column type, missing or anomalies entries and the fractions of normal, missing and anomalous entries in the column.
 ```python
 ptype.show_results()
 ```
 
-This prints a summary of the predictions for the columns. Below, we present a section of this, which is generated for the second column named '1':
+Below, we present the description generated for the second column named '1':
 ```
 col: 1
 	predicted type: integer
@@ -41,13 +41,14 @@ col: 1
 	percentage of missing: 0.2
 ```
 
-Alternatively, you can only show the results for the columns that contain missing data or anomalies.
-```
+
+Alternatively, you can find the columns that contain missing data or anomalies, and only show the results for these columns.
+```python
 column_names = ptype.get_columns_with_missing()
 ptype.show_results(column_names)
 ```
 
-```
+```python
 column_names = ptype.get_columns_with_anomalies()
 ptype.show_results(column_names)
 ```
