@@ -19,7 +19,7 @@ ptype.run_all_columns()
 
 ## Summarizing the Results
 
-```
+```python
 ptype.show_results()
 ```
 
