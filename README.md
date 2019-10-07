@@ -1,5 +1,9 @@
-# ptype-demo
+# Installation
+```
+pip install greenery
+```
 
+# Usage
 ## Initialization
 ```
 ptype = Ptype() 
@@ -35,6 +39,10 @@ column_names = ptype.get_columns_with_anomalies()
 ptype.show_results(column_names)
 ```
 
+Another way of presenting the column type predictions is to ember them in the header:
+```python
+ptype.show_results_df()
+```
 
 ## Interactions
 In addition to printing these outputs, we can change the predictions when needed.
@@ -54,5 +62,7 @@ ptype.change_missing_data_annotations()
 ptype.change_anomaly_annotations()
 ```
 
-
-
+### d. Merging Different Encodings of Missing Data
+```python
+ptype.merge_missing_data()
+```

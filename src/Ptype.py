@@ -291,6 +291,11 @@ class Ptype:
 
 
     ####################### OUTPUT METHODS #########################
+    def show_results_df(self,):
+        df_output = self.model.data.copy()
+        df_output.columns = df_output.columns.map(lambda x: x + '(' + self.predicted_types[str(x).replace(' ', '')] + ')')
+        return df_output
+
     def show_results(self, cols=None):
         if cols is None:
             cols = self.predicted_types
@@ -628,6 +633,16 @@ class Ptype:
 
         # remove those entries from missing_types
         self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
+
+    def merge_missing_data(self, _column_name, _missing_data):
+        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        missing_indices = self.missing_types[_column_name]
+
+        for missing_index in missing_indices:
+            self.model.data = self.model.data.replace({_column_name: unique_vals[missing_index]}, _missing_data)
+
+        self.run_inference(_data_frame=self.model.data)
+
 
     def get_categorical_columns(self,):
         cats = {}
