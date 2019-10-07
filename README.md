@@ -4,7 +4,7 @@
 ```
 ptype = Ptype() 
 ```
-By default, ptype considers the following data types: 'integer', 'string', 'float', 'boolean', 'gender', 'date'. However, this can be extended using the parameter named '_types'.
+By default, ptype considers the following data types: integer, string, float, boolean, gender, 'date'. However, this can be extended using the parameter named ''_types''.
 
 
 ```
@@ -13,79 +13,46 @@ ptype = Ptype(_types={1:'integer', 2:'string', 3:'float', 4:'boolean', 5:'gender
 
 ## Running
 ```
-ptype.set_data(_data_frame=df)
-ptype.run_all_columns()
+ptype.run_inference(_data_frame=df)
 ```
 
 ## Summarizing the Results
-We can generate a human-readable description of the predictions. For each data column, we print the posterior distribution of the column type, the most likely column type, missing or anomalies entries and the fractions of normal, missing and anomalous entries in the column.
+We can generate a human-readable description of the predictions, such as the posterior distribution of the column types, the most likely column types, missing or anomalies entries and the fractions of normal, missing and anomalous entries in the columns.
+
+###
 ```python
 ptype.show_results()
 ```
-
-Below, we present the description generated for the second column named '1':
-```
-col: 1
-	predicted type: integer
-	posterior probs:  [1.00000000e+00 0.00000000e+00 4.73609772e-47 0.00000000e+00
- 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00
- 0.00000000e+00]
-	types:  ['integer', 'string', 'float', 'boolean', 'gender', 'date-iso-8601', 'date-eu', 'date-non-std-subtype', 'date-non-std'] 
-
-	some normal data values:  ['101', '102', '103', '104', '106', '107', '108', '110', '113', '115', '118', '119', '121', '122', '125', '128', '129', '134', '137', '142']
-	their counts:  [3, 5, 5, 6, 4, 1, 2, 2, 2, 3, 4, 2, 1, 4, 3, 6, 2, 6, 3, 1]
-	percentage of normal: 0.8 
-
-	missing values: ['?']
-	their counts:  [41]
-	percentage of missing: 0.2
-```
-
-
-Alternatively, you can find the columns that contain missing data or anomalies, and only show the results for these columns.
+By default, it prints the descriptions for all of the columns. Alternatively, you can find the columns that contain missing data or anomalies, and only show the results for these columns.
 ```python
 column_names = ptype.get_columns_with_missing()
 ptype.show_results(column_names)
 ```
 
-    # columns with missing data: 8 
-    
-    col: 0
-    	predicted type: integer
-    	posterior probs:  [9.99999674e-01 0.00000000e+00 3.26244845e-07 0.00000000e+00
-     0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00
-     0.00000000e+00]
-    	types:  ['integer', 'string', 'float', 'boolean', 'gender', 'date-iso-8601', 'date-eu', 'date-non-std-subtype', 'date-non-std'] 
-    
-    	some normal data values:  ['-2', '0', '1', '2', '3']
-    	their counts:  [3, 67, 54, 32, 27]
-    	percentage of normal: 0.89 
-    
-    	missing values: ['-1']
-    	their counts:  [22]
-    	percentage of missing: 0.11 
-    
-    col: 1
-    	predicted type: integer
-    	posterior probs:  [1.00000000e+00 0.00000000e+00 4.73609772e-47 0.00000000e+00
-     0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00
-     0.00000000e+00]
-    	types:  ['integer', 'string', 'float', 'boolean', 'gender', 'date-iso-8601', 'date-eu', 'date-non-std-subtype', 'date-non-std'] 
-    
-    	some normal data values:  ['101', '102', '103', '104', '106', '107', '108', '110', '113', '115', '118', '119', '121', '122', '125', '128', '129', '134', '137', '142']
-    	their counts:  [3, 5, 5, 6, 4, 1, 2, 2, 2, 3, 4, 2, 1, 4, 3, 6, 2, 6, 3, 1]
-    	percentage of normal: 0.8 
-    
-    	missing values: ['?']
-    	their counts:  [41]
-    	percentage of missing: 0.2 
-    
-    ...
 
 ```python
 column_names = ptype.get_columns_with_anomalies()
 ptype.show_results(column_names)
 ```
 
-    # columns with anomalies: 0 
+
 ## Interactions
+In addition to printing these outputs, we can change the predictions when needed.
+
+### a. Updating the Column Type Predictions
+```python
+ptype.change_column_types()
+```
+
+### b. Updating the Missing Data Annotations
+```python
+ptype.change_missing_data_annotations()
+```
+
+### c. Updating the Anomaly Annotations
+```python
+ptype.change_anomaly_annotations()
+```
+
+
+

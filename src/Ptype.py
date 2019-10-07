@@ -603,13 +603,13 @@ class Ptype:
         print('# empty columns:', len(column_names), '\n')
         return column_names
 
-    def change_column_types(self, _column_names, _new_column_types):
+    def change_column_type_annotations(self, _column_names, _new_column_types):
 
         for column_name, new_column_type in zip(_column_names, _new_column_types):
             print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[column_name] + ' to ' + new_column_type)
             self.predicted_types[column_name] = new_column_type
 
-    def change_missing_data(self, _column_name, _missing_data):
+    def change_missing_data_annotations(self, _column_name, _missing_data):
         unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
         missing_indices = [np.where(unique_vals == missing_d)[0][0] for missing_d in _missing_data]
 
@@ -619,7 +619,7 @@ class Ptype:
         # remove those entries from missing_types
         self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
 
-    def change_anomalies(self, _column_name, anomalies):
+    def change_anomaly_annotations(self, _column_name, anomalies):
         unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
         anomaly_indices = [np.where(unique_vals==anomaly)[0][0] for anomaly in anomalies]
 
