@@ -73,16 +73,19 @@ class Ptype:
             print_to_file('\tinference is running...')
         self.model.run_inference(probs, counts)
 
-    def run_all_columns(self, _print=False, _prediction_path=None, _save=False):
+    def run_inference(self, _data_frame, _print=False, _prediction_path=None, _save=False):
         """ Runs ptype for each column in a dataframe.
             The outputs are stored in dictionaries (see store_outputs).
             The column types are saved to a csv file.
 
+        :param _data_frame:
         :param _print:
         :param _prediction_path:
         :param _save:
 
         """
+
+        self.set_data(_data_frame=_data_frame)
 
         self.print = _print
         self.prediction_path = _prediction_path
@@ -329,17 +332,19 @@ class Ptype:
             if self.normal_types[col] != []:
                 print('\tsome normal data values: ', some_normal_data_values)
                 print('\ttheir counts: ', some_normal_data_values_counts)
-                print('\tpercentage of normal:', round(count_normal / (count_normal + count_missing + count_anomalies), 2),  '\n')
+                print('\tfraction of normal:', round(count_normal / (count_normal + count_missing + count_anomalies), 2),  '\n')
 
             if self.missing_types[col] != []:
                 print('\tmissing values:', missing_values)
                 print('\ttheir counts: ', missing_values_counts)
-                print('\tpercentage of missing:', round(count_missing / (count_normal + count_missing + count_anomalies), 2),  '\n')
+                print('\tfraction of missing:', round(count_missing / (count_normal + count_missing + count_anomalies), 2),  '\n')
 
             if self.anomaly_types[col] != []:
                 print('\tanomalies:', anomalies)
                 print('\ttheir counts:', anomalies_counts)
-                print('\tpercentage of anomalies:', round(count_anomalies / (count_normal + count_missing + count_anomalies), 2),  '\n')
+                print('\tfraction of anomalies:', round(count_anomalies / (count_normal + count_missing + count_anomalies), 2),  '\n')
+
+
 
     def detect_missing_anomalies(self, inferred_column_type):
 
@@ -587,6 +592,7 @@ class Ptype:
         print('# columns with missing data:', len(column_names), '\n')
         return column_names
 
+
     def get_columns_with_anomalies(self,):
         column_names = [column_name for column_name in self.predicted_types.keys() if (self.anomaly_types[column_name] != [])]
         print('# columns with anomalies:', len(column_names), '\n')
@@ -596,6 +602,32 @@ class Ptype:
         column_names = [column_name for column_name in self.predicted_types.keys() if (self.normal_types[column_name] == [])]
         print('# empty columns:', len(column_names), '\n')
         return column_names
+
+    def change_column_types(self, _column_names, _new_column_types):
+
+        for column_name, new_column_type in zip(_column_names, _new_column_types):
+            print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[column_name] + ' to ' + new_column_type)
+            self.predicted_types[column_name] = new_column_type
+
+    def change_missing_data(self, _column_name, _missing_data):
+        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        missing_indices = [np.where(unique_vals == missing_d)[0][0] for missing_d in _missing_data]
+
+        # add those entries to normal_types
+        self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(missing_indices)))
+
+        # remove those entries from missing_types
+        self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
+
+    def change_anomalies(self, _column_name, anomalies):
+        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        anomaly_indices = [np.where(unique_vals==anomaly)[0][0] for anomaly in anomalies]
+
+        # add those entries to normal_types
+        self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(anomaly_indices)))
+
+        # remove those entries from missing_types
+        self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
 
     def get_categorical_columns(self,):
         cats = {}

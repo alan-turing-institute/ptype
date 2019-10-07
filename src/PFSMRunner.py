@@ -2,12 +2,13 @@ import sys
 sys.path.insert(0,'src/')
 
 from src.PFSM_DiscriminativeLearning import IntegersNewAuto, StringsNewAuto, AnomalyNew, FloatsNewAuto, MissingsNew, BooleansNew, Genders, \
-    ISO_8601NewAuto, Date_EUNewAuto, Nonstd_DateNewAuto, SubTypeNonstdDateNewAuto
+    ISO_8601NewAuto, Date_EUNewAuto, Nonstd_DateNewAuto, SubTypeNonstdDateNewAuto, IPAddress, EmailAddress
 
 from src.utils import contains_all
 MACHINES = {'integer':IntegersNewAuto(), 'string':StringsNewAuto(), 'float':FloatsNewAuto(), 'boolean':BooleansNew(),
             'gender':Genders(), 'date-iso-8601':ISO_8601NewAuto(), 'date-eu':Date_EUNewAuto(),
-            'date-non-std-subtype':SubTypeNonstdDateNewAuto(), 'date-non-std': Nonstd_DateNewAuto()}
+            'date-non-std-subtype':SubTypeNonstdDateNewAuto(), 'date-non-std': Nonstd_DateNewAuto(), 
+            'IPAddress':IPAddress(), 'EmailAddress':EmailAddress()}
 
 class PFSMRunner:
     def __init__(self, types):

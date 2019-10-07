@@ -139,15 +139,8 @@ def multi_logdot(Xs):
 ###############################################################
 ###################### DATA I/O METHODS #######################
 ###############################################################
-# def read_dataset(dataset_name, ALL_PATHS):
-#     if dataset_name in ['fuel', 'auto', 'census_income_kdd', 'intel_lab', '']:
-#         df = pd.read_csv(ALL_PATHS[dataset_name]['data'], sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=None, skipinitialspace=True)
-#     else:
-#         df = pd.read_csv(ALL_PATHS[dataset_name]['data'], sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, skipinitialspace=True)
-#     return df
-
-def read_dataset(data_path):
-    return pd.read_csv(data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=None, skipinitialspace=True)    
+def read_dataset(_data_path, _header=None):
+    return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)    
 
 # writing data
 def write_data(data, filepath='../../automata/example.dat'):
@@ -429,8 +422,51 @@ def print_table_latex(x, current_experiment_folder):
         f.write("\hline ")
         f.write("\\end{tabular}")
 
+def evaluate_types(_dataset_name, _ptype, _header=None,):
+    predicted_types = _ptype.predicted_types
+    dataset_path    = '../data/' + _dataset_name + '.csv'
+    annotation_path = '../annotations/' + _dataset_name + '.csv'
 
+    df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)    
+    annotations = pd.read_csv(annotation_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False)
 
+    true_values = annotations['Type'].values.tolist()
+    true_values = [true_value.split('-')[0] for true_value in true_values]
+    
+    predictions = predicted_types.values()
+    predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
+
+    column_names = list(predicted_types.keys())
+    
+    correct_, false_ = 0., 0.
+    for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):
+        column_name = column_names[i]
+        unique_vals, unique_vals_counts = np.unique([str(int_element) for int_element in df[df.columns[i]].tolist()], return_counts=True)
+        if prediction == true_value:
+            correct_ += 1
+        else:
+            false_ += 1
+            print('column name : ', column_names[i])
+            indices = _ptype.normal_types[column_name]
+            print('\tsome normal data values: ', [unique_vals[ind] for ind in indices][:20])
+            print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+            
+            indices = _ptype.missing_types[column_name]
+            if len(indices) !=0 :
+                print('\tsome missing data values: ', [unique_vals[ind] for ind in indices][:20])
+                print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+            
+            indices = _ptype.anomaly_types[column_name]
+            if len(indices) !=0 :                
+                print('\tsome anomalous data values: ', [unique_vals[ind] for ind in indices][:20])
+                print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+            
+            print('\ttrue/annotated type : ', true_value, '\n\tpredicted type : ', prediction)            
+            print('\tposterior probs: ', _ptype.p_t_columns[list(_ptype.p_t_columns.keys())[i]])
+            print('\ttypes: ', list(_ptype.types.values()), '\n')
+            
+
+    print('correct/total = ', round(correct_/len(column_names),2), '(' + str(int(correct_)) + '/' + str(len(column_names)) + ')')
 
 
 
