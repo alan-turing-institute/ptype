@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
 import _pickle as pickle
+# from mpltools import special
 
 LOG_EPS = -1e150
 
@@ -265,35 +266,35 @@ def _blob(x, y, area, colour):
     plt.fill(xcorners, ycorners, colour, edgecolor=colour)
 
 
-from mpltools import special
-def plot_hinton(W, method=None, _max_value=None, xticklabels=None, yticklabels=None, path=None):
-    """
-    Draws a Hinton diagram for visualizing a weight matrix.
-    Temporarily disables matplotlib interactive mode if it is on,
-    otherwise this takes forever.
-    """
 
-    reenable = False
-    if plt.isinteractive():
-        plt.ioff()
-    plt.clf()
-
-    if reenable:
-        plt.ion()
-
-    special.hinton(W, max_value=_max_value)
-    if xticklabels is not None:
-        plt.xticks(np.arange(len(xticklabels)), xticklabels, rotation=90, fontsize=13)
-    if yticklabels is not None:
-        plt.yticks(np.arange(len(xticklabels)), yticklabels, fontsize=13)
-
-    plt.xlabel('true type', fontsize=17)
-    plt.ylabel('predicted type', fontsize=17)
-
-    if path is not None:
-        plt.savefig(path, dpi=1000, bbox_inches="tight")
-
-    # plt.show()
+# def plot_hinton(W, method=None, _max_value=None, xticklabels=None, yticklabels=None, path=None):
+#     """
+#     Draws a Hinton diagram for visualizing a weight matrix.
+#     Temporarily disables matplotlib interactive mode if it is on,
+#     otherwise this takes forever.
+#     """
+#
+#     reenable = False
+#     if plt.isinteractive():
+#         plt.ioff()
+#     plt.clf()
+#
+#     if reenable:
+#         plt.ion()
+#
+#     special.hinton(W, max_value=_max_value)
+#     if xticklabels is not None:
+#         plt.xticks(np.arange(len(xticklabels)), xticklabels, rotation=90, fontsize=13)
+#     if yticklabels is not None:
+#         plt.yticks(np.arange(len(xticklabels)), yticklabels, fontsize=13)
+#
+#     plt.xlabel('true type', fontsize=17)
+#     plt.ylabel('predicted type', fontsize=17)
+#
+#     if path is not None:
+#         plt.savefig(path, dpi=1000, bbox_inches="tight")
+#
+#     # plt.show()
 
 def plot_roc(fpr, tpr, _type, _method='', _path='experiments/0_predictions/roc.eps', _save=False, _show=True):
     roc_auc = auc(fpr, tpr)
