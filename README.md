@@ -1,4 +1,5 @@
 # Installation
+Please make sure that you installed greenery to use our method:
 ```
 pip install greenery
 ```
