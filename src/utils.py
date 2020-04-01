@@ -1,13 +1,16 @@
 from datetime import timedelta
 from sklearn.metrics import auc
+from collections import Counter, OrderedDict 
+
 import functools
 import numpy.ma as ma
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
+import glob
 import _pickle as pickle
-from collections import Counter, OrderedDict 
+
 # from mpltools import special
 
 LOG_EPS = -1e150
@@ -578,3 +581,27 @@ def run_experiment(total_cols,
     
     overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
     return [df, overall_accuracy_to_print]    
+
+
+def get_datanames():
+    dataset_names = []
+    for file in glob.glob("data/*.csv"):
+        dataset_names.append(file.split('/')[-1])
+
+    return dataset_names
+
+
+
+def evaluate_predictions(_data_path, annotations, type_predictions):            
+    ### the column type counts of the datasets
+    [total_test, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)    
+    save_df_to_csv(pd.DataFrame(dataset_counts, columns=dataset_counts.keys()), 'tests/type_distributions.csv')
+    
+    Js, overall_accuracy = get_evaluations(annotations, type_predictions)        
+    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
+    print('overall accuracy: ', overall_accuracy_to_print)    
+    print('Jaccard index values: ', {t:Js[t]['ptype'] for t in Js})
+    
+    df = pd.DataFrame.from_dict(Js, orient='index')
+    df = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T.append(df)
+    save_df_to_csv(df, 'tests/evaluations.csv')   
