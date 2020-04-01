@@ -20,7 +20,7 @@ def get_predictions(_data_path):
 
 def main(_data_path='data/', 
          _annotations_path='annotations/annotations.json', 
-         _predictions_path='tests/type_predictions.json'):
+         _predictions_path='tests/column_type_predictions.json'):
     
     annotations = json.load(open(_annotations_path))    
 

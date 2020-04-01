@@ -595,7 +595,7 @@ def get_datanames():
 def evaluate_predictions(_data_path, annotations, type_predictions):            
     ### the column type counts of the datasets
     [total_test, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)    
-    save_df_to_csv(pd.DataFrame(dataset_counts, columns=dataset_counts.keys()), 'tests/type_distributions.csv')
+    save_df_to_csv(pd.DataFrame(dataset_counts, columns=dataset_counts.keys()), 'tests/column_type_counts.csv')
     
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)        
     overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
@@ -604,4 +604,4 @@ def evaluate_predictions(_data_path, annotations, type_predictions):
     
     df = pd.DataFrame.from_dict(Js, orient='index')
     df = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T.append(df)
-    save_df_to_csv(df, 'tests/evaluations.csv')   
+    save_df_to_csv(df, 'tests/column_type_evaluations.csv')   
