@@ -1,12 +1,16 @@
 from datetime import timedelta
 from sklearn.metrics import auc
+from collections import Counter, OrderedDict 
+
 import functools
 import numpy.ma as ma
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
+import glob
 import _pickle as pickle
+
 # from mpltools import special
 
 LOG_EPS = -1e150
@@ -469,5 +473,135 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
 
     print('correct/total = ', round(correct_/len(column_names),2), '(' + str(int(correct_)) + '/' + str(len(column_names)) + ')')
 
+###### added later - needs a pass over
+def not_vector(X):
+    return np.array([not x for x in X])
+
+def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float', 'integer', 'string']):
+    dataset_counts = OrderedDict()
+    total_test = {t: 0 for t in _types}
+    
+    for dataset_name in annotations:        
+        
+        true_values = annotations[dataset_name]
+        ptype_predictions = predictions[dataset_name].values()
+        
+        ptype_predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
+                             prediction in ptype_predictions]
+
+        ignored_columns = np.where((np.array(true_values) != 'all identical') & (np.array(true_values) != 'gender') & (np.array(ptype_predictions) != 'all identical') & (
+            np.array(ptype_predictions) != 'unknown'))[0]
+
+        counts = Counter(np.array(true_values)[ignored_columns])
+        for t in _types:
+            if t not in list(counts.keys()):
+                counts[t] = 0
+
+        dataset_counts[dataset_name] = counts
+
+        total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}        
+
+    total_cols = sum([total_test[t] for t in ['boolean', 'date', 'float', 'integer', 'string']])
+
+    return [total_test, dataset_counts, total_cols]
 
 
+def save_df_to_csv(df, _path_or_buf):
+    df.to_csv(index=False, path_or_buf=_path_or_buf)
+
+
+def evaluate_model_type(annotations, predictions):
+    types = ['integer', 'string', 'float', 'boolean', 'date']
+    type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
+            
+    predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
+                         prediction in predictions]
+
+    # find columns whose types are not supported by ptype    
+    ignored_columns = np.where((np.array(annotations) != 'all identical') & 
+                               (np.array(annotations) != 'gender') & 
+                               (np.array(predictions) != 'all identical') & 
+                               (np.array(predictions) != 'unknown'))[0]
+
+    for t in types:
+        # print(t)
+        # print(ignored_columns)
+        # print(annotations)
+        # print(predictions)
+        y_true = (np.array(annotations) == t)[ignored_columns]
+        y_score = (np.array(predictions) == t)[ignored_columns]
+
+        type_rates[t]['TP'] = sum(y_true * y_score)
+        type_rates[t]['FP'] = sum(not_vector(y_true) * y_score)
+        type_rates[t]['TN'] = sum(not_vector(y_true) * not_vector(y_score))
+        type_rates[t]['FN'] = sum(y_true * not_vector(y_score))
+
+    return type_rates
+
+
+def get_evaluations(_annotations, _predictions, methods=['ptype',]):    
+    
+    dataset_names = list(_annotations.keys())
+    types = ['boolean', 'date', 'float', 'integer', 'string']
+
+    Js = {}
+    overall_accuracy = {method: 0 for method in methods}
+    for t in types:
+
+        J = {}
+        for method in methods:
+
+            tp, fp, fn = .0, .0, .0
+            for dataset_name in dataset_names:                                
+                temp = evaluate_model_type(_annotations[dataset_name], 
+                                           _predictions[dataset_name].values())
+                tp += temp[t]['TP']
+                fp += temp[t]['FP']
+                fn += temp[t]['FN']
+
+            overall_accuracy[method] += tp
+            J[method] = "{:.2f}".format(tp / (tp + fp + fn))
+        Js[t] = J
+
+    return Js, overall_accuracy
+
+
+def run_experiment(total_cols,  
+                   dataset_names, 
+                   types={1: 'integer', 2: 'string', 3: 'float', 4: 'boolean', 
+                          5: 'date-iso-8601', 6: 'date-eu', 
+                          7: 'date-non-std-subtype', 8: 'date-non-std'}):
+
+    ptype = Ptype(_types=types)
+    for dataset_name in dataset_names:
+        df = read_dataset(dataset_name, TEMP_PATHS)            
+        ptype.run_inference(_data_frame=df, _dataset_name=dataset_name)
+
+    df, overall_accuracy = get_evaluations(_annotations_path=_annotations_path, _predictions_path=_predictions_path, _training=False, _sets=test_datasets)
+    
+    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
+    return [df, overall_accuracy_to_print]    
+
+
+def get_datanames():
+    dataset_names = []
+    for file in glob.glob("data/*.csv"):
+        dataset_names.append(file.split('/')[-1])
+
+    return dataset_names
+
+
+
+def evaluate_predictions(_data_path, annotations, type_predictions):            
+    ### the column type counts of the datasets
+    [total_test, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)    
+    save_df_to_csv(pd.DataFrame(dataset_counts, columns=dataset_counts.keys()), 'tests/column_type_counts.csv')
+    
+    Js, overall_accuracy = get_evaluations(annotations, type_predictions)        
+    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
+    print('overall accuracy: ', overall_accuracy_to_print)    
+    print('Jaccard index values: ', {t:Js[t]['ptype'] for t in Js})
+    
+    df = pd.DataFrame.from_dict(Js, orient='index')
+    df = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T.append(df)
+    save_df_to_csv(df, 'tests/column_type_evaluations.csv')   
