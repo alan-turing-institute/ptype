@@ -4,7 +4,13 @@
 # run in virtualenv to avoid unwanted interactions with e.g. MacPorts which installs with sudo
 python -m virtualenv venv
 source ./venv/bin/activate
-python -m pip install --upgrade pip greenery nbformat setuptools wheel
+
+# build source distribution
+python -m pip install --upgrade pip greenery nbconvert nbformat setuptools wheel
 python ../setup.py sdist
+
+# test
+python notebook_runner.py "../notebooks/demo.ipynb"
+
 deactivate
 rm -rf venv
