@@ -6,7 +6,7 @@ python -m virtualenv venv
 source ./venv/bin/activate
 
 # build source distribution
-python -m pip install --upgrade pip greenery nbconvert nbformat setuptools wheel
+python -m pip install --upgrade pip greenery jupyter_client ipykernel nbconvert nbformat setuptools wheel
 python ../setup.py sdist
 
 # test
