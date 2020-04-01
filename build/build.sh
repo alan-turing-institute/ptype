@@ -10,7 +10,10 @@ python -m pip install --upgrade pip greenery jupyter_client ipykernel nbconvert 
 python ../setup.py sdist
 
 # test
-python notebook_runner.py "../notebooks/demo.ipynb"
+pushd ..
+python tests/test_ptype.py
+popd
+# python notebook_runner.py "../notebooks/demo.ipynb"
 
 deactivate
 rm -rf venv
