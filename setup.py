@@ -7,5 +7,6 @@ setup(
    author = 'Taha Ceritli, Christopher K. I. Williams, James Geddes',
    author_email = 't.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk',
    url = 'https://github.com/tahaceritli/ptype-dmkd',
-   packages = []
+   packages = [],
+   requires=['numpy', 'scipy']
 )
