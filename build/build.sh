@@ -9,7 +9,7 @@ source ./venv/bin/activate
 python ../setup.py sdist
 
 # more idiomatic way to achieve this?
-export PYTHONPATH="src;test"
+export PYTHONPATH="src:test"
 
 # test
 pushd ..
