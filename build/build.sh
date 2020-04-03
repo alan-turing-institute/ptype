@@ -9,11 +9,12 @@ $pyexe ../setup.py sdist || exit 1
 
 # test
 pushd ..
-$pyexe tests/test_ptype.py || exit 1
-popd ... || exit
 
+$pyexe tests/test_ptype.py || exit 1
 # for now discard any result disparities; will check these later
-git checkout test/column_type_counts.cvs
-git checkout test/column_type_predictions.json
+git checkout tests/column_type_counts.cvs
+git checkout tests/column_type_predictions.json
+
+popd ... || exit
 
 # python notebook_runner.py "../notebooks/demo.ipynb"
