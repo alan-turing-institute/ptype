@@ -1,21 +1,14 @@
 #!/bin/bash
 # Build Python package. Make this more repeatable/platform-independent as time goes on.
 
-# run in virtualenv to avoid unwanted interactions with e.g. MacPorts which installs with sudo
-python3 -m virtualenv venv
-source ./venv/bin/activate
+# doesn't seem to work if I run in a virtualenv (can't find 'src' module)
+pyexe=/usr/local/bin/python3.8
 
 # build source distribution
-python ../setup.py sdist
-
-# more idiomatic way to achieve this?
-export PYTHONPATH="src:test"
+$pyexe ../setup.py sdist
 
 # test
 pushd ..
-python tests/test_ptype.py
-popd
+$pyexe tests/test_ptype.py
+popd ... || exit
 # python notebook_runner.py "../notebooks/demo.ipynb"
-
-deactivate
-rm -rf venv
