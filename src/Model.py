@@ -8,6 +8,7 @@ from scipy.stats import norm
 
 Inf = np.Inf
 
+
 def vecnorm(x, ord=2):
     if ord == Inf:
         return np.amax(np.abs(x))
