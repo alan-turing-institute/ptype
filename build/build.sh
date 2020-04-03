@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 # Build Python package.
 
 # doesn't seem to work if I run in a virtualenv (can't find 'src' module)
