@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
    name='ptype',
@@ -8,5 +8,5 @@ setup(
    author_email='t.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk',
    url='https://github.com/tahaceritli/ptype-dmkd',
    packages=[],
-   requires=['numpy', 'scipy', 'scikit-learn', 'matplotlib', 'pandas', 'greenery', 'clevercsv']
+   install_requires=['numpy', 'scipy', 'scikit-learn', 'matplotlib', 'pandas', 'greenery', 'clevercsv']
 )
