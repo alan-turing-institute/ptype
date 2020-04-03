@@ -8,5 +8,5 @@ setup(
    author_email='t.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk',
    url='https://github.com/tahaceritli/ptype-dmkd',
    packages=[],
-   requires=['numpy', 'scipy', 'scikit-learn', 'matplotlib', 'pandas', 'greenery']
+   requires=['numpy', 'scipy', 'scikit-learn', 'matplotlib', 'pandas', 'greenery', 'clevercsv']
 )

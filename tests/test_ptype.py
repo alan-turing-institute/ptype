@@ -18,6 +18,7 @@ def get_predictions(_data_path):
 
     return type_predictions
 
+
 def main(_data_path='data/',
          _annotations_path='annotations/annotations.json',
          _predictions_path='tests/column_type_predictions.json'):
