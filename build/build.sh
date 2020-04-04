@@ -19,18 +19,23 @@ pushd ..
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
 
+  # TODO: extract common helper script.
   python tests/test_ptype.py || exit 1
-  # TODO: check agreement.
   if [[ $(git diff tests/column_type_counts.csv) ]]
   then
-    echo "Unexpected test output."
-  else
-    echo "Expected test output."
+    echo "Test failed."
     exit 1
+  else
+    echo "Test passed."
   fi
-  # show disparities, then discard; will check these later
-  git diff tests/column_type_predictions.json
-  git checkout tests/column_type_predictions.json
+  if [[ $(git diff tests/column_type_predictions.json) ]]
+  then
+    echo "Test failed."
+    git checkout tests/column_type_predictions.json
+    # exit 1  -- once we solve the current discrepancy
+  else
+    echo "Test passed."
+  fi
 popd ... || exit
 deactivate
 rm -rf venv
