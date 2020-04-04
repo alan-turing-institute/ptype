@@ -11,7 +11,6 @@ import pathlib
 import glob
 import _pickle as pickle
 
-from src.Ptype import Ptype
 
 LOG_EPS = -1e150
 
@@ -523,7 +522,8 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
             if t not in list(counts.keys()):
                 counts[t] = 0
 
-        dataset_counts[dataset_name] = counts
+        # Counters are unordered, so for deterministic output we sort via a list
+        dataset_counts[dataset_name] = dict(sorted(counts.items()))
 
         total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}        
 
