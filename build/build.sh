@@ -9,7 +9,7 @@ $pyexe -m virtualenv venv
 source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
-pip freeze
+pip freeze # useful for debugging
 
 # build source distribution
 python ../setup.py sdist || exit 1
@@ -20,9 +20,16 @@ pushd ..
   export PYTHONPATH=.
 
   python tests/test_ptype.py || exit 1
+  # TODO: check agreement.
+  if [[ $(git diff tests/column_type_counts.csv) ]]
+  then
+    echo "Unexpected test output."
+  else
+    echo "Expected test output."
+    exit 1
+  fi
   # show disparities, then discard; will check these later
-  git diff tests
-  git checkout tests/column_type_counts.csv
+  git diff tests/column_type_predictions.json
   git checkout tests/column_type_predictions.json
 popd ... || exit
 deactivate
