@@ -9,7 +9,7 @@ $pyexe -m virtualenv venv
 source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
-pip freeze
+pip freeze # useful for debugging
 
 # build source distribution
 python ../setup.py sdist || exit 1
@@ -19,11 +19,23 @@ pushd ..
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
 
+  # TODO: extract common helper script.
   python tests/test_ptype.py || exit 1
-  # show disparities, then discard; will check these later
-  git diff tests
-  git checkout tests/column_type_counts.csv
-  git checkout tests/column_type_predictions.json
+  if [[ $(git diff tests/column_type_counts.csv) ]]
+  then
+    echo "Test failed."
+    exit 1
+  else
+    echo "Test passed."
+  fi
+  if [[ $(git diff tests/column_type_predictions.json) ]]
+  then
+    echo "Test should fail, but for now ignore."
+    git checkout tests/column_type_predictions.json
+    # exit 1  -- once we solve the current discrepancy
+  else
+    echo "Test passed."
+  fi
 popd ... || exit
 deactivate
 rm -rf venv

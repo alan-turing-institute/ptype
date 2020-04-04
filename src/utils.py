@@ -11,7 +11,6 @@ import pathlib
 import glob
 import _pickle as pickle
 
-from src.Ptype import Ptype
 
 LOG_EPS = -1e150
 
@@ -371,8 +370,6 @@ def plot_roc_multiple_dots(Xs, _type, _path='experiments/0_predictions/roc.eps',
             'group': groups
         })
 
-
-
         sns.regplot(data=df, x="x", y="y", fit_reg=False, marker="+", color="skyblue")
 
         plt.xlim([0.0, 1.0])
@@ -384,6 +381,8 @@ def plot_roc_multiple_dots(Xs, _type, _path='experiments/0_predictions/roc.eps',
             plt.show()
         if _save:
             plt.savefig(_path, dpi=1000)
+
+
 ###############################################################
 #################### LATEX METHODS ############################
 ###############################################################
@@ -392,8 +391,10 @@ def print_figure_latex(column_name, f):
           "/outputs/type_posteriors.eps} \n \\caption{The posterior probability distribution of the column type for column named " +
           column_name.replace("_", "\_") + ".} \n \\label{fig:" + column_name+ "} \n \\end{figure}",file=f)
 
+
 def print_line_latex(txt, f):
     print(txt, file=f)
+
 
 def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells, num_missings, num_catch_alls, num_data):
     table_row_type_dist = pd.DataFrame(columns=['', 'Number of Entries', 'Proportion to the Total Num. of Rows'])
@@ -413,6 +414,7 @@ def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells,
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
         f.write("\hline ")
         f.write("\\end{tabular}")
+
 
 def print_statistics_table_latex(x, current_experiment_folder):
     table_histogram = pd.DataFrame(columns=['Min.', 'Max.', 'Mean', 'Std'])
@@ -520,7 +522,8 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
             if t not in list(counts.keys()):
                 counts[t] = 0
 
-        dataset_counts[dataset_name] = counts
+        # Counters are unordered, so for deterministic output we sort via a list
+        dataset_counts[dataset_name] = dict(sorted(counts.items()))
 
         total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}        
 
@@ -590,11 +593,12 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
 
 
 def run_experiment(total_cols,  
-                   dataset_names, 
-                   types={1: 'integer', 2: 'string', 3: 'float', 4: 'boolean', 
-                          5: 'date-iso-8601', 6: 'date-eu', 
-                          7: 'date-non-std-subtype', 8: 'date-non-std'}):
-
+                   dataset_names,
+                   types=None):
+    if types is None:
+        types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
+                 5: 'date-iso-8601', 6: 'date-eu',
+                 7: 'date-non-std-subtype', 8: 'date-non-std'}
     ptype = Ptype(_types=types)
     for dataset_name in dataset_names:
         df = read_dataset(dataset_name, TEMP_PATHS)            
