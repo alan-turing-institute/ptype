@@ -3,19 +3,22 @@ from copy import deepcopy
 import numpy as np
 import numpy.ma as ma
 import functools
+from greenery.lego import parse
+
 
 def log_sum_probs(log_p1, log_p2):
     log_mx = np.max([log_p1, log_p2])
 
     return log_mx + np.log(np.exp(log_p1 - log_mx) + np.exp(log_p2 - log_mx))
 
+
 def ma_multidot(arrays):
     return functools.reduce(ma.dot, arrays)
 
-from greenery.lego import parse
 
 LOG_EPS = -1e150
 PRINT = False
+
 
 class Machine(object):
     def __init__(self):

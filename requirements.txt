@@ -1,0 +1,8 @@
+# TODO: add versions
+numpy
+scipy
+scikit-learn
+matplotlib
+pandas
+greenery
+clevercsv
