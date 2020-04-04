@@ -1,3 +1,5 @@
+![CI](https://github.com/alan-turing-institute/ptype-dmkd/workflows/CI/badge.svg)
+
 # Installation
 Please make sure that you installed greenery to use our method:
 ```
