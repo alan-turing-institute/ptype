@@ -1,4 +1,4 @@
-![CI](https://github.com/alan-turing-institute/ptype-dmkd/workflows/CI/badge.svg)
+![build](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg)
 
 # Install requirements
 ```
