@@ -1,12 +1,6 @@
 name: build
 
-on:
-  push:
-    paths:
-    - '!README.md'
-  pull_request:
-    paths:
-    - '!README.md'
+on: [push, pull_request]
 
 jobs:
   build:
