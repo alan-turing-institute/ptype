@@ -13,7 +13,8 @@ $pyexe ../setup.py sdist || exit 1
 pushd ..
 
 $pyexe tests/test_ptype.py || exit 1
-# for now discard any result disparities; will check these later
+# show disparities, then discard; will check these later
+git diff
 git checkout tests/column_type_counts.csv
 git checkout tests/column_type_predictions.json
 
