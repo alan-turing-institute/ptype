@@ -14,7 +14,7 @@ pushd ..
 
 # this seems to be included by default, but not in the GitHub runner
 PYTHONPATH=.
-pwd
+echo pwd
 
 $pyexe tests/test_ptype.py || exit 1
 # show disparities, then discard; will check these later
