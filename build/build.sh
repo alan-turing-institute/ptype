@@ -9,6 +9,7 @@ $pyexe -m virtualenv venv
 source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
+pip freeze
 
 # build source distribution
 python ../setup.py sdist || exit 1

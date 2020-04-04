@@ -11,7 +11,7 @@ import pathlib
 import glob
 import _pickle as pickle
 
-# from mpltools import special
+from src.Ptype import Ptype
 
 LOG_EPS = -1e150
 
@@ -28,6 +28,7 @@ def chop_microseconds(delta):
 
 def convert_to_bold(string):
     return '\033[1m' + string + '\033[0m'
+
 
 def convert_to_bold_for_latex(string):
     return "\\textbf{" + string + "}"
@@ -46,13 +47,16 @@ def remove_whitespaces_head_and_tail(s):
             s = s[:-1]
     return s
 
+
 def set_precision(val, prec=10):
     return round(val, prec)
+
 
 def llhoods_with_precision(llhoods, prec=40):    
     for i in range(len(llhoods)):
         llhoods[i] = set_precision(llhoods[i], prec)    
     return llhoods
+
 
 def contains_all(_str, _list):
     res = True
@@ -69,6 +73,7 @@ def log_sum_probs(log_p1, log_p2):
 
     return log_mx + np.log(np.exp(log_p1 - log_mx) + np.exp(log_p2 - log_mx))
 
+
 def log_weighted_sum_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
 
     x_1 = np.log(pi_1) + log_p1
@@ -81,6 +86,7 @@ def log_weighted_sum_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
     sm = (log_p1!=LOG_EPS) * np.exp(x_1 - log_mx) + (log_p2!=LOG_EPS) * np.exp(x_2 - log_mx) + (log_p3!=LOG_EPS) * np.exp(x_3 - log_mx)
 
     return log_mx + np.log(sm)
+
 
 def log_weighted_sum_probs_check(pi_2, log_p2, pi_3, log_p3):
 
@@ -119,10 +125,12 @@ def log_weighted_sum_probs_min(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
     sm = (log_p1!=LOG_EPS) * np.exp(x_1 + log_mn) + (log_p2!=LOG_EPS) * np.exp(x_2 + log_mn) + (log_p3!=LOG_EPS) * np.exp(x_3 + log_mn)
 
     return log_mx + np.log(sm)
-    
+
+
 def normalize_log_probs(probs):
     reduced_probs = np.exp(probs - max(probs))
     return reduced_probs/reduced_probs.sum()
+
 
 def logdot(a, b):
     max_a, max_b = np.max(a), np.max(b)
@@ -131,8 +139,10 @@ def logdot(a, b):
 
     return c
 
+
 def ma_multidot(arrays):
     return functools.reduce(ma.dot, arrays)
+
 
 def multi_logdot(Xs):
     max_Xs = [np.max(X) for X in Xs]
@@ -141,11 +151,13 @@ def multi_logdot(Xs):
     res[np.where(res==0)] = LOG_EPS
     return np.log(res) + sum(max_Xs)
 
+
 ###############################################################
 ###################### DATA I/O METHODS #######################
 ###############################################################
 def read_dataset(_data_path, _header=None):
     return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)    
+
 
 # writing data
 def write_data(data, filepath='../../automata/example.dat'):
@@ -154,9 +166,11 @@ def write_data(data, filepath='../../automata/example.dat'):
         f.write(str(line)+"\n")
     f.close()
 
+
 def save_object(obj, filename):
     with open(filename, 'wb') as output:  # Overwrites any existing file.
         pickle.dump(obj, output)
+
 
 def load_object(filename):
     with open(filename, 'rb') as output:
@@ -164,9 +178,11 @@ def load_object(filename):
 
     return obj
 
+
 def print_to_file(txt, filename='long_my_output.txt'):
     with open(filename, 'a+') as f:
         f.write(txt + '\n')
+
 
 def create_folders(model, _start_over_report):
     """ Creates folders for a column in a dataset
@@ -198,11 +214,14 @@ def create_folders(model, _start_over_report):
         with open(model.experiment_config.main_experiments_folder + '/' + model.experiment_config.dataset_name + '/report.tex', 'a') as f:
             print('\section{Column Name: ' + model.experiment_config.current_column_name.replace("_","\_") + '}', file=f)
 
+
 # copies some columns directly
 def copy_columns_between_dicts(dict_source, dict_target, columns):    
     for column in columns:
         dict_target[column] = dict_source[column]    
     return dict_target
+
+
 ###############################################################
 #################### VISUALIZATION METHODS ####################
 ###############################################################
@@ -411,6 +430,7 @@ def print_statistics_table_latex(x, current_experiment_folder):
         f.write("\hline ")
         f.write("\\end{tabular}")
 
+
 def print_table_latex(x, current_experiment_folder):
     table_histogram = pd.DataFrame(columns=['Min.', 'Max.', 'Mean', 'Std'])
     table_histogram.loc[0] = ['Min.', 'Max.', 'Avg.', 'Std.']
@@ -426,6 +446,7 @@ def print_table_latex(x, current_experiment_folder):
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
         f.write("\hline ")
         f.write("\\end{tabular}")
+
 
 def evaluate_types(_dataset_name, _ptype, _header=None,):
     predicted_types = _ptype.predicted_types
@@ -473,9 +494,11 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
 
     print('correct/total = ', round(correct_/len(column_names),2), '(' + str(int(correct_)) + '/' + str(len(column_names)) + ')')
 
+
 ###### added later - needs a pass over
 def not_vector(X):
     return np.array([not x for x in X])
+
 
 def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float', 'integer', 'string']):
     dataset_counts = OrderedDict()
@@ -589,7 +612,6 @@ def get_datanames():
         dataset_names.append(file.split('/')[-1])
 
     return dataset_names
-
 
 
 def evaluate_predictions(_data_path, annotations, type_predictions):            
