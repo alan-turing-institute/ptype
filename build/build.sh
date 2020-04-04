@@ -12,6 +12,9 @@ $pyexe ../setup.py sdist || exit 1
 # test
 pushd ..
 
+# this seems to be included by default, but not in the GitHub runner
+PYTHONPATH=.
+
 $pyexe tests/test_ptype.py || exit 1
 # show disparities, then discard; will check these later
 git diff
