@@ -36,6 +36,8 @@ if __name__ == "__main__":
     from src.utils import get_datanames, evaluate_predictions
     from src.Ptype import Ptype
 
+    import sys; print('\n'.join(sys.path))
+
     import json
     import clevercsv as csv
 
