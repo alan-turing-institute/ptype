@@ -32,9 +32,6 @@ def main(_data_path='data/',
 
 
 if __name__ == "__main__":
-    import sys; print("sys.path:"); print("\n".join(sys.path))
-
-    from argparse import ArgumentParser
     from src.utils import get_datanames, evaluate_predictions
     from src.Ptype import Ptype
 

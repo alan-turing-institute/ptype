@@ -17,7 +17,7 @@ export PYTHONPATH=.
 
 $pyexe tests/test_ptype.py || exit 1
 # show disparities, then discard; will check these later
-git diff
+git diff tests
 git checkout tests/column_type_counts.csv
 git checkout tests/column_type_predictions.json
 
