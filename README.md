@@ -1,9 +1,8 @@
 ![CI](https://github.com/alan-turing-institute/ptype-dmkd/workflows/CI/badge.svg)
 
-# Installation
-Please make sure that you installed greenery to use our method:
+# Install requirements
 ```
-pip install greenery
+pip install -r requirements.txt
 ```
 
 # Usage
