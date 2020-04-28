@@ -6,6 +6,7 @@ set -u -o xtrace
 
 # Same pattern as build.sh for "reproducible" Python behaviour.
 pyexe=${2:-/usr/local/bin/python3.8}
+$pyexe -m pip install virtualenv
 $pyexe -m virtualenv venv || exit 1
 source venv/bin/activate
 
