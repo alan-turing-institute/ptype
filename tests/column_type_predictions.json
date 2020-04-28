@@ -28,7 +28,7 @@
     "two": "string"
   },
   "data_gov_10151_1.csv": {
-    "ARC_City": "string",
+    "ARC_City2": "string",
     "ARC_State": "string",
     "ARC_Street": "string",
     "ARC_ZIP": "integer",

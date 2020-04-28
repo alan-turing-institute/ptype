@@ -14,27 +14,23 @@ pip freeze # useful for debugging
 # build source distribution
 python ../setup.py sdist || exit 1
 
+compare_test_output () {
+  if [[ $(git diff tests/$1) ]]
+  then
+    echo "Test failed."
+    exit 1
+  else
+    echo "Test passed."
+  fi
+}
+
 # test
 pushd ..
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
-
-  # TODO: extract common helper script.
   python tests/test_ptype.py || exit 1
-  if [[ $(git diff tests/column_type_counts.csv) ]]
-  then
-    echo "Test failed."
-    exit 1
-  else
-    echo "Test passed."
-  fi
-  if [[ $(git diff tests/column_type_predictions.json) ]]
-  then
-    echo "Test failed."
-    exit 1
-  else
-    echo "Test passed."
-  fi
+  compare_test_output column_type_counts.csv
+  compare_test_output column_type_predictions.json
 popd ... || exit
 deactivate
 rm -rf venv
