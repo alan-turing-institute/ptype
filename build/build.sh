@@ -16,9 +16,6 @@ pushd ..
   python setup.py sdist bdist_wheel || exit 1
 popd
 
-python -m pip install --upgrade twine
-python -m twine upload --repository testpypi dist/*
-
 compare_test_output () {
   if [[ $(git diff tests/$1) ]]
   then
