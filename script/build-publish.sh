@@ -1,2 +1,3 @@
-source build.sh
-source publish.sh $1
+build.sh
+
+publish.sh "$1"

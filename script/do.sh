@@ -1,5 +1,6 @@
 #!/bin/bash
-# $1: Script to run inside Python virtualenv
+# Run another script inside a Python virtualenv.
+# $1: other script to run
 # $2: Python binary to use for virtualenv
 set -u -o xtrace
 
