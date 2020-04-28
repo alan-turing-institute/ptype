@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -u -o xtrace
 # Build Python package.
 
 # doesn't seem to work if I run in a virtualenv (can't find 'src' module)
@@ -39,5 +39,8 @@ pushd ..
 popd ... || exit
 deactivate
 rm -rf venv
+
+set +o xtrace
+echo Build completed successfully.
 
 # python notebook_runner.py "../notebooks/demo.ipynb"
