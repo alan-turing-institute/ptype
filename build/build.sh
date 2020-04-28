@@ -1,6 +1,6 @@
 #!/bin/bash
 set -u -o xtrace
-# Build Python package.
+# Build Python package. Run from package root.
 
 # doesn't seem to work if I run in a virtualenv (can't find 'src' module)
 # default to local Python 3.8 installation; use argument when building in GitHub runner.
@@ -10,11 +10,7 @@ source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
 python -m pip freeze # useful for debugging
-
-# build source distribution; run in package root
-pushd ..
-  python setup.py sdist bdist_wheel || exit 1
-popd
+python setup.py sdist bdist_wheel || exit 1
 
 compare_test_output () {
   if [[ $(git diff tests/$1) ]]
@@ -26,14 +22,12 @@ compare_test_output () {
   fi
 }
 
-# test
-pushd ..
-  # seems to be included by default, except in GitHub runner or virtualenv
-  export PYTHONPATH=.
-  python tests/test_ptype.py || exit 1
-  compare_test_output column_type_counts.csv
-  compare_test_output column_type_predictions.json
-popd ... || exit
+# seems to be included by default, except in GitHub runner or virtualenv
+export PYTHONPATH=.
+python tests/test_ptype.py || exit 1
+compare_test_output column_type_counts.csv
+compare_test_output column_type_predictions.json
+
 deactivate
 rm -rf venv
 
