@@ -1,4 +1,3 @@
-# from src.utils import log_sum_probs, ma_multidot
 from copy import deepcopy
 import numpy as np
 import numpy.ma as ma

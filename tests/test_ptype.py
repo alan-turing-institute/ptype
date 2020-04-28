@@ -43,8 +43,8 @@ def main(_data_path='data/',
     evaluate_predictions(_data_path, annotations, type_predictions)
 
 if __name__ == "__main__":
-    from src.utils import get_datanames, evaluate_predictions
-    from src.Ptype import Ptype
+    from ptype.utils import get_datanames, evaluate_predictions
+    from ptype.Ptype import Ptype
 
     import json
     import clevercsv as csv
