@@ -1,14 +1,6 @@
 #!/bin/bash
 # Build and test Python package. Run from package root.
 # $1: Python binary to use for virtualenv
-set -u -o xtrace
-
-# default to local Python 3.8 installation; use argument when building in GitHub runner
-pyexe=${1:-/usr/local/bin/python3.8}
-$pyexe -m pip install virtualenv
-$pyexe -m virtualenv venv || exit 1
-source venv/bin/activate
-
 rm -rf dist # clean
 
 python -m pip install -r requirements.txt
@@ -31,9 +23,5 @@ python tests/test_ptype.py || exit 1
 compare_test_output column_type_counts.csv
 compare_test_output column_type_predictions.json
 
-deactivate || exit 1
-rm -rf venv
-
-set +o xtrace
 rm -rf build # temp dir used by setuptools (I think)
 echo Build completed successfully.
