@@ -1,16 +1,16 @@
 # Mainly text manipulation utils
-from src.utils import create_folders
+from ptype.utils import create_folders
 
 # Latex, and visualization utils
-from src.utils import print_to_file, save_object
+from ptype.utils import print_to_file, save_object
 
 import csv
 import numpy as np
 import os
 
-from src.Config import Config
-from src.Model import PtypeModel
-from src.PFSMRunner import PFSMRunner
+from ptype.Config import Config
+from ptype.Model import PtypeModel
+from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
 class Ptype:

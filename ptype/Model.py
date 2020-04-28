@@ -1,6 +1,6 @@
-from src.utils import normalize_log_probs, log_weighted_sum_probs, log_weighted_sum_probs_check, print_to_file, log_weighted_sum_normalize_probs
+from ptype.utils import normalize_log_probs, log_weighted_sum_probs, log_weighted_sum_probs_check, print_to_file, log_weighted_sum_normalize_probs
+from ptype.Config import Config
 from scipy import optimize
-from src.Config import Config
 import numpy as np
 import time
 import sys

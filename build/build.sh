@@ -9,10 +9,12 @@ $pyexe -m virtualenv venv
 source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
-pip freeze # useful for debugging
+python -m pip freeze # useful for debugging
 
-# build source distribution
-python ../setup.py sdist || exit 1
+# build source distribution; run in package root
+pushd ..
+  python setup.py sdist bdist_wheel || exit 1
+popd
 
 compare_test_output () {
   if [[ $(git diff tests/$1) ]]
