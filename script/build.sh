@@ -1,6 +1,7 @@
 #!/bin/bash
-set -u -o xtrace
 # Build and test Python package. Run from package root.
+# $1: Python binary to use for virtualenv
+set -u -o xtrace
 
 # default to local Python 3.8 installation; use argument when building in GitHub runner
 pyexe=${1:-/usr/local/bin/python3.8}
