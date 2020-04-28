@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - name: Build
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
