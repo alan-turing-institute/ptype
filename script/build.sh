@@ -9,6 +9,8 @@ $pyexe -m pip install virtualenv
 $pyexe -m virtualenv venv || exit 1
 source venv/bin/activate
 
+rm -rf dist # clean
+
 python -m pip install -r requirements.txt
 python -m pip freeze # useful for debugging
 python setup.py sdist bdist_wheel || exit 1
