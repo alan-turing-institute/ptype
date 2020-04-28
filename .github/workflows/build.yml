@@ -25,6 +25,9 @@ jobs:
     needs: build
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1 # needed for twine
+      with:
+        python-version: '3.8'
     - name: Publish to PyPI
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
