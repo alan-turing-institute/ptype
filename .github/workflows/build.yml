@@ -19,9 +19,8 @@ jobs:
         python-version: '3.7'
     - name: Build
       run: |
-        cd build
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
-        ./build.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python
+        ./build/build.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python
     - uses: actions/upload-artifact@v1
       with:
         name: dist

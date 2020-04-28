@@ -8,7 +8,7 @@ pyexe=${1:-/usr/local/bin/python3.8}
 $pyexe -m virtualenv venv
 source venv/bin/activate
 
-python -m pip install -r ../requirements.txt
+python -m pip install -r requirements.txt
 python -m pip freeze # useful for debugging
 python setup.py sdist bdist_wheel || exit 1
 
