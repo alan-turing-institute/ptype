@@ -7,6 +7,7 @@ set -u -o xtrace
 pyexe=${1:-/usr/local/bin/python3.8}
 $pyexe -m virtualenv venv
 source venv/bin/activate
+typeset -F # show defined functions
 
 python -m pip install -r requirements.txt
 python -m pip freeze # useful for debugging
@@ -28,10 +29,12 @@ python tests/test_ptype.py || exit 1
 compare_test_output column_type_counts.csv
 compare_test_output column_type_predictions.json
 
-deactivate
+deactivate || exit 1
 rm -rf venv
 
 set +o xtrace
+
+rm -rf build # temp dir used by setuptools (I think)
 echo Build completed successfully.
 
 # python notebook_runner.py "../notebooks/demo.ipynb"
