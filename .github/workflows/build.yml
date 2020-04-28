@@ -29,9 +29,9 @@ jobs:
       with:
         python-version: '3.8'
     - name: Prepare distribution
-        uses: actions/download-artifact@v1
-        with:
-          name: dist
+      uses: actions/download-artifact@v1
+      with:
+        name: dist
     - name: Publish to PyPI
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
