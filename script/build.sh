@@ -1,9 +1,8 @@
 #!/bin/bash
 set -u -o xtrace
-# Build Python package. Run from package root.
+# Build and test Python package. Run from package root.
 
-# doesn't seem to work if I run in a virtualenv (can't find 'src' module)
-# default to local Python 3.8 installation; use argument when building in GitHub runner.
+# default to local Python 3.8 installation; use argument when building in GitHub runner
 pyexe=${1:-/usr/local/bin/python3.8}
 $pyexe -m pip install virtualenv
 $pyexe -m virtualenv venv || exit 1
@@ -33,8 +32,5 @@ deactivate || exit 1
 rm -rf venv
 
 set +o xtrace
-
 rm -rf build # temp dir used by setuptools (I think)
 echo Build completed successfully.
-
-# python notebook_runner.py "../notebooks/demo.ipynb"
