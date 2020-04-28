@@ -11,9 +11,13 @@ source venv/bin/activate
 python -m pip install -r ../requirements.txt
 python -m pip freeze # useful for debugging
 
-# build source distribution
-python ../setup.py sdist bdist_wheel || exit 1
-rm -rf build # temp dir for bdist_wheel
+# build source distribution; run in package root
+pushd ..
+  python setup.py sdist bdist_wheel || exit 1
+popd
+
+python -m pip install --upgrade twine
+python -m twine upload --repository testpypi dist/*
 
 compare_test_output () {
   if [[ $(git diff tests/$1) ]]
