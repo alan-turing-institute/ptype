@@ -13,6 +13,8 @@ pip freeze # useful for debugging
 
 # build source distribution
 python ../setup.py sdist || exit 1
+python ../setup.py bdist_wheel || exit 1
+rm -rf build # temp dir for bdist_wheel
 
 compare_test_output () {
   if [[ $(git diff tests/$1) ]]
