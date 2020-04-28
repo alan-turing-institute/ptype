@@ -1,8 +1,9 @@
 # TODO: add versions
+clevercsv
+greenery
+matplotlib
 numpy
+pandas
 scipy
 scikit-learn
-matplotlib
-pandas
-greenery
-clevercsv
+wheel
