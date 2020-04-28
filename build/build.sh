@@ -30,9 +30,8 @@ pushd ..
   fi
   if [[ $(git diff tests/column_type_predictions.json) ]]
   then
-    echo "Test should fail, but for now ignore."
-    git checkout tests/column_type_predictions.json
-    # exit 1  -- once we solve the current discrepancy
+    echo "Test failed."
+    exit 1
   else
     echo "Test passed."
   fi
