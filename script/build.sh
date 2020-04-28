@@ -5,8 +5,8 @@ set -u -o xtrace
 # doesn't seem to work if I run in a virtualenv (can't find 'src' module)
 # default to local Python 3.8 installation; use argument when building in GitHub runner.
 pyexe=${1:-/usr/local/bin/python3.8}
-$pyexe -m pip install virtualenv
-$pyexe -m virtualenv venv
+# $pyexe -m pip install virtualenv
+$pyexe -m virtualenv venv || exit 1
 source venv/bin/activate
 
 python -m pip install -r requirements.txt
