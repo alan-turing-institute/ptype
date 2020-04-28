@@ -9,11 +9,10 @@ $pyexe -m virtualenv venv
 source venv/bin/activate
 
 python -m pip install -r ../requirements.txt
-pip freeze # useful for debugging
+python -m pip freeze # useful for debugging
 
 # build source distribution
-python ../setup.py sdist || exit 1
-python ../setup.py bdist_wheel || exit 1
+python ../setup.py sdist bdist_wheel || exit 1
 rm -rf build # temp dir for bdist_wheel
 
 compare_test_output () {
