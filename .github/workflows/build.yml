@@ -35,4 +35,4 @@ jobs:
     - name: Publish to PyPI
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
-        script/publish.sh ${{ secrets.pypi_password }} /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python
+        script/do.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python script/publish.sh ${{ secrets.pypi_password }}
