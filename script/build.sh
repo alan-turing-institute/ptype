@@ -1,6 +1,5 @@
 #!/bin/bash
 # Build and test Python package. Run from package root.
-# $1: Python binary to use for virtualenv
 rm -rf dist # clean
 
 python -m pip install -r requirements.txt
