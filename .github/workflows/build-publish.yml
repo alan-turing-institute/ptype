@@ -12,7 +12,6 @@ on:
 jobs:
   build-publish:
     runs-on: macos-10.15
-    needs: build
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1 # needed for twine
