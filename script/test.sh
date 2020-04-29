@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Test Python package found in dist folder.
 python -m pip install dist/*.whl
 
@@ -14,7 +14,7 @@ compare_test_output () {
 
 # seems to be included by default, except in GitHub runner or virtualenv
 export PYTHONPATH=.
-python tests/test_ptype.py || exit 1
+python tests/test_ptype.py
 compare_test_output column_type_counts.csv
 compare_test_output column_type_predictions.json
 

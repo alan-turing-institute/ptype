@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # $1: Python binary to use for virtualenv
 # $2: PyPI password
 
