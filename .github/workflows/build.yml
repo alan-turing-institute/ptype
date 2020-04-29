@@ -3,11 +3,11 @@ name: build
 on:
   push:
     branches:
-      - !release
+      - '!release'
 
   pull_request:
     branches:
-      - !release
+      - '!release'
 
 jobs:
   build:
