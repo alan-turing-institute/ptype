@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
    name='ptype',
-   version='0.1.8',
+   version='0.1.9',
    description='Probabilistic type inference',
    long_description=long_description,
    long_description_content_type="text/markdown",
