@@ -16,4 +16,4 @@ jobs:
     - name: Build, test and publish to PyPI
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
-        script/do-build-test-publish.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python ${{ secrets.testpypi_password }} testpypi
+        script/do-build-test-publish.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python ${{ secrets.pypi_password }} pypi
