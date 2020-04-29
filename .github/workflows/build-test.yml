@@ -20,4 +20,4 @@ jobs:
     - name: Build
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
-        script/do-test-build.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python
+        script/do-build-test.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python
