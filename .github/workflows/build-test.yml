@@ -1,4 +1,4 @@
-name: build
+name: build-test
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - release
 
 jobs:
-  build:
+  build-test:
     runs-on: macos-10.15
     steps:
     - uses: actions/checkout@v2
@@ -20,4 +20,4 @@ jobs:
     - name: Build
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
-        script/do.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python script/build.sh
+        script/do-build-test.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 python -m pip install bump2version
-bump2version patch || exit 1
+bump2version patch
