@@ -23,4 +23,5 @@ jobs:
         # git config --global user.email 'your-username@users.noreply.github.com'
         git status
         git commit -a -m "Bump version number."
-        git push --tags
+        git status
+        git push
