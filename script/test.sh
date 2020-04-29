@@ -1,6 +1,5 @@
 #!/bin/bash
-# Test Python package found in dist.
-
+# Test Python package found in dist folder.
 python -m pip install dist/*.whl
 
 compare_test_output () {
