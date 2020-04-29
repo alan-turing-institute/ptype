@@ -21,3 +21,8 @@ jobs:
       run: |
         # https://github.com/alan-turing-institute/ptype-dmkd/issues/14
         script/do.sh /Users/runner/hostedtoolcache/Python/3.8.2/x64/bin/python script/build-publish.sh ${{ secrets.pypi_password }}
+    - name: Push version bump
+      run: |
+        # git config --global user.name 'Your Name'
+        # git config --global user.email 'your-username@users.noreply.github.com'
+        git push --tags
