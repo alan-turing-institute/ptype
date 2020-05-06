@@ -1,4 +1,5 @@
 ![build](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb)
 
 # Install requirements
 ```
