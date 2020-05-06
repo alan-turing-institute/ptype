@@ -1,4 +1,5 @@
-![build](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg)
+![build-publish on release](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-test-publish/badge.svg)
+![build on develop](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-test/badge.svg?branch=develop)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb)
 
 # Install requirements
@@ -9,13 +10,13 @@ pip install -r requirements.txt
 # Usage
 ## Initialization
 ```
-ptype = Ptype() 
+ptype = Ptype()
 ```
 By default, ptype considers the following data types: integer, string, float, boolean, gender, 'date'. However, this can be extended using the parameter named ''_types''.
 
 
 ```
-ptype = Ptype(_types={1:'integer', 2:'string', 3:'float', 4:'boolean', 5:'gender', 6:'date-iso-8601', 7:'date-eu', 8:'date-non-std-subtype', 9:'date-non-std', 10:'IPAddress', 11:'EmailAddress') 
+ptype = Ptype(_types={1:'integer', 2:'string', 3:'float', 4:'boolean', 5:'gender', 6:'date-iso-8601', 7:'date-eu', 8:'date-non-std-subtype', 9:'date-non-std', 10:'IPAddress', 11:'EmailAddress')
 ```
 
 ## Running

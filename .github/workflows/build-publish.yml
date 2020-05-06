@@ -1,4 +1,4 @@
-name: build-test-publish
+name: build-publish
 
 on:
   push:
@@ -15,4 +15,4 @@ jobs:
         python-version: '3.8'
     - name: Build, test and publish to PyPI
       run: |
-        script/do-build-test-publish.sh $(which python) ${{ secrets.pypi_password }} pypi
+        script/do-build-publish.sh $(which python) ${{ secrets.pypi_password }} pypi
