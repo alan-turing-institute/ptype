@@ -19,4 +19,4 @@ jobs:
         python-version: '3.8'
     - name: Build and test
       run: |
-        script/do-build-test.sh ${which python}
+        script/do-build-test.sh $(which python)
