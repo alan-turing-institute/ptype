@@ -1,3 +1,3 @@
 #!/bin/bash -e
-# default to local Python 3.8 installation
-source script/do.sh /usr/local/bin/python3.8 "$@"
+# default to local Python installation
+source script/do.sh $(which python) "$@"
