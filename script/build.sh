@@ -11,19 +11,21 @@ rm -rf build # temp dir used by setuptools (I think)
 echo Built successfully.
 
 # Test Python package found in dist folder.
-start=$(date +%s)
+install () {
   python -m pip install dist/*.whl
+}
 
-  compare_test_output () {
-    if [[ $(git diff tests/$1) ]]
-    then
-      echo "Test failed."
-      exit 1
-    else
-      echo "Test passed."
-    fi
-  }
+compare_test_output () {
+  if [[ $(git diff tests/$1) ]]
+  then
+    echo "Test failed."
+    exit 1
+  else
+    echo "Test passed."
+  fi
+}
 
+test () {
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
   python tests/test_ptype.py
@@ -31,5 +33,7 @@ start=$(date +%s)
   compare_test_output column_type_predictions.json
 
   echo Tests passed.
-end=$(date +%s)
-echo "Tests took $((end-start)) seconds."
+}
+
+time install
+time test
