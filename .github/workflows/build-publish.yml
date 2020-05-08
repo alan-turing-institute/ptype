@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - release
+    paths-ignore:
+      - 'notes/**'
+      - README.md
 
 jobs:
   main:
