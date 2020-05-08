@@ -33,10 +33,9 @@ def main(_data_path='data/',
          _predictions_path='tests/column_type_predictions.json'):
 
     annotations = json.load(open(_annotations_path))
-
     type_predictions = get_predictions(_data_path)
 
-    # does not write optional BOM char and perfors pretty printing for json file
+    # omits optional BOM char and prettyprints JSON file
     with open(_predictions_path, 'w', encoding='utf-8-sig') as write_file:
             json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
 
