@@ -7,7 +7,7 @@ def read_data(_data_path, dataset_name):
     return csv.csv2df(_data_path + dataset_name, encoding=encoding, dtype=str, skipinitialspace=True)
 
 def get_predictions(_data_path):
-    dataset_names = get_datanames()
+    dataset_names = get_datasets()
 
     # create ptype
     types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
@@ -37,12 +37,12 @@ def main(_data_path='data/',
 
     # omits optional BOM char and prettyprints JSON file
     with open(_predictions_path, 'w', encoding='utf-8-sig') as write_file:
-            json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
+        json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
 
-    evaluate_predictions(_data_path, annotations, type_predictions)
+    evaluate_predictions(annotations, type_predictions)
 
 if __name__ == "__main__":
-    from ptype.utils import get_datanames, evaluate_predictions
+    from ptype.utils import get_datasets, evaluate_predictions
     from ptype.Ptype import Ptype
 
     import json

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from sklearn.metrics import auc
-from collections import Counter, OrderedDict 
+from collections import Counter, OrderedDict
 
 import functools
 import numpy.ma as ma
@@ -51,9 +51,9 @@ def set_precision(val, prec=10):
     return round(val, prec)
 
 
-def llhoods_with_precision(llhoods, prec=40):    
+def llhoods_with_precision(llhoods, prec=40):
     for i in range(len(llhoods)):
-        llhoods[i] = set_precision(llhoods[i], prec)    
+        llhoods[i] = set_precision(llhoods[i], prec)
     return llhoods
 
 
@@ -155,7 +155,7 @@ def multi_logdot(Xs):
 ###################### DATA I/O METHODS #######################
 ###############################################################
 def read_dataset(_data_path, _header=None):
-    return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)    
+    return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)
 
 
 # writing data
@@ -215,9 +215,9 @@ def create_folders(model, _start_over_report):
 
 
 # copies some columns directly
-def copy_columns_between_dicts(dict_source, dict_target, columns):    
+def copy_columns_between_dicts(dict_source, dict_target, columns):
     for column in columns:
-        dict_target[column] = dict_source[column]    
+        dict_target[column] = dict_source[column]
     return dict_target
 
 
@@ -244,7 +244,7 @@ def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None
         plt.xticks(range(len(xticklabels)), xticklabels, rotation=90)
 
     plt.imshow(X, interpolation='none', vmax=VMAX, vmin=0, aspect='auto', cmap=cmap)
-    plt.colorbar()    
+    plt.colorbar()
     plt.xlabel(xlabel, fontsize=20)
     plt.ylabel(ylabel, fontsize=20)
     plt.title(title, fontsize=20)
@@ -455,17 +455,17 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
     dataset_path    = '../data/' + _dataset_name + '.csv'
     annotation_path = '../annotations/' + _dataset_name + '.csv'
 
-    df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)    
+    df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)
     annotations = pd.read_csv(annotation_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False)
 
     true_values = annotations['Type'].values.tolist()
     true_values = [true_value.split('-')[0] for true_value in true_values]
-    
+
     predictions = predicted_types.values()
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
 
     column_names = list(predicted_types.keys())
-    
+
     correct_, false_ = 0., 0.
     for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):
         column_name = column_names[i]
@@ -478,21 +478,21 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
             indices = _ptype.normal_types[column_name]
             print('\tsome normal data values: ', [unique_vals[ind] for ind in indices][:20])
             print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
-            
+
             indices = _ptype.missing_types[column_name]
             if len(indices) !=0 :
                 print('\tsome missing data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
-            
+
             indices = _ptype.anomaly_types[column_name]
-            if len(indices) !=0 :                
+            if len(indices) !=0 :
                 print('\tsome anomalous data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
-            
-            print('\ttrue/annotated type : ', true_value, '\n\tpredicted type : ', prediction)            
+
+            print('\ttrue/annotated type : ', true_value, '\n\tpredicted type : ', prediction)
             print('\tposterior probs: ', _ptype.p_t_columns[list(_ptype.p_t_columns.keys())[i]])
             print('\ttypes: ', list(_ptype.types.values()), '\n')
-            
+
 
     print('correct/total = ', round(correct_/len(column_names),2), '(' + str(int(correct_)) + '/' + str(len(column_names)) + ')')
 
@@ -505,12 +505,12 @@ def not_vector(X):
 def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float', 'integer', 'string']):
     dataset_counts = OrderedDict()
     total_test = {t: 0 for t in _types}
-    
-    for dataset_name in annotations:        
-        
+
+    for dataset_name in annotations:
+
         true_values = annotations[dataset_name]
         ptype_predictions = predictions[dataset_name].values()
-        
+
         ptype_predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
                              prediction in ptype_predictions]
 
@@ -525,7 +525,7 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
         # Counters are unordered, so for deterministic output we sort via a list
         dataset_counts[dataset_name] = dict(sorted(counts.items()))
 
-        total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}        
+        total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}
 
     total_cols = sum([total_test[t] for t in ['boolean', 'date', 'float', 'integer', 'string']])
 
@@ -539,14 +539,14 @@ def save_df_to_csv(df, _path_or_buf):
 def evaluate_model_type(annotations, predictions):
     types = ['integer', 'string', 'float', 'boolean', 'date']
     type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
-            
+
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
                          prediction in predictions]
 
-    # find columns whose types are not supported by ptype    
-    ignored_columns = np.where((np.array(annotations) != 'all identical') & 
-                               (np.array(annotations) != 'gender') & 
-                               (np.array(predictions) != 'all identical') & 
+    # find columns whose types are not supported by ptype
+    ignored_columns = np.where((np.array(annotations) != 'all identical') &
+                               (np.array(annotations) != 'gender') &
+                               (np.array(predictions) != 'all identical') &
                                (np.array(predictions) != 'unknown'))[0]
 
     for t in types:
@@ -565,8 +565,8 @@ def evaluate_model_type(annotations, predictions):
     return type_rates
 
 
-def get_evaluations(_annotations, _predictions, methods=['ptype',]):    
-    
+def get_evaluations(_annotations, _predictions, methods=['ptype',]):
+
     dataset_names = list(_annotations.keys())
     types = ['boolean', 'date', 'float', 'integer', 'string']
 
@@ -578,8 +578,8 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
         for method in methods:
 
             tp, fp, fn = .0, .0, .0
-            for dataset_name in dataset_names:                                
-                temp = evaluate_model_type(_annotations[dataset_name], 
+            for dataset_name in dataset_names:
+                temp = evaluate_model_type(_annotations[dataset_name],
                                            _predictions[dataset_name].values())
                 tp += temp[t]['TP']
                 fp += temp[t]['FP']
@@ -592,7 +592,7 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
     return Js, overall_accuracy
 
 
-def run_experiment(total_cols,  
+def run_experiment(total_cols,
                    dataset_names,
                    types=None):
     if types is None:
@@ -601,16 +601,16 @@ def run_experiment(total_cols,
                  7: 'date-non-std-subtype', 8: 'date-non-std'}
     ptype = Ptype(_types=types)
     for dataset_name in dataset_names:
-        df = read_dataset(dataset_name, TEMP_PATHS)            
+        df = read_dataset(dataset_name, TEMP_PATHS)
         ptype.run_inference(_data_frame=df, _dataset_name=dataset_name)
 
     df, overall_accuracy = get_evaluations(_annotations_path=_annotations_path, _predictions_path=_predictions_path, _training=False, _sets=test_datasets)
-    
+
     overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
-    return [df, overall_accuracy_to_print]    
+    return [df, overall_accuracy_to_print]
 
 
-def get_datanames():
+def get_datasets():
     dataset_names = []
     for file in glob.glob("data/*.csv"):
         dataset_names.append(file.split('/')[-1])
@@ -618,16 +618,16 @@ def get_datanames():
     return dataset_names
 
 
-def evaluate_predictions(_data_path, annotations, type_predictions):            
+def evaluate_predictions(annotations, type_predictions):
     ### the column type counts of the datasets
-    [total_test, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)    
+    [_, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)
     save_df_to_csv(pd.DataFrame(dataset_counts, columns=dataset_counts.keys()), 'tests/column_type_counts.csv')
-    
-    Js, overall_accuracy = get_evaluations(annotations, type_predictions)        
-    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
-    print('overall accuracy: ', overall_accuracy_to_print)    
+
+    Js, overall_accuracy = get_evaluations(annotations, type_predictions)
+    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / total_cols) for method in overall_accuracy}
+    print('overall accuracy: ', overall_accuracy_to_print)
     print('Jaccard index values: ', {t:Js[t]['ptype'] for t in Js})
-    
+
     df = pd.DataFrame.from_dict(Js, orient='index')
     df = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T.append(df)
-    save_df_to_csv(df, 'tests/column_type_evaluations.csv')   
+    save_df_to_csv(df, 'tests/column_type_evaluations.csv')
