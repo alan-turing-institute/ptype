@@ -1,18 +1,21 @@
 #!/bin/bash -e
+
 # Build Python package into dist folder, and then test.
-rm -rf dist # clean
+build () {
+  rm -rf dist # clean
 
-python -m pip install -r requirements.txt
-python -m pip freeze # useful for debugging
+  python -m pip install -r requirements.txt
+  python -m pip freeze # useful for debugging
 
-python setup.py sdist bdist_wheel
+  python setup.py sdist bdist_wheel
 
-rm -rf build # temp dir used by setuptools (I think)
-echo Built successfully.
+  rm -rf build # temp dir used by setuptools (I think)
+  echo Built successfully.
 
-# Test Python package found in dist folder.
-install () {
-  python -m pip install dist/*.whl
+  # Test Python package found in dist folder.
+  install () {
+    python -m pip install dist/*.whl
+  }
 }
 
 compare_test_output () {
@@ -28,12 +31,13 @@ compare_test_output () {
 test () {
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
-  python tests/test_ptype.py
+  time python tests/test_ptype.py
   compare_test_output column_type_counts.csv
   compare_test_output column_type_predictions.json
 
   echo Tests passed.
 }
 
-time install
-time test
+build
+install
+test
