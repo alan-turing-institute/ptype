@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Build Python package into dist folder, and then test. Run from package root.
+# Build Python package into dist folder, and then test.
 rm -rf dist # clean
 
 python -m pip install -r requirements.txt
