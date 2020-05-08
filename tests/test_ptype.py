@@ -35,11 +35,16 @@ def main(_data_folder='data/',
     annotations = json.load(open(_annotations_file))
     type_predictions = get_predictions(_data_folder)
 
-    # omits optional BOM char and prettyprints JSON file
-    with open(_predictions_file, 'w', encoding='utf-8-sig') as write_file:
-        json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
+    with open(_predictions_file, 'r', encoding='utf-8-sig') as read_file:
+        expected = json.load(read_file)
+    if type_predictions == expected:
+        evaluate_predictions(annotations, type_predictions)
+    else:
+        # prettyprint new JSON, omiting optional BOM char
+        with open(_predictions_file, 'w', encoding='utf-8-sig') as write_file:
+            json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
 
-    evaluate_predictions(annotations, type_predictions)
+        raise Exception("Test failed")
 
 if __name__ == "__main__":
     from ptype.utils import get_datasets, evaluate_predictions

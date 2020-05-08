@@ -33,7 +33,6 @@ test () {
   export PYTHONPATH=.
   time python tests/test_ptype.py
   compare_test_output column_type_counts.csv
-  compare_test_output column_type_predictions.json
 
   echo Tests passed.
 }
