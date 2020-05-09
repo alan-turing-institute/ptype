@@ -625,8 +625,9 @@ def evaluate_predictions(annotations, type_predictions):
     df = pd.DataFrame(dataset_counts, columns=dataset_counts.keys())
     column_type_counts = 'tests/column_type_counts.csv'
     expected = pd.read_csv(column_type_counts, index_col=0)
-    df.to_csv(path_or_buf=column_type_counts)
-    assert expected.equals(df)
+    if not(expected.equals(df)):
+        df.to_csv(path_or_buf=column_type_counts + '.new')
+        raise Exception(f'{column_type_counts} comparison failed.')
 
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)
     overall_accuracy_to_print = {method: {'overall-accuracy': float_2dp(overall_accuracy[method] / total_cols)} for method in overall_accuracy}
@@ -638,5 +639,6 @@ def evaluate_predictions(annotations, type_predictions):
     df = df2.append(df1)
     column_type_evaluations = 'tests/column_type_evaluations.csv'
     expected = pd.read_csv(column_type_evaluations, index_col=0)
-    df.to_csv(path_or_buf=column_type_evaluations)
-    assert expected.equals(df)
+    if not(expected.equals(df)):
+        df.to_csv(path_or_buf=column_type_evaluations + '.new')
+        raise Exception(f'{column_type_evaluations} comparison failed.')
