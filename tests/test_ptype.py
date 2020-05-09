@@ -37,7 +37,7 @@ def main(_data_folder='data/',
 
     with open(_predictions_file, 'r', encoding='utf-8-sig') as read_file:
         expected = json.load(read_file)
-    if type_predictions == expected:
+    if not(type_predictions == expected):
         # prettyprint new JSON, omiting optional BOM char
         with open(_predictions_file + '.new', 'w', encoding='utf-8-sig') as write_file:
             json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
