@@ -623,8 +623,8 @@ def evaluate_predictions(annotations, type_predictions):
     [_, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)
     df = pd.DataFrame(dataset_counts, columns=dataset_counts.keys())
     expected = pd.read_csv('tests/column_type_counts.csv', index_col=0)
-    assert expected.equals(df)
     df.to_csv(path_or_buf='tests/column_type_counts.csv')
+    assert expected.equals(df)
 
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)
     overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / total_cols) for method in overall_accuracy}
