@@ -532,10 +532,6 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
     return [total_test, dataset_counts, total_cols]
 
 
-def save_df_to_csv(df, _path_or_buf):
-    df.to_csv(index=False, path_or_buf=_path_or_buf)
-
-
 def evaluate_model_type(annotations, predictions):
     types = ['integer', 'string', 'float', 'boolean', 'date']
     type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
@@ -586,7 +582,7 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
                 fn += temp[t]['FN']
 
             overall_accuracy[method] += tp
-            J[method] = "{:.2f}".format(tp / (tp + fp + fn))
+            J[method] = float_2dp(tp / (tp + fp + fn))
         Js[t] = J
 
     return Js, overall_accuracy
@@ -618,19 +614,29 @@ def get_datasets():
     return dataset_names
 
 
+def float_2dp(n: float):
+    """Round a float to 2 decimal places, preserving float-hood. Probably a better way to do this."""
+    return np.float64("{:.2f}".format(n))
+
+
 def evaluate_predictions(annotations, type_predictions):
     ### the column type counts of the datasets
     [_, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)
     df = pd.DataFrame(dataset_counts, columns=dataset_counts.keys())
-    expected = pd.read_csv('tests/column_type_counts.csv', index_col=0)
-    df.to_csv(path_or_buf='tests/column_type_counts.csv')
+    column_type_counts = 'tests/column_type_counts.csv'
+    expected = pd.read_csv(column_type_counts, index_col=0)
+    df.to_csv(path_or_buf=column_type_counts)
     assert expected.equals(df)
 
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)
-    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / total_cols) for method in overall_accuracy}
+    overall_accuracy_to_print = {method: {'overall-accuracy': float_2dp(overall_accuracy[method] / total_cols)} for method in overall_accuracy}
     print('overall accuracy: ', overall_accuracy_to_print)
     print('Jaccard index values: ', {t:Js[t]['ptype'] for t in Js})
 
-    df = pd.DataFrame.from_dict(Js, orient='index')
-    df = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T.append(df)
-    save_df_to_csv(df, 'tests/column_type_evaluations.csv')
+    df1 = pd.DataFrame.from_dict(Js, orient='index')
+    df2 = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T
+    df = df2.append(df1)
+    column_type_evaluations = 'tests/column_type_evaluations.csv'
+    expected = pd.read_csv(column_type_evaluations, index_col=0)
+    df.to_csv(path_or_buf=column_type_evaluations)
+    assert expected.equals(df)
