@@ -7,7 +7,7 @@ def read_data(_data_path, dataset_name):
     return csv.csv2df(_data_path + dataset_name, encoding=encoding, dtype=str, skipinitialspace=True)
 
 def get_predictions(_data_path):
-    dataset_names = get_datanames()
+    dataset_names = get_datasets()
 
     # create ptype
     types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
@@ -28,22 +28,26 @@ def get_predictions(_data_path):
     return type_predictions
 
 
-def main(_data_path='data/',
-         _annotations_path='annotations/annotations.json',
-         _predictions_path='tests/column_type_predictions.json'):
+def main(_data_folder='data/',
+         _annotations_file='annotations/annotations.json',
+         _predictions_file='tests/column_type_predictions.json'):
 
-    annotations = json.load(open(_annotations_path))
+    annotations = json.load(open(_annotations_file))
+    type_predictions = get_predictions(_data_folder)
 
-    type_predictions = get_predictions(_data_path)
-
-    # does not write optional BOM char and perfors pretty printing for json file
-    with open(_predictions_path, 'w', encoding='utf-8-sig') as write_file:
+    with open(_predictions_file, 'r', encoding='utf-8-sig') as read_file:
+        expected = json.load(read_file)
+    if not(type_predictions == expected):
+        # prettyprint new JSON, omiting optional BOM char
+        with open(_predictions_file + '.new', 'w', encoding='utf-8-sig') as write_file:
             json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
+        raise Exception(f'{_predictions_file} comparison failed.')
 
-    evaluate_predictions(_data_path, annotations, type_predictions)
+    evaluate_predictions(annotations, type_predictions)
+
 
 if __name__ == "__main__":
-    from ptype.utils import get_datanames, evaluate_predictions
+    from ptype.utils import get_datasets, evaluate_predictions
     from ptype.Ptype import Ptype
 
     import json

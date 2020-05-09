@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - release
+    paths-ignore:
+      - '.idea/**'
+      - 'notes/**'
+      - 'README.md'
+      - '**/README.md'
 
 jobs:
   main:
