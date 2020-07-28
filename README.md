@@ -8,7 +8,8 @@ Type inference refers to the task of inferring the data type (e.g., Boolean, dat
 <p align="center">
   <img src="/notes/motivation.png" alt="drawing"  width="400"/>
 </p>
-<figcaption>Normal, missing  and anomalous values are denoted by green, yellow and red, respectively.</figcaption>
+<figcaption>Normal, missing and anomalous values are denoted by green, yellow and
+red, respectively in the right hand figure.</figcaption>
 
 [ptype](https://link.springer.com/content/pdf/10.1007/s10618-020-00680-1.pdf) is a probabilistic type inference model for tabular data, which aims to robustly infer the data type for each column in a table of data. By taking into account missing data and anomalies, ptype improves over the existing type inference methods. This repository provides an implementation of ptype in Python.
 
