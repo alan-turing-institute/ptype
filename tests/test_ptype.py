@@ -54,3 +54,4 @@ if __name__ == "__main__":
     import clevercsv as csv
 
     main()
+    print("Tests passed.")
