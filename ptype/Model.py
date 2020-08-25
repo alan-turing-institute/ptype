@@ -472,21 +472,6 @@ class PtypeModel:
     def set_data(self, data):
         self.data = data
 
-    def set_data_multiple_dfs(self, _data_frame, _dataset_name=None, _column_names=None):
-        if _dataset_name is None:
-            _dataset_name = 'demo'
-        _data_frame = _data_frame.rename(columns=lambda n: str(n).replace(' ', ''))
-
-        # Check for dataframes without column names
-        if _column_names is None:
-            _column_names = _data_frame.columns
-
-        # Creates a configuration object for the experiments
-        config = Config(_dataset_name=_dataset_name, _column_names=_column_names, _types=self.types)
-
-        # Ptype model for inference
-        self.set_params(config, _data_frame=_data_frame)
-
     def set_params(self, _experiment_config, _data_frame):
         self.experiment_config = _experiment_config
         self.data = _data_frame
