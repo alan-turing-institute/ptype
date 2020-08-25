@@ -475,7 +475,6 @@ class PtypeModel:
     def set_data_multiple_dfs(self, _data_frame, _dataset_name=None, _column_names=None):
         if _dataset_name is None:
             _dataset_name = 'demo'
-        _data_frame = _data_frame.rename(columns=lambda n: str(n).replace(' ', ''))
 
         # Check for dataframes without column names
         if _column_names is None:

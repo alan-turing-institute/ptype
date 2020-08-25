@@ -32,8 +32,6 @@ class Ptype:
     def set_data(self, _data_frame, _dataset_name=None, _column_names=None):
         if _dataset_name is None:
             _dataset_name = 'demo'
-        _data_frame = _data_frame.rename(columns=lambda n: str(n).replace(' ', ''))
-
         _data_frame = _data_frame.applymap(str)
 
         # to refresh the outputs
@@ -146,10 +144,6 @@ class Ptype:
 
         # Setup folders and probabilities for all columns
         self.normalize_params()
-
-        # Changing column names
-        self.data_frames = [data_frame.rename(columns=lambda n: str(n).replace(' ', '')) for data_frame in
-                            self.data_frames]
         self.model.data_frames = self.data_frames
 
         # find the unique values in all of the columns once
@@ -233,10 +227,6 @@ class Ptype:
 
         # Setup folders and probabilities for all columns
         self.normalize_params()
-
-        # Changing column names
-        self.data_frames = [data_frame.rename(columns=lambda n: str(n).replace(' ', '')) for data_frame in
-                            self.data_frames]
         self.model.data_frames = self.data_frames
 
         # find the unique values in all of the columns once
