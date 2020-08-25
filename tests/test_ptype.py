@@ -29,10 +29,10 @@ def get_predictions(_data_path):
             column = df[col]
             print('Column:' + df[col])
             for _, v in column.iteritems():
-                print(v)
-
-            isMissing = ptype.get_unique_vals(col)
-            ptype.missing_types[col]
+                if v in ptype.get_missing_data_predictions(col):
+                    print(v + ": missing")
+                if v in ptype.get_anomaly_predictions(col):
+                    print(v + ": anomaly")
 
             print(sorted(ptype.normal_types[col] +
                          ptype.missing_types[col] +
