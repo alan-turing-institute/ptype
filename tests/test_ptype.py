@@ -22,6 +22,25 @@ def get_predictions(_data_path):
         df = read_data(_data_path, dataset_name)
         ptype.run_inference(_data_frame=df)
 
+        # TEMPORARY
+        print(list(df.index))
+        for _, column_name in enumerate(list(ptype.model.experiment_config.column_names)):
+            print('Column name:' + column_name)
+            if column_name == 'OrgName':
+                print('Here')
+            column = df[column_name]
+            print('Column:' + df[column_name])
+            for _, v in column.iteritems():
+                print(v)
+
+#            print(ptype.normal_types[column_name])
+#            print(ptype.missing_types[column_name])
+#            print(ptype.anomaly_types[column_name])
+
+            print(sorted(ptype.normal_types[column_name] +
+                         ptype.missing_types[column_name] +
+                         ptype.anomaly_types[column_name]))
+
         # store types
         type_predictions[dataset_name] = ptype.predicted_types
 
