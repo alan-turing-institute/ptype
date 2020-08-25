@@ -13,10 +13,13 @@ from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
+
 class Ptype:
     avg_racket_time = None
 
-    def __init__(self, _exp_num=0, _types={1:'integer', 2:'string', 3:'float', 4:'boolean', 5:'gender', 6:'date-iso-8601', 7:'date-eu', 8:'date-non-std-subtype', 9:'date-non-std'}, _data_frames=None):
+    def __init__(self, _exp_num=0,
+                 _types={1: 'integer', 2: 'string', 3: 'float', 4: 'boolean', 5: 'gender', 6: 'date-iso-8601',
+                         7: 'date-eu', 8: 'date-non-std-subtype', 9: 'date-non-std'}, _data_frames=None):
         self.exp_num = _exp_num
         self.types = _types
         self.PFSMRunner = PFSMRunner(list(_types.values()))
@@ -29,8 +32,6 @@ class Ptype:
     def set_data(self, _data_frame, _dataset_name=None, _column_names=None):
         if _dataset_name is None:
             _dataset_name = 'demo'
-        _data_frame = _data_frame.rename(columns=lambda n: str(n).replace(' ', ''))
-
         _data_frame = _data_frame.applymap(str)
 
         # to refresh the outputs
@@ -99,9 +100,7 @@ class Ptype:
         # Generates a binary mask matrix to check if a word is supported by a PFSM or not. (this is just to optimize the implementation.)
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
-        for i, column_name in enumerate(list(self.model.experiment_config.column_names)):
-            # self.setup_a_column(i, column_name)
-
+        for _, column_name in enumerate(list(self.model.experiment_config.column_names)):
             # Calculates the probabilities
             probabilities, counts = self.generate_probs_a_column(column_name)
 
@@ -120,7 +119,8 @@ class Ptype:
             print_to_file('\ttraining is running...')
         return self.model.train_all_z_multiple_dfs_new(runner)
 
-    def train_machines_multiple_dfs(self, _labels, _experiment_output_name='demo',_max_iter=20, _prediction_path=None, _print=False,  _test_data=None, _test_labels=None, _uniformly=False):
+    def train_machines_multiple_dfs(self, _labels, _experiment_output_name='demo', _max_iter=20, _prediction_path=None,
+                                    _print=False, _test_data=None, _test_labels=None, _uniformly=False):
         """ Train the PFSMs given a set of dataframes and their labels
 
         :param _labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
@@ -142,9 +142,6 @@ class Ptype:
 
         # Setup folders and probabilities for all columns
         self.normalize_params()
-
-        # Changing column names
-        self.data_frames = [data_frame.rename(columns=lambda n: str(n).replace(' ', '')) for data_frame in self.data_frames]
         self.model.data_frames = self.data_frames
 
         # find the unique values in all of the columns once
@@ -162,7 +159,7 @@ class Ptype:
         for i, df in enumerate(self.data_frames):
             df_unique_vals_counts = {}
             for column_name in list(df.columns):
-                temp_x, counts = np.unique([str(int_element) for int_element in df[column_name].tolist()], return_counts=True)
+                temp_x, counts = self.get_unique_vals(column_name, return_counts=True)
                 counts = {u_data: c for u_data, c in zip(temp_x, counts)}
                 temp_counts = list(counts.values())
                 counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
@@ -203,9 +200,9 @@ class Ptype:
 
         save_object(training_error, self.experiment_output_name + '_training_error.pkl')
 
-
-
-    def train_machines_multiple_dfs_new(self, _labels, _experiment_output_name='demo',_max_iter=20, _prediction_path=None, _print=False,  _test_data=None, _test_labels=None, _uniformly=False):
+    def train_machines_multiple_dfs_new(self, _labels, _experiment_output_name='demo', _max_iter=20,
+                                        _prediction_path=None, _print=False, _test_data=None, _test_labels=None,
+                                        _uniformly=False):
         """ Train the PFSMs given a set of dataframes and their labels
 
         :param _labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
@@ -227,9 +224,6 @@ class Ptype:
 
         # Setup folders and probabilities for all columns
         self.normalize_params()
-
-        # Changing column names
-        self.data_frames = [data_frame.rename(columns=lambda n: str(n).replace(' ', '')) for data_frame in self.data_frames]
         self.model.data_frames = self.data_frames
 
         # find the unique values in all of the columns once
@@ -247,7 +241,7 @@ class Ptype:
         for i, df in enumerate(self.data_frames):
             df_unique_vals_counts = {}
             for column_name in list(df.columns):
-                temp_x, counts = np.unique([str(int_element) for int_element in df[column_name].tolist()], return_counts=True)
+                temp_x, counts = self.get_unique_vals(column_name, return_counts=True)
                 counts = {u_data: c for u_data, c in zip(temp_x, counts)}
                 temp_counts = list(counts.values())
                 counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
@@ -289,11 +283,11 @@ class Ptype:
             save_object(self.PFSMRunner, self.experiment_output_name + '_training_runner' + str(it) + '.pkl')
         save_object(training_error, self.experiment_output_name + '_training_error.pkl')
 
-
     ####################### OUTPUT METHODS #########################
-    def show_results_df(self,):
+    def show_results_df(self, ):
         df_output = self.model.data.copy()
-        df_output.columns = df_output.columns.map(lambda x: x + '(' + self.predicted_types[str(x).replace(' ', '')] + ')')
+        df_output.columns = df_output.columns.map(
+            lambda x: str(x) + '(' + self.predicted_types[x] + ')')
         return df_output
 
     def show_results(self, cols=None):
@@ -301,12 +295,12 @@ class Ptype:
             cols = self.predicted_types
 
         for col in cols:
-            print('col: ' + col)
+            print('col: ' + str(col))
             print('\tpredicted type: ' + self.predicted_types[col])
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            unique_vals, unique_vals_counts = np.unique([str(int_element) for int_element in self.model.data[col].tolist()], return_counts=True)
+            unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
             indices = self.normal_types[col]
             if len(indices) == 0:
                 count_normal = 0
@@ -337,30 +331,30 @@ class Ptype:
             if self.normal_types[col] != []:
                 print('\tsome normal data values: ', some_normal_data_values)
                 print('\ttheir counts: ', some_normal_data_values_counts)
-                print('\tfraction of normal:', round(count_normal / (count_normal + count_missing + count_anomalies), 2),  '\n')
+                print('\tfraction of normal:',
+                      round(count_normal / (count_normal + count_missing + count_anomalies), 2), '\n')
 
             if self.missing_types[col] != []:
                 print('\tmissing values:', missing_values)
                 print('\ttheir counts: ', missing_values_counts)
-                print('\tfraction of missing:', round(count_missing / (count_normal + count_missing + count_anomalies), 2),  '\n')
+                print('\tfraction of missing:',
+                      round(count_missing / (count_normal + count_missing + count_anomalies), 2), '\n')
 
             if self.anomaly_types[col] != []:
                 print('\tanomalies:', anomalies)
                 print('\ttheir counts:', anomalies_counts)
-                print('\tfraction of anomalies:', round(count_anomalies / (count_normal + count_missing + count_anomalies), 2),  '\n')
-
-
+                print('\tfraction of anomalies:',
+                      round(count_anomalies / (count_normal + count_missing + count_anomalies), 2), '\n')
 
     def detect_missing_anomalies(self, inferred_column_type):
-
         normals, missings, anomalies = [], [], []
         if inferred_column_type != 'all identical':
             row_posteriors = self.model.p_z[:, np.argmax(self.model.p_t), :]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            normals = list(np.where(max_row_posterior_indices==self.model.TYPE_INDEX)[0])
-            missings = list(np.where(max_row_posterior_indices==self.model.MISSING_INDEX)[0])
-            anomalies = list(np.where(max_row_posterior_indices==self.model.ANOMALIES_INDEX)[0])
+            normals = list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0])
+            missings = list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0])
+            anomalies = list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0])
 
         return [normals, missings, anomalies]
 
@@ -394,10 +388,13 @@ class Ptype:
     def write_type_predictions_2_csv(self, column_type_predictions):
         # Creates a csv file to write the predictions if no filename is given
         if self.prediction_path is None:
-            with open(self.model.experiment_config.main_experiments_folder + '/type_predictions/' + self.model.experiment_config.dataset_name + '/type_predictions.csv', 'w') as f:
+            with open(
+                    self.model.experiment_config.main_experiments_folder + '/type_predictions/' + self.model.experiment_config.dataset_name + '/type_predictions.csv',
+                    'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['Column', 'F#', 'messytables', 'ptype', 'readr', 'Trifacta', 'hypoparsr'])
-                for column_name, column_type_prediction in zip(self.model.experiment_config.column_names, column_type_predictions):
+                for column_name, column_type_prediction in zip(self.model.experiment_config.column_names,
+                                                               column_type_predictions):
                     writer.writerow([column_name, '', '', column_type_prediction, '', '', ''])
         else:
             # Updates the file if a file already exists
@@ -411,7 +408,7 @@ class Ptype:
                             updated_predictions.append(row)
                         else:
                             new_row = row
-                            new_row[3] = column_type_predictions[i-1]
+                            new_row[3] = column_type_predictions[i - 1]
                             updated_predictions.append(new_row)
                 with open(temp_path, 'w') as f:
                     writer = csv.writer(f)
@@ -479,14 +476,16 @@ class Ptype:
             if i >= 2:
                 # make uniform
                 # machine.I = {a: np.log(np.random.uniform(0.,1.)) if machine.I[a] != LOG_EPS else LOG_EPS for a in machine.I}
-                machine.I_z = {a: np.log(np.random.uniform(0., 1.)) if machine.I[a] != LOG_EPS else LOG_EPS for a in machine.I}
+                machine.I_z = {a: np.log(np.random.uniform(0., 1.)) if machine.I[a] != LOG_EPS else LOG_EPS for a in
+                               machine.I}
 
                 for a in machine.T:
                     for b in machine.T[a]:
                         for c in machine.T[a][b]:
-                            machine.T_z[a][b][c] = np.log(np.random.uniform(0.,1.))
+                            machine.T_z[a][b][c] = np.log(np.random.uniform(0., 1.))
 
-                machine.F_z = {a: np.log(np.random.uniform(0.,1.)) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
+                machine.F_z = {a: np.log(np.random.uniform(0., 1.)) if machine.F[a] != LOG_EPS else LOG_EPS for a in
+                               machine.F}
 
         self.PFSMRunner.machines = machines
 
@@ -494,11 +493,11 @@ class Ptype:
         """ Generates probabilities for the unique data values in a column.
 
         :param column_name: name of a column
-        :return probabilities: a IxJ sized np array, where probabilities[i][j] denotes the probability generated for i^th unique value by the j^th PFSM.
-                counts: a I sized np array, where counts[i] denotes the number of times i^th unique value is observed in a column.
+        :return probabilities: an IxJ sized np array, where probabilities[i][j] is the probability generated for i^th unique value by the j^th PFSM.
+                counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_values_in_a_column, counts = np.unique([str(int_element) for int_element in self.model.data[column_name].tolist()], return_counts=True)
+        unique_values_in_a_column, counts = self.get_unique_vals(column_name, return_counts=True)
         probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values_in_a_column)
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
 
@@ -506,10 +505,10 @@ class Ptype:
 
     def normalize_params(self):
         for i, machine in enumerate(self.PFSMRunner.machines):
-            if i not in [0,1]:
+            if i not in [0, 1]:
                 self.PFSMRunner.machines[i].I = self.model.normalize_initial(machine.I_z)
-                self.PFSMRunner.machines[i].F, self.PFSMRunner.machines[i].T = self.model.normalize_final(machine.F_z, machine.T_z)
-
+                self.PFSMRunner.machines[i].F, self.PFSMRunner.machines[i].T = self.model.normalize_final(machine.F_z,
+                                                                                                          machine.T_z)
 
     def calculate_error_df(self, dfs, labelss):
         # find the unique values in all of the columns once
@@ -543,7 +542,7 @@ class Ptype:
     def remove_missing_and_anomalies(self, x, col_name):
         y = np.unique([str(int_element) for int_element in x.tolist()])
         entries_to_discard = self.missing_types[col_name] + self.anomaly_types[col_name]
-        normal_entries = list(set(range(len(y)))-set(entries_to_discard))
+        normal_entries = list(set(range(len(y))) - set(entries_to_discard))
         normal_data_values = y[normal_entries]
 
         return x.loc[x.isin(normal_data_values)]
@@ -557,19 +556,23 @@ class Ptype:
 
         return x.index[x.isin(unnormal_data_values)].tolist()
 
+    def get_unique_vals(self, col, return_counts=False):
+        return np.unique(
+            [str(int_element) for int_element in self.model.data[col].tolist()],
+            return_counts=return_counts
+        )
+
     def get_missing_data_predictions(self, cols=None):
         missing_data_predictions = {}
         if cols is None:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = np.unique([str(int_element) for int_element in self.model.data[col].tolist()])
-
             if len(self.missing_types[col]) == 0:
                 missing_data_predictions[col] = []
             else:
                 indices = self.missing_types[col]
-                missing_data_predictions[col] = [unique_vals[ind] for ind in indices]
+                missing_data_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
 
         return missing_data_predictions
 
@@ -579,44 +582,45 @@ class Ptype:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = np.unique([str(int_element) for int_element in self.model.data[col].tolist()])
-
             if len(self.anomaly_types[col]) == 0:
                 anomaly_predictions[col] = []
             else:
                 indices = self.anomaly_types[col]
-                anomaly_predictions[col] = [unique_vals[ind] for ind in indices]
+                anomaly_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
 
         return anomaly_predictions
 
     def get_columns_with_type(self, _type):
-        return [column_name for column_name in self.predicted_types.keys() if (self.predicted_types[column_name] == _type)]
+        return [column_name for column_name in self.predicted_types.keys() if
+                (self.predicted_types[column_name] == _type)]
 
-    def get_columns_with_missing(self,):
-        column_names = [column_name for column_name in self.predicted_types.keys() if (self.missing_types[column_name] != [])]
+    def get_columns_with_missing(self, ):
+        column_names = [column_name for column_name in self.predicted_types.keys() if
+                        (self.missing_types[column_name] != [])]
         print('# columns with missing data:', len(column_names), '\n')
         return column_names
 
-
-    def get_columns_with_anomalies(self,):
-        column_names = [column_name for column_name in self.predicted_types.keys() if (self.anomaly_types[column_name] != [])]
+    def get_columns_with_anomalies(self, ):
+        column_names = [column_name for column_name in self.predicted_types.keys() if
+                        (self.anomaly_types[column_name] != [])]
         print('# columns with anomalies:', len(column_names), '\n')
         return column_names
 
-    def get_empty_columns(self,):
-        column_names = [column_name for column_name in self.predicted_types.keys() if (self.normal_types[column_name] == [])]
+    def get_empty_columns(self, ):
+        column_names = [column_name for column_name in self.predicted_types.keys() if
+                        (self.normal_types[column_name] == [])]
         print('# empty columns:', len(column_names), '\n')
         return column_names
 
     def change_column_type_annotations(self, _column_names, _new_column_types):
 
         for column_name, new_column_type in zip(_column_names, _new_column_types):
-            print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[column_name] + ' to ' + new_column_type)
+            print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[
+                column_name] + ' to ' + new_column_type)
             self.predicted_types[column_name] = new_column_type
 
     def change_missing_data_annotations(self, _column_name, _missing_data):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
-        missing_indices = [np.where(unique_vals == missing_d)[0][0] for missing_d in _missing_data]
+        missing_indices = [np.where(self.get_unique_vals(_column_name) == missing_d)[0][0] for missing_d in _missing_data]
 
         # add those entries to normal_types
         self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(missing_indices)))
@@ -625,8 +629,7 @@ class Ptype:
         self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
 
     def change_anomaly_annotations(self, _column_name, anomalies):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
-        anomaly_indices = [np.where(unique_vals==anomaly)[0][0] for anomaly in anomalies]
+        anomaly_indices = [np.where(self.get_unique_vals(_column_name) == anomaly)[0][0] for anomaly in anomalies]
 
         # add those entries to normal_types
         self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(anomaly_indices)))
@@ -635,7 +638,7 @@ class Ptype:
         self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
 
     def merge_missing_data(self, _column_name, _missing_data):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        unique_vals = self.get_unique_vals(_column_name)
         missing_indices = self.missing_types[_column_name]
 
         for missing_index in missing_indices:
@@ -643,8 +646,7 @@ class Ptype:
 
         self.run_inference(_data_frame=self.model.data)
 
-
-    def get_categorical_columns(self,):
+    def get_categorical_columns(self, ):
         cats = {}
         for col_name in self.model.data.columns:
             x = self.model.data[col_name]
@@ -652,8 +654,10 @@ class Ptype:
             x = self.remove_missing_and_anomalies(x, col_name)
 
             # just dropping certain values
-            for encoding in ['NULL', 'null', 'Null', '#NA', '#N/A', 'NA', 'NA ', ' NA', 'N A', 'N/A', 'N/ A', 'N /A', 'N/A',
-                             'na', ' na', 'na ', 'n a', 'n/a', 'N/O', 'NAN', 'NaN', 'nan', '-NaN', '-nan', '-', '!', '?', '*', '.']:
+            for encoding in ['NULL', 'null', 'Null', '#NA', '#N/A', 'NA', 'NA ', ' NA', 'N A', 'N/A', 'N/ A', 'N /A',
+                             'N/A',
+                             'na', ' na', 'na ', 'n a', 'n/a', 'N/O', 'NAN', 'NaN', 'nan', '-NaN', '-nan', '-', '!',
+                             '?', '*', '.']:
                 x = x.apply(lambda y: str(y).replace(encoding, ''))
 
             x = x.replace('', np.nan)

@@ -5,6 +5,7 @@
 # $3+: arguments to pass to script
 set -u -o xtrace
 
+rm -rf venv
 pyexe=$1
 $pyexe -m pip install virtualenv
 $pyexe -m virtualenv venv
