@@ -161,8 +161,7 @@ class Ptype:
         for i, df in enumerate(self.data_frames):
             df_unique_vals_counts = {}
             for column_name in list(df.columns):
-                temp_x, counts = np.unique([str(int_element) for int_element in df[column_name].tolist()],
-                                           return_counts=True)
+                temp_x, counts = self.get_unique_vals(column_name, return_counts=True)
                 counts = {u_data: c for u_data, c in zip(temp_x, counts)}
                 temp_counts = list(counts.values())
                 counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
@@ -244,8 +243,7 @@ class Ptype:
         for i, df in enumerate(self.data_frames):
             df_unique_vals_counts = {}
             for column_name in list(df.columns):
-                temp_x, counts = np.unique([str(int_element) for int_element in df[column_name].tolist()],
-                                           return_counts=True)
+                temp_x, counts = self.get_unique_vals(column_name, return_counts=True)
                 counts = {u_data: c for u_data, c in zip(temp_x, counts)}
                 temp_counts = list(counts.values())
                 counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
@@ -304,8 +302,7 @@ class Ptype:
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            unique_vals, unique_vals_counts = np.unique(
-                [str(int_element) for int_element in self.model.data[col].tolist()], return_counts=True)
+            unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
             indices = self.normal_types[col]
             if len(indices) == 0:
                 count_normal = 0
@@ -498,12 +495,11 @@ class Ptype:
         """ Generates probabilities for the unique data values in a column.
 
         :param column_name: name of a column
-        :return probabilities: a IxJ sized np array, where probabilities[i][j] denotes the probability generated for i^th unique value by the j^th PFSM.
-                counts: a I sized np array, where counts[i] denotes the number of times i^th unique value is observed in a column.
+        :return probabilities: an IxJ sized np array, where probabilities[i][j] is the probability generated for i^th unique value by the j^th PFSM.
+                counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_values_in_a_column, counts = np.unique(
-            [str(int_element) for int_element in self.model.data[column_name].tolist()], return_counts=True)
+        unique_values_in_a_column, counts = self.get_unique_vals(column_name, return_counts=True)
         probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values_in_a_column)
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
 
@@ -590,7 +586,7 @@ class Ptype:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = np.unique([str(int_element) for int_element in self.model.data[col].tolist()])
+            unique_vals = self.get_unique_vals(col)
 
             if len(self.anomaly_types[col]) == 0:
                 anomaly_predictions[col] = []
