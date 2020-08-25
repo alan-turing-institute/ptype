@@ -26,8 +26,6 @@ def get_predictions(_data_path):
         print(list(df.index))
         for _, column_name in enumerate(list(ptype.model.experiment_config.column_names)):
             print('Column name:' + column_name)
-            if column_name == 'OrgName':
-                print('Here')
             column = df[column_name]
             print('Column:' + df[column_name])
             for _, v in column.iteritems():

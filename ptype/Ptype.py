@@ -562,13 +562,19 @@ class Ptype:
 
         return x.index[x.isin(unnormal_data_values)].tolist()
 
+    def get_unique_vals(self, col, return_counts=False):
+        return np.unique(
+            [str(int_element) for int_element in self.model.data[col].tolist()],
+            return_counts=return_counts
+        )
+
     def get_missing_data_predictions(self, cols=None):
         missing_data_predictions = {}
         if cols is None:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = np.unique([str(int_element) for int_element in self.model.data[col].tolist()])
+            unique_vals = self.get_unique_vals(col)
 
             if len(self.missing_types[col]) == 0:
                 missing_data_predictions[col] = []
@@ -624,7 +630,7 @@ class Ptype:
             self.predicted_types[column_name] = new_column_type
 
     def change_missing_data_annotations(self, _column_name, _missing_data):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        unique_vals = self.get_unique_vals(_column_name)
         missing_indices = [np.where(unique_vals == missing_d)[0][0] for missing_d in _missing_data]
 
         # add those entries to normal_types
@@ -634,7 +640,7 @@ class Ptype:
         self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
 
     def change_anomaly_annotations(self, _column_name, anomalies):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        unique_vals = self.get_unique_vals(_column_name)
         anomaly_indices = [np.where(unique_vals == anomaly)[0][0] for anomaly in anomalies]
 
         # add those entries to normal_types
@@ -644,7 +650,7 @@ class Ptype:
         self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
 
     def merge_missing_data(self, _column_name, _missing_data):
-        unique_vals = np.unique([str(int_element) for int_element in self.model.data[_column_name].tolist()])
+        unique_vals = self.get_unique_vals(_column_name)
         missing_indices = self.missing_types[_column_name]
 
         for missing_index in missing_indices:
