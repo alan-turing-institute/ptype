@@ -287,7 +287,7 @@ class Ptype:
     def show_results_df(self, ):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
-            lambda x: x + '(' + self.predicted_types[str(x).replace(' ', '')] + ')')
+            lambda x: str(x) + '(' + self.predicted_types[x] + ')')
         return df_output
 
     def show_results(self, cols=None):
