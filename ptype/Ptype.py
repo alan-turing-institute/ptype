@@ -570,13 +570,11 @@ class Ptype:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = self.get_unique_vals(col)
-
             if len(self.missing_types[col]) == 0:
                 missing_data_predictions[col] = []
             else:
                 indices = self.missing_types[col]
-                missing_data_predictions[col] = [unique_vals[ind] for ind in indices]
+                missing_data_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
 
         return missing_data_predictions
 
@@ -586,13 +584,11 @@ class Ptype:
             cols = self.model.data.columns
 
         for col in cols:
-            unique_vals = self.get_unique_vals(col)
-
             if len(self.anomaly_types[col]) == 0:
                 anomaly_predictions[col] = []
             else:
                 indices = self.anomaly_types[col]
-                anomaly_predictions[col] = [unique_vals[ind] for ind in indices]
+                anomaly_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
 
         return anomaly_predictions
 
@@ -626,8 +622,7 @@ class Ptype:
             self.predicted_types[column_name] = new_column_type
 
     def change_missing_data_annotations(self, _column_name, _missing_data):
-        unique_vals = self.get_unique_vals(_column_name)
-        missing_indices = [np.where(unique_vals == missing_d)[0][0] for missing_d in _missing_data]
+        missing_indices = [np.where(self.get_unique_vals(_column_name) == missing_d)[0][0] for missing_d in _missing_data]
 
         # add those entries to normal_types
         self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(missing_indices)))
@@ -636,8 +631,7 @@ class Ptype:
         self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
 
     def change_anomaly_annotations(self, _column_name, anomalies):
-        unique_vals = self.get_unique_vals(_column_name)
-        anomaly_indices = [np.where(unique_vals == anomaly)[0][0] for anomaly in anomalies]
+        anomaly_indices = [np.where(self.get_unique_vals(_column_name) == anomaly)[0][0] for anomaly in anomalies]
 
         # add those entries to normal_types
         self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(anomaly_indices)))
