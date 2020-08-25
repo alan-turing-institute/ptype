@@ -59,9 +59,10 @@ class Ptype:
         else:
             self.model.set_params(config, _data_frame=_data_frame)
 
-        # Creates a df to report annotations for Wrattler
+        # These are both dictionaries of lists
         self.missing_types = {}
         self.anomaly_types = {}
+
         self.p_z_columns = {}
         self.p_t_columns = {}
         self.print = False
@@ -557,38 +558,21 @@ class Ptype:
         return x.index[x.isin(unnormal_data_values)].tolist()
 
     def get_unique_vals(self, col, return_counts=False):
+        """ List of the unique values found in a column."""
         return np.unique(
             [str(int_element) for int_element in self.model.data[col].tolist()],
             return_counts=return_counts
         )
 
-    def get_missing_data_predictions(self, cols=None):
-        missing_data_predictions = {}
-        if cols is None:
-            cols = self.model.data.columns
+    def get_missing_data_predictions(self, col):
+        """The values identified as 'missing' in a given column."""
+        vs = self.get_unique_vals(col)
+        return [vs[ind] for ind in self.missing_types[col]]
 
-        for col in cols:
-            if len(self.missing_types[col]) == 0:
-                missing_data_predictions[col] = []
-            else:
-                indices = self.missing_types[col]
-                missing_data_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
-
-        return missing_data_predictions
-
-    def get_anomaly_predictions(self, cols=None):
-        anomaly_predictions = {}
-        if cols is None:
-            cols = self.model.data.columns
-
-        for col in cols:
-            if len(self.anomaly_types[col]) == 0:
-                anomaly_predictions[col] = []
-            else:
-                indices = self.anomaly_types[col]
-                anomaly_predictions[col] = [self.get_unique_vals(col)[ind] for ind in indices]
-
-        return anomaly_predictions
+    def get_anomaly_predictions(self, col):
+        """The values identified as 'anomalies' in a given column."""
+        vs = self.get_unique_vals(col)
+        return [vs[ind] for ind in self.anomaly_types[col]]
 
     def get_columns_with_type(self, _type):
         return [column_name for column_name in self.predicted_types.keys() if

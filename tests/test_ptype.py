@@ -24,20 +24,19 @@ def get_predictions(_data_path):
 
         # TEMPORARY
         print(list(df.index))
-        for _, column_name in enumerate(list(ptype.model.experiment_config.column_names)):
-            print('Column name:' + column_name)
-            column = df[column_name]
-            print('Column:' + df[column_name])
+        for _, col in enumerate(list(ptype.model.experiment_config.column_names)):
+            print('Column name:' + col)
+            column = df[col]
+            print('Column:' + df[col])
             for _, v in column.iteritems():
                 print(v)
 
-#            print(ptype.normal_types[column_name])
-#            print(ptype.missing_types[column_name])
-#            print(ptype.anomaly_types[column_name])
+            isMissing = ptype.get_unique_vals(col)
+            ptype.missing_types[col]
 
-            print(sorted(ptype.normal_types[column_name] +
-                         ptype.missing_types[column_name] +
-                         ptype.anomaly_types[column_name]))
+            print(sorted(ptype.normal_types[col] +
+                         ptype.missing_types[col] +
+                         ptype.anomaly_types[col]))
 
         # store types
         type_predictions[dataset_name] = ptype.predicted_types
