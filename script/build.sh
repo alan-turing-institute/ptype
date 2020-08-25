@@ -3,7 +3,6 @@
 # Build Python package into dist folder, and then test.
 build () {
   rm -rf dist # clean
-  rm -rf venv # clean
 
   python -m pip install -r requirements.txt
   python -m pip freeze # useful for debugging
