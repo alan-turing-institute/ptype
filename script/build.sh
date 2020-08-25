@@ -3,6 +3,7 @@
 # Build Python package into dist folder, and then test.
 build () {
   rm -rf dist # clean
+  rm -rf venv # clean
 
   python -m pip install -r requirements.txt
   python -m pip freeze # useful for debugging
@@ -22,7 +23,7 @@ test () {
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
   time python tests/test_ptype.py
-  py.test --nbval-lax notebooks/demo.ipynb
+  pytest --nbval notebooks/*.ipynb --sanitize-with sanitize.cfg
 }
 
 build
