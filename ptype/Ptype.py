@@ -101,8 +101,6 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
         for _, column_name in enumerate(list(self.model.experiment_config.column_names)):
-            # self.setup_a_column(i, column_name)
-
             # Calculates the probabilities
             probabilities, counts = self.generate_probs_a_column(column_name)
 
