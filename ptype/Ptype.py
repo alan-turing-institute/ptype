@@ -295,7 +295,7 @@ class Ptype:
             cols = self.predicted_types
 
         for col in cols:
-            print('col: ' + col)
+            print('col: ' + str(col))
             print('\tpredicted type: ' + self.predicted_types[col])
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
