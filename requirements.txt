@@ -2,7 +2,6 @@
 clevercsv
 greenery
 matplotlib
-nbval
 numpy
 pandas
 scipy
