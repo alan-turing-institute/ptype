@@ -564,6 +564,11 @@ class Ptype:
             return_counts=return_counts
         )
 
+    def get_normal_predictions(self, col):
+        """The values identified as 'normal' in a given column."""
+        vs = self.get_unique_vals(col)
+        return [vs[ind] for ind in self.normal_types[col]]
+
     def get_missing_data_predictions(self, col):
         """The values identified as 'missing' in a given column."""
         vs = self.get_unique_vals(col)

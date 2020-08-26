@@ -154,10 +154,6 @@ def multi_logdot(Xs):
 ###############################################################
 ###################### DATA I/O METHODS #######################
 ###############################################################
-def read_dataset(_data_path, _header=None):
-    return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)
-
-
 # writing data
 def write_data(data, filepath='../../automata/example.dat'):
     f = open(filepath, 'w')
@@ -586,24 +582,6 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
         Js[t] = J
 
     return Js, overall_accuracy
-
-
-def run_experiment(total_cols,
-                   dataset_names,
-                   types=None):
-    if types is None:
-        types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
-                 5: 'date-iso-8601', 6: 'date-eu',
-                 7: 'date-non-std-subtype', 8: 'date-non-std'}
-    ptype = Ptype(_types=types)
-    for dataset_name in dataset_names:
-        df = read_dataset(dataset_name, TEMP_PATHS)
-        ptype.run_inference(_data_frame=df, _dataset_name=dataset_name)
-
-    df, overall_accuracy = get_evaluations(_annotations_path=_annotations_path, _predictions_path=_predictions_path, _training=False, _sets=test_datasets)
-
-    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
-    return [df, overall_accuracy_to_print]
 
 
 def get_datasets():
