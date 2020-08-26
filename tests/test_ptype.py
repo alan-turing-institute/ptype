@@ -1,3 +1,5 @@
+import pandas as pd
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
     if dataset_name in ['mass_6.csv', ]:
@@ -5,6 +7,15 @@ def read_data(_data_path, dataset_name):
     else:
         encoding = 'utf-8'
     return csv.csv2df(_data_path + dataset_name, encoding=encoding, dtype=str, skipinitialspace=True)
+
+
+def as_missing(ptype):
+    def f(series):
+        def f(col):
+            print(col, ': ', type(col))
+            return lambda v: v if v in ptype.get_missing_data_predictions(col) else pd.NA
+        return series.map(f(series.name))
+    return f
 
 def get_predictions(_data_path):
     dataset_names = get_datasets()
@@ -15,28 +26,25 @@ def get_predictions(_data_path):
              8: 'date-non-std'}
     ptype = Ptype(_types=types)
 
-    # run ptype on each dataset
+        # run ptype on each dataset
     type_predictions = {}
     for dataset_name in dataset_names:
 
         df = read_data(_data_path, dataset_name)
         ptype.run_inference(_data_frame=df)
 
-        # TEMPORARY
-        print(list(df.index))
-        for _, col in enumerate(list(ptype.model.experiment_config.column_names)):
-            print('Column name:' + col)
-            column = df[col]
-            print('Column:' + df[col])
-            for _, v in column.iteritems():
-                if v in ptype.get_missing_data_predictions(col):
-                    print(v + ": missing")
-                if v in ptype.get_anomaly_predictions(col):
-                    print(v + ": anomaly")
+        df_missing = df.apply(as_missing(ptype), axis=0)
+        print(df)
+        print(df_missing)
 
-            print(sorted(ptype.normal_types[col] +
-                         ptype.missing_types[col] +
-                         ptype.anomaly_types[col]))
+        # TEMPORARY
+        for _, col in enumerate(list(ptype.model.experiment_config.column_names)):
+            column = df[col]
+#            for _, v in column.iteritems():
+#                if v in ptype.get_missing_data_predictions(col):
+#                    print(v + ": missing")
+#                if v in ptype.get_anomaly_predictions(col):
+#                    print(v + ": anomaly")
 
         # store types
         type_predictions[dataset_name] = ptype.predicted_types
