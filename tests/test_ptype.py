@@ -10,12 +10,14 @@ def read_data(_data_path, dataset_name):
 
 
 def as_missing(ptype):
-    def f(series):
-        def f(col):
-            print(col, ': ', type(col))
-            return lambda v: v if v in ptype.get_missing_data_predictions(col) else pd.NA
-        return series.map(f(series.name))
-    return f
+    return lambda series: \
+        series.map(lambda v: v if v in ptype.get_missing_data_predictions(series.name) else pd.NA)
+
+
+def as_anomaly(ptype):
+    return lambda series: \
+        series.map(lambda v: v if v in ptype.get_anomaly_predictions(series.name) else pd.NA)
+
 
 def get_predictions(_data_path):
     dataset_names = get_datasets()
@@ -34,8 +36,10 @@ def get_predictions(_data_path):
         ptype.run_inference(_data_frame=df)
 
         df_missing = df.apply(as_missing(ptype), axis=0)
-        print(df)
-        print(df_missing)
+        df_anomaly = df.apply(as_anomaly(ptype), axis=0)
+        print('Original dataframe:\n', df)
+        print('Missing data:\n', df_missing)
+        print('Anomalies:\n', df_anomaly)
 
         # TEMPORARY
         for _, col in enumerate(list(ptype.model.experiment_config.column_names)):
