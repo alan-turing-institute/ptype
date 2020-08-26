@@ -41,15 +41,6 @@ def get_predictions(_data_path):
         print('Missing data:\n', df_missing)
         print('Anomalies:\n', df_anomaly)
 
-        # TEMPORARY
-        for _, col in enumerate(list(ptype.model.experiment_config.column_names)):
-            column = df[col]
-#            for _, v in column.iteritems():
-#                if v in ptype.get_missing_data_predictions(col):
-#                    print(v + ": missing")
-#                if v in ptype.get_anomaly_predictions(col):
-#                    print(v + ": anomaly")
-
         # store types
         type_predictions[dataset_name] = ptype.predicted_types
 
