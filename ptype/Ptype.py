@@ -42,6 +42,7 @@ class Ptype:
         self.anomaly_types = {}
         self.p_z_columns = {}
         self.p_t_columns = {}
+        self.features = {}
 
         # Check for dataframes without column names
         if _column_names is None:
@@ -109,6 +110,9 @@ class Ptype:
 
             # Stores types, both cols types and rows types
             self.store_outputs(column_name)
+
+            # Store canonical types
+            self.store_features(column_name, counts)
 
         # Export column types, and missing data
         if _save:
@@ -382,6 +386,36 @@ class Ptype:
         self.p_z_columns[column_name] = self.model.p_z[:, np.argmax(self.model.p_t), :]
         self.p_t_columns[column_name] = self.model.p_t
 
+    def store_features(self, column_name, counts):
+        posterior = self.p_t_columns[column_name]
+
+        sorted_posterior = [
+            posterior[3],
+            posterior[4:].sum(),
+            posterior[2],
+            posterior[0],
+            posterior[1],
+        ]
+
+        entries = [
+            str(int_element) for int_element in self.model.data[column_name].tolist()
+        ]
+        U = len(np.unique(entries))
+        U_clean = len(self.normal_types[column_name])
+
+        N = len(entries)
+        N_clean = sum([counts[index] for index in self.normal_types[column_name]])
+
+        u_ratio = U / N
+        if U_clean == 0 and N_clean == 0:
+            u_ratio_clean = 0.0
+        else:
+            u_ratio_clean = U_clean / N_clean
+
+        self.features[column_name] = np.array(
+            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean,]
+        )
+        
     def save_posteriors(self, filename='all_posteriors.pkl'):
         save_object(self.all_posteriors, filename)
 
