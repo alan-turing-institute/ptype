@@ -560,7 +560,7 @@ class Ptype:
     def get_unique_vals(self, col, return_counts=False):
         """ List of the unique values found in a column."""
         return np.unique(
-            [str(int_element) for int_element in self.model.data[col].tolist()],
+            [str(x) for x in self.model.data[col].tolist()],
             return_counts=return_counts
         )
 
