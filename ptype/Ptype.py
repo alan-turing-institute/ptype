@@ -17,17 +17,17 @@ from scipy.stats import norm
 class Ptype:
     avg_racket_time = None
 
-    def __init__(self, _exp_num=0,
-                 _types={1: 'integer', 2: 'string', 3: 'float', 4: 'boolean', 5: 'gender', 6: 'date-iso-8601',
-                         7: 'date-eu', 8: 'date-non-std-subtype', 9: 'date-non-std'}, _data_frames=None):
+    def __init__(self, _exp_num=0, _types=None):
+        default_types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean', 5: 'gender', 6: 'date-iso-8601',
+                         7: 'date-eu', 8: 'date-non-std-subtype', 9: 'date-non-std'}
         self.exp_num = _exp_num
-        self.types = _types
-        self.PFSMRunner = PFSMRunner(list(_types.values()))
+        self.types = default_types if _types is None else _types
+        self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
-        self.data_frames = _data_frames
+        self.data_frames = None
         self.all_posteriors = {}
-        if _data_frames is not None:
-            self.set_data(_data_frame=_data_frames[0])
+        self.print = False
+        self.prediction_path = None
 
     def set_data(self, _data_frame):
         _dataset_name = 'demo'
@@ -59,31 +59,22 @@ class Ptype:
         else:
             self.model.set_params(config, _data_frame=_data_frame)
 
-        self.print = False
-        self.prediction_path = None
-
     ###################### MAIN METHODS #######################
     def run_inference_on_model(self, probs, counts):
         if self.print:
             print_to_file('\tinference is running...')
         self.model.run_inference(probs, counts)
 
-    def run_inference(self, _data_frame, _print=False, _prediction_path=None, _save=False):
+    def run_inference(self, _data_frame):
         """ Runs ptype for each column in a dataframe.
             The outputs are stored in dictionaries (see store_outputs).
             The column types are saved to a csv file.
 
         :param _data_frame:
-        :param _print:
-        :param _prediction_path:
-        :param _save:
 
         """
 
-        self.set_data(_data_frame=_data_frame)
-
-        self.print = _print
-        self.prediction_path = _prediction_path
+        self.set_data(_data_frame)
 
         if self.print:
             print_to_file('processing ' + self.model.experiment_config.dataset_name)
@@ -105,7 +96,8 @@ class Ptype:
             self.store_outputs(column_name)
 
         # Export column types, and missing data
-        if _save:
+        save = False
+        if save:
             self.write_type_predictions_2_csv(list(self.predicted_types.values()))
 
     def train_all_models_multiple_dfs(self, runner):
@@ -500,11 +492,11 @@ class Ptype:
 
         return error
 
-    def get_categorical_signal_gaussian(self, x, _print=False, sigma=1, threshold=0.03):
+    def get_categorical_signal_gaussian(self, x, sigma=1, threshold=0.03):
         N = len(x)
         K = len(np.unique(x))
 
-        if _print:
+        if self.print:
             print(N, K, np.log(N))
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]

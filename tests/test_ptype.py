@@ -28,10 +28,10 @@ def get_predictions(_data_path):
     dataset_names = get_datasets()
 
     # create ptype
-    types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
-             5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
-             8: 'date-non-std'}
-    ptype = Ptype(_types=types)
+    ptype = Ptype(_types=
+                  {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
+                   5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
+                   8: 'date-non-std'})
 
     # run ptype on each dataset
     type_predictions = {}
