@@ -230,12 +230,7 @@ class Ptype:
         self.model.experiment_config.current_experiment_folder = self.model.experiment_config.main_experiments_folder + '/' + self.model.experiment_config.dataset_name + '/' + self.model.experiment_config.current_column_name
 
         # Removes existing folders accordingly
-        if i == 0:
-            _start_over_report = True
-        else:
-            _start_over_report = False
-
-        create_folders(self.model, _start_over_report)
+        create_folders(self.model, i == 0)
 
     def initialize_params_uniformly(self):
         LOG_EPS = -1e150
