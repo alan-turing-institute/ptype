@@ -14,18 +14,52 @@ from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
 
-class Result:
-    def __init__(self, dataset_name):
-        self.all_posteriors = {}
-        self.predicted_types = {}
+class ColResult:
+    def __init(self, series):
+        self.series = series
+        self.p_t = {}
+        self.predicted_types = None
+        self.normal_types = []
+        self.missing_types = []
+        self.anomaly_types = []
+        self.p_z_columns = []
+        self.p_t_columns = []
 
-        # column-indexed dictionaries of lists
-        self.normal_types = {}
-        self.missing_types = {}
-        self.anomaly_types = {}
+    def get_unique_vals(self, return_counts=False):
+        """ List of the unique values found in a column."""
+        return np.unique(
+            [str(x) for x in self.series.tolist()],
+            return_counts=return_counts
+        )
 
-        self.p_z_columns = {}
-        self.p_t_columns = {}
+    def show_results_for(self, indices, desc):
+        if len(indices) == 0:
+            count = 0
+        else:
+            unique_vals, unique_vals_counts = self.get_unique_vals(return_counts=True)
+            vs = [unique_vals[ind] for ind in indices][:20]
+            vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
+            count = sum(unique_vals_counts[indices])
+            print('\t' + desc, vs)
+            print('\ttheir counts: ', vs_counts)
+
+        return count
+
+    def show(self):
+        print('col: ' + self.series.name)
+        print('\tpredicted type: ' + self.predicted_types)
+        print('\tposterior probs: ', self.p_t)
+        print('\ttypes: ', list(self.types.values()), '\n')
+
+        normal = self.show_results_for(self.normal_types, "some normal data values: ")
+        missing = self.show_results_for(self.missing_types, "missing values:")
+        anomalies = self.show_results_for(self.anomaly_types, "anomalies:")
+
+        total = normal + missing + anomalies
+
+        print('\tfraction of normal:', round(normal / total, 2), '\n')
+        print('\tfraction of missing:', round(missing / total, 2), '\n')
+        print('\tfraction of anomalies:', round(anomalies / total, 2), '\n')
 
 
 class Ptype:
@@ -45,9 +79,9 @@ class Ptype:
     def set_data(self, _data_frame):
         _dataset_name = 'demo'
         _data_frame = _data_frame.applymap(str)
-        self.result = Result(_dataset_name)
         # to refresh the outputs
-        self.all_posteriors = {'demo': {}}
+        self.results = {} # column-indexed
+        self.all_posteriors = {_dataset_name: {}}
         self.predicted_types = {}
 
         # dictionaries of lists
@@ -97,6 +131,7 @@ class Ptype:
                 print_to_file('\tinference is running...')
             self.model.run_inference(probabilities, counts)
             self.store_outputs(col)
+            self.results[col] = self.column_results(col)
 
         # Export column types, and missing data
         save = False
@@ -127,11 +162,12 @@ class Ptype:
         if cols is None:
             cols = self.predicted_types
 
+        print('\ttypes: ', list(self.types.values()), '\n')
+
         for col in cols:
             print('col: ' + str(col))
             print('\tpredicted type: ' + self.predicted_types[col])
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
-            print('\ttypes: ', list(self.types.values()), '\n')
 
             normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
             missing = self.show_results_for(self.missing_types[col], "missing values:", col)
@@ -161,7 +197,6 @@ class Ptype:
 
         :param column_name:
         """
-
         self.all_posteriors[self.model.experiment_config.dataset_name][column_name] = self.model.p_t
 
         # In case of a posterior vector whose entries are equal
@@ -178,6 +213,31 @@ class Ptype:
         self.anomaly_types[column_name] = anomalies
         self.p_z_columns[column_name] = self.model.p_z[:, np.argmax(self.model.p_t), :]
         self.p_t_columns[column_name] = self.model.p_t
+
+    def column_results(self, col):
+        """ First stores the posterior distribution of the column type, and the predicted column type.
+            Secondly, it stores the indices of the rows categorized according to the row types.
+
+        :param col:
+        """
+        result = ColResult()
+        result.p_t = self.model.p_t
+
+        # In case of a posterior vector whose entries are equal
+        if len(set([i for i in self.model.p_t])) == 1:
+            inferred_column_type = 'all identical'
+        else:
+            inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
+        result.predicted_types = inferred_column_type
+
+        # Indices for the unique values
+        [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
+        result.normal_types = normals
+        result.missing_types = missings
+        result.anomaly_types = anomalies
+        result.p_z_columns = self.model.p_z[:, np.argmax(self.model.p_t), :]
+        result.p_t_columns = self.model.p_t
+        return result
 
     def save_posteriors(self, filename='all_posteriors.pkl'):
         save_object(self.all_posteriors, filename)
