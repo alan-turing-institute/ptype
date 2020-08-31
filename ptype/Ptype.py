@@ -37,9 +37,12 @@ class Ptype:
         # to refresh the outputs
         self.all_posteriors[_dataset_name] = {}
         self.predicted_types = {}
+
+        # dictionaries of lists
         self.normal_types = {}
         self.missing_types = {}
         self.anomaly_types = {}
+
         self.p_z_columns = {}
         self.p_t_columns = {}
 
@@ -59,15 +62,8 @@ class Ptype:
         else:
             self.model.set_params(config, _data_frame=_data_frame)
 
-        # These are both dictionaries of lists
-        self.missing_types = {}
-        self.anomaly_types = {}
-
-        self.p_z_columns = {}
-        self.p_t_columns = {}
         self.print = False
         self.prediction_path = None
-        self.predicted_types = {}
 
     ###################### MAIN METHODS #######################
     def run_inference_on_model(self, probs, counts):
@@ -291,6 +287,22 @@ class Ptype:
             lambda x: str(x) + '(' + self.predicted_types[x] + ')')
         return df_output
 
+    def show_results_for (self, indices, col):
+        if len(indices) == 0:
+            count_normal = 0
+            pass
+        else:
+            unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
+            vs = [unique_vals[ind] for ind in indices][:20]
+            vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
+            count = sum(unique_vals_counts[indices])
+
+        if indices != []:
+            print('\tsome normal data values: ', vs)
+            print('\ttheir counts: ', vs_counts)
+
+        return count
+
     def show_results(self, cols=None):
         if cols is None:
             cols = self.predicted_types
@@ -303,6 +315,7 @@ class Ptype:
 
             unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
             indices = self.normal_types[col]
+
             if len(indices) == 0:
                 count_normal = 0
                 pass

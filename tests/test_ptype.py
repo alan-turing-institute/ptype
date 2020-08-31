@@ -33,7 +33,7 @@ def get_predictions(_data_path):
              8: 'date-non-std'}
     ptype = Ptype(_types=types)
 
-        # run ptype on each dataset
+    # run ptype on each dataset
     type_predictions = {}
     for dataset_name in dataset_names:
 
@@ -43,6 +43,8 @@ def get_predictions(_data_path):
         df_missing = df.apply(as_missing(ptype), axis=0)
         df_anomaly = df.apply(as_anomaly(ptype), axis=0)
         df_normal = df.apply(as_normal(ptype), axis=0)
+        print(dataset_name)
+        print('Original data:\n', df)
         print('Missing data:\n', df_missing)
         print('Anomalies:\n', df_anomaly)
         print('Normal:\n', df_normal)
