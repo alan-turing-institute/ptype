@@ -27,7 +27,6 @@ class Ptype:
         self.data_frames = None
         self.all_posteriors = {}
         self.print = False
-        self.prediction_path = None
 
     def set_data(self, _data_frame):
         _dataset_name = 'demo'
@@ -182,42 +181,15 @@ class Ptype:
         save_object(self.all_posteriors, filename)
 
     def write_type_predictions_2_csv(self, column_type_predictions):
-        # Creates a csv file to write the predictions if no filename is given
-        if self.prediction_path is None:
-            with open(
-                    self.model.experiment_config.main_experiments_folder + '/type_predictions/' + self.model.experiment_config.dataset_name + '/type_predictions.csv',
-                    'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['Column', 'F#', 'messytables', 'ptype', 'readr', 'Trifacta', 'hypoparsr'])
-                for column_name, column_type_prediction in zip(self.model.experiment_config.column_names,
-                                                               column_type_predictions):
-                    writer.writerow([column_name, '', '', column_type_prediction, '', '', ''])
-        else:
-            # Updates the file if a file already exists
-            temp_path = self.prediction_path + self.model.experiment_config.dataset_name + '.csv'
-            if os.path.exists(temp_path):
-                updated_predictions = []
-                with open(temp_path, 'r') as f:
-                    reader = csv.reader(f)
-                    for i, row in enumerate(reader):
-                        if i == 0:
-                            updated_predictions.append(row)
-                        else:
-                            new_row = row
-                            new_row[3] = column_type_predictions[i - 1]
-                            updated_predictions.append(new_row)
-                with open(temp_path, 'w') as f:
-                    writer = csv.writer(f)
-                    for row in updated_predictions:
-                        writer.writerow(row)
-            else:
-                # Creates a new file with the given path
-                with open(temp_path, 'w') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['Column', 'F#', 'messytables', 'ptype', 'readr', 'Trifacta', 'hypoparsr'])
-                    for column_name, column_type_prediction in zip(self.model.experiment_config.column_names,
-                                                                   column_type_predictions):
-                        writer.writerow([column_name, '', '', column_type_prediction, '', '', ''])
+        with open(
+                self.model.experiment_config.main_experiments_folder + '/type_predictions/' +
+                self.model.experiment_config.dataset_name + '/type_predictions.csv',
+                'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Column', 'F#', 'messytables', 'ptype', 'readr', 'Trifacta', 'hypoparsr'])
+            for column_name, column_type_prediction in zip(self.model.experiment_config.column_names,
+                                                           column_type_predictions):
+                writer.writerow([column_name, '', '', column_type_prediction, '', '', ''])
 
     ####################### HELPERS #########################
     def setup_a_column(self, i, column_name):
