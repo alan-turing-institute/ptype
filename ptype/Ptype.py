@@ -306,7 +306,7 @@ class Ptype:
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            count_normal = self.show_results_for(self.normal_types[col], "some normal data values:", col)
+            count_normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
             count_missing = self.show_results_for(self.missing_types[col], "missing values:", col)
             count_anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
 
