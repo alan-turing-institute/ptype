@@ -80,7 +80,9 @@ if __name__ == "__main__":
 
     import json
     import clevercsv as csv
+    import os
 
     main()
-    os.system("pytest --nbval notebooks/*.ipynb")
+    if os.system("pytest --nbval notebooks/*.ipynb") != 0:
+        raise Exception("Notebook test(s) failed.")
     print("Tests passed.")

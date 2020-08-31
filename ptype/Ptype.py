@@ -29,13 +29,12 @@ class Ptype:
         if _data_frames is not None:
             self.set_data(_data_frame=_data_frames[0])
 
-    def set_data(self, _data_frame, _dataset_name=None, _column_names=None):
-        if _dataset_name is None:
-            _dataset_name = 'demo'
+    def set_data(self, _data_frame):
+        _dataset_name = 'demo'
         _data_frame = _data_frame.applymap(str)
 
         # to refresh the outputs
-        self.all_posteriors[_dataset_name] = {}
+        self.all_posteriors['demo'] = {}
         self.predicted_types = {}
 
         # dictionaries of lists
@@ -46,9 +45,7 @@ class Ptype:
         self.p_z_columns = {}
         self.p_t_columns = {}
 
-        # Check for dataframes without column names
-        if _column_names is None:
-            _column_names = _data_frame.columns
+        _column_names = _data_frame.columns
 
         # Creates a configuration object for the experiments
         if self.types is None:
@@ -309,7 +306,7 @@ class Ptype:
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            count_normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
+            count_normal = self.show_results_for(self.normal_types[col], "some normal data values:", col)
             count_missing = self.show_results_for(self.missing_types[col], "missing values:", col)
             count_anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
 
