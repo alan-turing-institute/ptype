@@ -15,8 +15,11 @@ from scipy.stats import norm
 
 
 class Result:
-    def __init__(self):
-        # dictionaries of lists
+    def __init__(self, dataset_name):
+        self.all_posteriors = {}
+        self.predicted_types = {}
+
+        # column-indexed dictionaries of lists
         self.normal_types = {}
         self.missing_types = {}
         self.anomaly_types = {}
@@ -42,13 +45,12 @@ class Ptype:
     def set_data(self, _data_frame):
         _dataset_name = 'demo'
         _data_frame = _data_frame.applymap(str)
-
+        self.result = Result(_dataset_name)
         # to refresh the outputs
-        self.all_posteriors['demo'] = {}
+        self.all_posteriors = {'demo': {}}
         self.predicted_types = {}
 
         # dictionaries of lists
-        self.result = Result()
         self.normal_types = {}
         self.missing_types = {}
         self.anomaly_types = {}
@@ -69,7 +71,7 @@ class Ptype:
 
     ###################### MAIN METHODS #######################
     def run_inference(self, _data_frame):
-        """ Runs ptype for each column in a dataframe.
+        """ Runs inference for each column in a dataframe.
             The outputs are stored in dictionaries (see store_outputs).
             The column types are saved to a csv file.
 
@@ -93,7 +95,7 @@ class Ptype:
             probabilities, counts = self.generate_probs_a_column(col)
             if self.verbose:
                 print_to_file('\tinference is running...')
-            self.run_inference_on_model(probabilities, counts)
+            self.model.run_inference(probabilities, counts)
             self.store_outputs(col)
 
         # Export column types, and missing data
