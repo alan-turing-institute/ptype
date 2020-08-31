@@ -96,11 +96,6 @@ class Ptype:
         if save:
             self.write_type_predictions_2_csv(list(self.predicted_types.values()))
 
-    def train_all_models_multiple_dfs(self, runner):
-        if self.print:
-            print_to_file('\ttraining is running...')
-        return self.model.train_all_z_multiple_dfs_new(runner)
-
     ####################### OUTPUT METHODS #########################
     def show_results_df(self, ):
         df_output = self.model.data.copy()
@@ -352,16 +347,10 @@ class Ptype:
         return column_names
 
     def get_columns_with_anomalies(self, ):
-        column_names = [column_name for column_name in self.predicted_types.keys() if
-                        (self.anomaly_types[column_name] != [])]
-        print('# columns with anomalies:', len(column_names), '\n')
-        return column_names
+        return [col for col in self.predicted_types.keys() if self.anomaly_types[col] != []]
 
     def get_empty_columns(self, ):
-        column_names = [column_name for column_name in self.predicted_types.keys() if
-                        (self.normal_types[column_name] == [])]
-        print('# empty columns:', len(column_names), '\n')
-        return column_names
+        return [col for col in self.predicted_types.keys() if self.normal_types[col] == []]
 
     def change_column_type_annotations(self, _column_names, _new_column_types):
 
