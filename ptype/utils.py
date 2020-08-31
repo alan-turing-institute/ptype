@@ -218,7 +218,7 @@ def copy_columns_between_dicts(dict_source, dict_target, columns):
 
 
 ###############################################################
-#################### VISUALIZATION METHODS ####################
+#################### VISUALISATION METHODS ####################
 ###############################################################
 def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None, vmax_=None, xticklabels=None, yticklabels=None, cmap=plt.cm.gray_r):
     if figsize is None:
@@ -385,7 +385,7 @@ def plot_roc_multiple_dots(Xs, _type, _path='experiments/0_predictions/roc.eps',
 def print_figure_latex(column_name, f):
     print("\\begin{figure}[!h] \n \\centering \n \\includegraphics[width = \\textwidth]{" + column_name +
           "/outputs/type_posteriors.eps} \n \\caption{The posterior probability distribution of the column type for column named " +
-          column_name.replace("_", "\_") + ".} \n \\label{fig:" + column_name+ "} \n \\end{figure}",file=f)
+          column_name.replace("_", "\\_") + ".} \n \\label{fig:" + column_name + "} \n \\end{figure}", file=f)
 
 
 def print_line_latex(txt, f):
@@ -403,12 +403,12 @@ def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells,
     with open(current_experiment_folder + "/outputs/table_row_type_dist.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_row_type_dist.columns)) + "|}\n")
         for i, row in table_row_type_dist.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
@@ -420,12 +420,12 @@ def print_statistics_table_latex(x, current_experiment_folder):
     with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
         for i, row in table_histogram.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
@@ -437,12 +437,12 @@ def print_table_latex(x, current_experiment_folder):
     with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
         for i, row in table_histogram.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 

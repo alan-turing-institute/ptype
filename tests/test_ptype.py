@@ -82,4 +82,5 @@ if __name__ == "__main__":
     import clevercsv as csv
 
     main()
+    os.system("pytest --nbval notebooks/*.ipynb")
     print("Tests passed.")

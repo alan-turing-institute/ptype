@@ -271,11 +271,10 @@ class Ptype:
             training_error.append(self.calculate_error_df(self.data_frames, _labels))
             print(training_error)
 
-            if it > 0:
-                if (training_error[-2] - training_error[-1] < 1e-2):
-                    print_to_file('converged!', filename=self.experiment_output_name + '_output.txt')
-                    save_object(self.PFSMRunner, self.experiment_output_name + '_training_runner' + str(it) + '.pkl')
-                    break
+            if it > 0 and training_error[-2] - training_error[-1] < 1e-2:
+                print_to_file('converged!', filename=self.experiment_output_name + '_output.txt')
+                save_object(self.PFSMRunner, self.experiment_output_name + '_training_runner' + str(it) + '.pkl')
+                break
 
             save_object(self.PFSMRunner, self.experiment_output_name + '_training_runner' + str(it) + '.pkl')
         save_object(training_error, self.experiment_output_name + '_training_error.pkl')
@@ -287,18 +286,15 @@ class Ptype:
             lambda x: str(x) + '(' + self.predicted_types[x] + ')')
         return df_output
 
-    def show_results_for (self, indices, col):
+    def show_results_for(self, indices, desc, col):
         if len(indices) == 0:
-            count_normal = 0
-            pass
+            count = 0
         else:
             unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
             vs = [unique_vals[ind] for ind in indices][:20]
             vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
             count = sum(unique_vals_counts[indices])
-
-        if indices != []:
-            print('\tsome normal data values: ', vs)
+            print('\t' + desc, vs)
             print('\ttheir counts: ', vs_counts)
 
         return count
@@ -313,50 +309,15 @@ class Ptype:
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
-            indices = self.normal_types[col]
+            count_normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
+            count_missing = self.show_results_for(self.missing_types[col], "missing values:", col)
+            count_anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
 
-            if len(indices) == 0:
-                count_normal = 0
-            else:
-                some_normal_data_values = [unique_vals[ind] for ind in indices][:20]
-                some_normal_data_values_counts = [unique_vals_counts[ind] for ind in indices][:20]
-                count_normal = sum(unique_vals_counts[indices])
+            total = count_normal + count_missing + count_anomalies
 
-            if len(self.missing_types[col]) == 0:
-                count_missing = 0
-            else:
-                indices = self.missing_types[col]
-                missing_values = [unique_vals[ind] for ind in indices][:20]
-                missing_values_counts = [unique_vals_counts[ind] for ind in indices][:20]
-                count_missing = sum(unique_vals_counts[indices])
-
-            if len(self.anomaly_types[col]) == 0:
-                count_anomalies = 0
-            else:
-                indices = self.anomaly_types[col]
-                anomalies = [unique_vals[ind] for ind in indices]
-                anomalies_counts = [unique_vals_counts[ind] for ind in indices]
-                count_anomalies = sum(unique_vals_counts[indices])
-
-            if self.normal_types[col] != []:
-                print('\tsome normal data values: ', some_normal_data_values)
-                print('\ttheir counts: ', some_normal_data_values_counts)
-
-            if self.missing_types[col] != []:
-                print('\tmissing values:', missing_values)
-                print('\ttheir counts: ', missing_values_counts)
-
-            if self.anomaly_types[col] != []:
-                print('\tanomalies:', anomalies)
-                print('\ttheir counts:', anomalies_counts)
-
-            print('\tfraction of normal:',
-                  round(count_normal / (count_normal + count_missing + count_anomalies), 2), '\n')
-            print('\tfraction of missing:',
-                  round(count_missing / (count_normal + count_missing + count_anomalies), 2), '\n')
-            print('\tfraction of anomalies:',
-                  round(count_anomalies / (count_normal + count_missing + count_anomalies), 2), '\n')
+            print('\tfraction of normal:', round(count_normal / total, 2), '\n')
+            print('\tfraction of missing:', round(count_missing / total, 2), '\n')
+            print('\tfraction of anomalies:', round(count_anomalies / total, 2), '\n')
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
