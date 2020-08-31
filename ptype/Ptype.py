@@ -14,6 +14,17 @@ from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
 
+class Result:
+    def __init__(self):
+        # dictionaries of lists
+        self.normal_types = {}
+        self.missing_types = {}
+        self.anomaly_types = {}
+
+        self.p_z_columns = {}
+        self.p_t_columns = {}
+
+
 class Ptype:
     avg_racket_time = None
 
@@ -37,6 +48,7 @@ class Ptype:
         self.predicted_types = {}
 
         # dictionaries of lists
+        self.result = Result()
         self.normal_types = {}
         self.missing_types = {}
         self.anomaly_types = {}
@@ -56,11 +68,6 @@ class Ptype:
             self.model.set_params(config, _data_frame=_data_frame)
 
     ###################### MAIN METHODS #######################
-    def run_inference_on_model(self, probs, counts):
-        if self.verbose:
-            print_to_file('\tinference is running...')
-        self.model.run_inference(probs, counts)
-
     def run_inference(self, _data_frame):
         """ Runs ptype for each column in a dataframe.
             The outputs are stored in dictionaries (see store_outputs).
@@ -84,6 +91,8 @@ class Ptype:
         # Calculate probabilities for each column, run inference and store results.
         for _, col in enumerate(list(self.model.experiment_config.column_names)):
             probabilities, counts = self.generate_probs_a_column(col)
+            if self.verbose:
+                print_to_file('\tinference is running...')
             self.run_inference_on_model(probabilities, counts)
             self.store_outputs(col)
 
