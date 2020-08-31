@@ -26,7 +26,7 @@ class Ptype:
         self.model = None
         self.data_frames = None
         self.all_posteriors = {}
-        self.print = False
+        self.verbose = False
 
     def set_data(self, _data_frame):
         _dataset_name = 'demo'
@@ -57,7 +57,7 @@ class Ptype:
 
     ###################### MAIN METHODS #######################
     def run_inference_on_model(self, probs, counts):
-        if self.print:
+        if self.verbose:
             print_to_file('\tinference is running...')
         self.model.run_inference(probs, counts)
 
@@ -72,7 +72,7 @@ class Ptype:
 
         self.set_data(_data_frame)
 
-        if self.print:
+        if self.verbose:
             print_to_file('processing ' + self.model.experiment_config.dataset_name)
 
         # Normalizing the parameters to make sure they're probabilities
@@ -81,15 +81,11 @@ class Ptype:
         # Generates a binary mask matrix to check if a word is supported by a PFSM or not. (this is just to optimize the implementation.)
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
-        for _, column_name in enumerate(list(self.model.experiment_config.column_names)):
-            # Calculates the probabilities
-            probabilities, counts = self.generate_probs_a_column(column_name)
-
-            # Runs inference for a column
+        # Calculate probabilities for each column, run inference and store results.
+        for _, col in enumerate(list(self.model.experiment_config.column_names)):
+            probabilities, counts = self.generate_probs_a_column(col)
             self.run_inference_on_model(probabilities, counts)
-
-            # Stores types, both cols types and rows types
-            self.store_outputs(column_name)
+            self.store_outputs(col)
 
         # Export column types, and missing data
         save = False
@@ -126,15 +122,15 @@ class Ptype:
             print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
             print('\ttypes: ', list(self.types.values()), '\n')
 
-            count_normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
-            count_missing = self.show_results_for(self.missing_types[col], "missing values:", col)
-            count_anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
+            normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
+            missing = self.show_results_for(self.missing_types[col], "missing values:", col)
+            anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
 
-            total = count_normal + count_missing + count_anomalies
+            total = normal + missing + anomalies
 
-            print('\tfraction of normal:', round(count_normal / total, 2), '\n')
-            print('\tfraction of missing:', round(count_missing / total, 2), '\n')
-            print('\tfraction of anomalies:', round(count_anomalies / total, 2), '\n')
+            print('\tfraction of normal:', round(normal / total, 2), '\n')
+            print('\tfraction of missing:', round(missing / total, 2), '\n')
+            print('\tfraction of anomalies:', round(anomalies / total, 2), '\n')
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
@@ -188,7 +184,7 @@ class Ptype:
 
     ####################### HELPERS #########################
     def setup_a_column(self, i, column_name):
-        if self.print:
+        if self.verbose:
             print_to_file('column # ' + str(i) + ' ' + column_name)
 
         # Sets parameters for folders of each column
@@ -292,7 +288,7 @@ class Ptype:
         N = len(x)
         K = len(np.unique(x))
 
-        if self.print:
+        if self.verbose:
             print(N, K, np.log(N))
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
