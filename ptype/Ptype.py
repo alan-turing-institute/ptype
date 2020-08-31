@@ -337,14 +337,10 @@ class Ptype:
         return [vs[ind] for ind in self.anomaly_types[col]]
 
     def get_columns_with_type(self, _type):
-        return [column_name for column_name in self.predicted_types.keys() if
-                (self.predicted_types[column_name] == _type)]
+        return [col for col in self.predicted_types.keys() if self.predicted_types[col] == _type]
 
     def get_columns_with_missing(self):
-        column_names = [column_name for column_name in self.predicted_types.keys() if
-                        (self.missing_types[column_name] != [])]
-        print('# columns with missing data:', len(column_names), '\n')
-        return column_names
+        return [col for col in self.predicted_types.keys() if self.missing_types[col] != []]
 
     def get_columns_with_anomalies(self):
         return [col for col in self.predicted_types.keys() if self.anomaly_types[col] != []]
@@ -353,29 +349,29 @@ class Ptype:
         return [col for col in self.predicted_types.keys() if self.normal_types[col] == []]
 
     def change_column_type_annotations(self, _column_names, _new_column_types):
-
         for column_name, new_column_type in zip(_column_names, _new_column_types):
             print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[
                 column_name] + ' to ' + new_column_type)
             self.predicted_types[column_name] = new_column_type
 
+    def remove_from_missing (self, col, indices):
+        self.missing_types[col] = list(set(self.missing_types[col]) - set(indices))
+
+    def remove_from_anomalies (self, col, indices):
+        self.anomaly_types[col] = list(set(self.anomaly_types[col]) - set(indices))
+
+    def add_to_normal (self, col, indices):
+        self.normal_types[col] = list(set(self.normal_types[col]).union(set(indices)))
+
     def change_missing_data_annotations(self, _column_name, _missing_data):
-        missing_indices = [np.where(self.get_unique_vals(_column_name) == missing_d)[0][0] for missing_d in _missing_data]
-
-        # add those entries to normal_types
-        self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(missing_indices)))
-
-        # remove those entries from missing_types
-        self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
+        indices = [np.where(self.get_unique_vals(_column_name) == v)[0][0] for v in _missing_data]
+        self.add_to_normal(_column_name, indices)
+        self.remove_from_missing(_column_name, indices)
 
     def change_anomaly_annotations(self, _column_name, anomalies):
-        anomaly_indices = [np.where(self.get_unique_vals(_column_name) == anomaly)[0][0] for anomaly in anomalies]
-
-        # add those entries to normal_types
-        self.normal_types[_column_name] = list(set(self.normal_types[_column_name]).union(set(anomaly_indices)))
-
-        # remove those entries from missing_types
-        self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
+        indices = [np.where(self.get_unique_vals(_column_name) == v)[0][0] for v in anomalies]
+        self.add_to_normal(_column_name, indices)
+        self.remove_from_anomalies(_column_name,indices)
 
     def merge_missing_data(self, _column_name, _missing_data):
         unique_vals = self.get_unique_vals(_column_name)
@@ -390,7 +386,6 @@ class Ptype:
         cats = {}
         for col_name in self.model.data.columns:
             x = self.model.data[col_name]
-
             x = self.remove_missing_and_anomalies(x, col_name)
 
             # just dropping certain values
@@ -407,5 +402,3 @@ class Ptype:
             res = self.get_categorical_signal_gaussian(x)
             if res[0]:
                 cats[col_name] = [res[1], res[2]]
-
-        self.cats = cats
