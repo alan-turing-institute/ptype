@@ -318,7 +318,6 @@ class Ptype:
 
             if len(indices) == 0:
                 count_normal = 0
-                pass
             else:
                 some_normal_data_values = [unique_vals[ind] for ind in indices][:20]
                 some_normal_data_values_counts = [unique_vals_counts[ind] for ind in indices][:20]
@@ -326,7 +325,6 @@ class Ptype:
 
             if len(self.missing_types[col]) == 0:
                 count_missing = 0
-                pass
             else:
                 indices = self.missing_types[col]
                 missing_values = [unique_vals[ind] for ind in indices][:20]
@@ -335,7 +333,6 @@ class Ptype:
 
             if len(self.anomaly_types[col]) == 0:
                 count_anomalies = 0
-                pass
             else:
                 indices = self.anomaly_types[col]
                 anomalies = [unique_vals[ind] for ind in indices]
@@ -345,20 +342,21 @@ class Ptype:
             if self.normal_types[col] != []:
                 print('\tsome normal data values: ', some_normal_data_values)
                 print('\ttheir counts: ', some_normal_data_values_counts)
-                print('\tfraction of normal:',
-                      round(count_normal / (count_normal + count_missing + count_anomalies), 2), '\n')
 
             if self.missing_types[col] != []:
                 print('\tmissing values:', missing_values)
                 print('\ttheir counts: ', missing_values_counts)
-                print('\tfraction of missing:',
-                      round(count_missing / (count_normal + count_missing + count_anomalies), 2), '\n')
 
             if self.anomaly_types[col] != []:
                 print('\tanomalies:', anomalies)
                 print('\ttheir counts:', anomalies_counts)
-                print('\tfraction of anomalies:',
-                      round(count_anomalies / (count_normal + count_missing + count_anomalies), 2), '\n')
+
+            print('\tfraction of normal:',
+                  round(count_normal / (count_normal + count_missing + count_anomalies), 2), '\n')
+            print('\tfraction of missing:',
+                  round(count_missing / (count_normal + count_missing + count_anomalies), 2), '\n')
+            print('\tfraction of anomalies:',
+                  round(count_anomalies / (count_normal + count_missing + count_anomalies), 2), '\n')
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
