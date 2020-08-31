@@ -97,7 +97,7 @@ class Ptype:
             self.write_type_predictions_2_csv(list(self.predicted_types.values()))
 
     ####################### OUTPUT METHODS #########################
-    def show_results_df(self, ):
+    def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
             lambda x: str(x) + '(' + self.predicted_types[x] + ')')
@@ -340,16 +340,16 @@ class Ptype:
         return [column_name for column_name in self.predicted_types.keys() if
                 (self.predicted_types[column_name] == _type)]
 
-    def get_columns_with_missing(self, ):
+    def get_columns_with_missing(self):
         column_names = [column_name for column_name in self.predicted_types.keys() if
                         (self.missing_types[column_name] != [])]
         print('# columns with missing data:', len(column_names), '\n')
         return column_names
 
-    def get_columns_with_anomalies(self, ):
+    def get_columns_with_anomalies(self):
         return [col for col in self.predicted_types.keys() if self.anomaly_types[col] != []]
 
-    def get_empty_columns(self, ):
+    def get_empty_columns(self):
         return [col for col in self.predicted_types.keys() if self.normal_types[col] == []]
 
     def change_column_type_annotations(self, _column_names, _new_column_types):
@@ -386,7 +386,7 @@ class Ptype:
 
         self.run_inference(_data_frame=self.model.data)
 
-    def get_categorical_columns(self, ):
+    def get_categorical_columns(self):
         cats = {}
         for col_name in self.model.data.columns:
             x = self.model.data[col_name]
