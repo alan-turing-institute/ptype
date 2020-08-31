@@ -533,7 +533,7 @@ def evaluate_model_type(annotations, predictions):
     type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
 
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
-                         prediction in predictions]
+                   prediction in predictions]
 
     # find columns whose types are not supported by ptype
     ignored_columns = np.where((np.array(annotations) != 'all identical') &
