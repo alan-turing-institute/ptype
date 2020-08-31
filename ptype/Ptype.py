@@ -48,10 +48,7 @@ class Ptype:
         _column_names = _data_frame.columns
 
         # Creates a configuration object for the experiments
-        if self.types is None:
-            config = Config(_dataset_name=_dataset_name, _column_names=_column_names)
-        else:
-            config = Config(_dataset_name=_dataset_name, _column_names=_column_names, _types=self.types)
+        config = Config(self.types, _dataset_name=_dataset_name, _column_names=_column_names)
 
         # Ptype model for inference
         if self.model is None:
