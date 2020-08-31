@@ -15,7 +15,7 @@ from scipy.stats import norm
 
 
 class ColResult:
-    def __init(self, series):
+    def __init__(self, series):
         self.series = series
         self.p_t = {}
         self.predicted_types = None
@@ -27,10 +27,7 @@ class ColResult:
 
     def get_unique_vals(self, return_counts=False):
         """ List of the unique values found in a column."""
-        return np.unique(
-            [str(x) for x in self.series.tolist()],
-            return_counts=return_counts
-        )
+        return np.unique([str(x) for x in self.series.tolist()], return_counts=return_counts)
 
     def show_results_for(self, indices, desc):
         if len(indices) == 0:
@@ -46,10 +43,9 @@ class ColResult:
         return count
 
     def show(self):
-        print('col: ' + self.series.name)
+        print('col: ' + str(self.series.name))
         print('\tpredicted type: ' + self.predicted_types)
         print('\tposterior probs: ', self.p_t)
-        print('\ttypes: ', list(self.types.values()), '\n')
 
         normal = self.show_results_for(self.normal_types, "some normal data values: ")
         missing = self.show_results_for(self.missing_types, "missing values:")
@@ -60,6 +56,25 @@ class ColResult:
         print('\tfraction of normal:', round(normal / total, 2), '\n')
         print('\tfraction of missing:', round(missing / total, 2), '\n')
         print('\tfraction of anomalies:', round(anomalies / total, 2), '\n')
+
+    def remove_from_missing (self, indices):
+        self.missing_types = list(set(self.missing_types) - set(indices))
+
+    def remove_from_anomalies (self, indices):
+        self.anomaly_types = list(set(self.anomaly_types) - set(indices))
+
+    def add_to_normal (self, indices):
+        self.normal_types = list(set(self.normal_types).union(set(indices)))
+
+    def change_missing_data_annotations(self, missing_data):
+        indices = [np.where(self.get_unique_vals() == v)[0][0] for v in missing_data]
+        self.add_to_normal(indices)
+        self.remove_from_missing(indices)
+
+    def change_anomaly_annotations(self, anomalies):
+        indices = [np.where(self.get_unique_vals() == v)[0][0] for v in anomalies]
+        self.add_to_normal(indices)
+        self.remove_from_anomalies(indices)
 
 
 class Ptype:
@@ -145,19 +160,6 @@ class Ptype:
             lambda x: str(x) + '(' + self.predicted_types[x] + ')')
         return df_output
 
-    def show_results_for(self, indices, desc, col):
-        if len(indices) == 0:
-            count = 0
-        else:
-            unique_vals, unique_vals_counts = self.get_unique_vals(col, return_counts=True)
-            vs = [unique_vals[ind] for ind in indices][:20]
-            vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
-            count = sum(unique_vals_counts[indices])
-            print('\t' + desc, vs)
-            print('\ttheir counts: ', vs_counts)
-
-        return count
-
     def show_results(self, cols=None):
         if cols is None:
             cols = self.predicted_types
@@ -165,19 +167,7 @@ class Ptype:
         print('\ttypes: ', list(self.types.values()), '\n')
 
         for col in cols:
-            print('col: ' + str(col))
-            print('\tpredicted type: ' + self.predicted_types[col])
-            print('\tposterior probs: ', self.all_posteriors[self.model.experiment_config.dataset_name][col])
-
-            normal = self.show_results_for(self.normal_types[col], "some normal data values: ", col)
-            missing = self.show_results_for(self.missing_types[col], "missing values:", col)
-            anomalies = self.show_results_for(self.anomaly_types[col], "anomalies:", col)
-
-            total = normal + missing + anomalies
-
-            print('\tfraction of normal:', round(normal / total, 2), '\n')
-            print('\tfraction of missing:', round(missing / total, 2), '\n')
-            print('\tfraction of anomalies:', round(anomalies / total, 2), '\n')
+            self.results[col].show()
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
@@ -220,7 +210,7 @@ class Ptype:
 
         :param col:
         """
-        result = ColResult()
+        result = ColResult(self.model.data[col])
         result.p_t = self.model.p_t
 
         # In case of a posterior vector whose entries are equal
@@ -415,11 +405,11 @@ class Ptype:
     def get_empty_columns(self):
         return [col for col in self.predicted_types.keys() if self.normal_types[col] == []]
 
-    def change_column_type_annotations(self, _column_names, _new_column_types):
-        for column_name, new_column_type in zip(_column_names, _new_column_types):
-            print('The column type of ' + column_name + ' is changed from ' + self.predicted_types[
-                column_name] + ' to ' + new_column_type)
-            self.predicted_types[column_name] = new_column_type
+    def change_column_type_annotations(self, cols, new_types):
+        for col, new_type in zip(cols, new_types):
+            print('The column type of ' + col + ' is changed from ' + self.predicted_types[col] + ' to ' + new_type)
+            self.predicted_types[col] = new_type
+            self.results[col].predicted_types = new_type
 
     def remove_from_missing (self, col, indices):
         self.missing_types[col] = list(set(self.missing_types[col]) - set(indices))
@@ -430,22 +420,26 @@ class Ptype:
     def add_to_normal (self, col, indices):
         self.normal_types[col] = list(set(self.normal_types[col]).union(set(indices)))
 
-    def change_missing_data_annotations(self, _column_name, _missing_data):
-        indices = [np.where(self.get_unique_vals(_column_name) == v)[0][0] for v in _missing_data]
-        self.add_to_normal(_column_name, indices)
-        self.remove_from_missing(_column_name, indices)
+    def change_missing_data_annotations(self, col, _missing_data):
+        indices = [np.where(self.get_unique_vals(col) == v)[0][0] for v in _missing_data]
+        self.add_to_normal(col, indices)
+        self.remove_from_missing(col, indices)
 
-    def change_anomaly_annotations(self, _column_name, anomalies):
-        indices = [np.where(self.get_unique_vals(_column_name) == v)[0][0] for v in anomalies]
-        self.add_to_normal(_column_name, indices)
-        self.remove_from_anomalies(_column_name,indices)
+        self.results[col].change_missing_data_annotations(_missing_data)
 
-    def merge_missing_data(self, _column_name, _missing_data):
-        unique_vals = self.get_unique_vals(_column_name)
-        missing_indices = self.missing_types[_column_name]
+    def change_anomaly_annotations(self, col, anomalies):
+        indices = [np.where(self.get_unique_vals(col) == v)[0][0] for v in anomalies]
+        self.add_to_normal(col, indices)
+        self.remove_from_anomalies(col, indices)
+
+        self.results[col].change_anomaly_annotations(anomalies)
+
+    def merge_missing_data(self, col, _missing_data):
+        unique_vals = self.get_unique_vals(col)
+        missing_indices = self.missing_types[col]
 
         for missing_index in missing_indices:
-            self.model.data = self.model.data.replace({_column_name: unique_vals[missing_index]}, _missing_data)
+            self.model.data = self.model.data.replace({col: unique_vals[missing_index]}, _missing_data)
 
         self.run_inference(_data_frame=self.model.data)
 
