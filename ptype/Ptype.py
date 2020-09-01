@@ -114,18 +114,16 @@ class Ptype:
         self.data_frames = None
         self.all_posteriors = {}
         self.verbose = False
+        self.results = {}  # column-indexed
 
     def set_data(self, df):
         _dataset_name = 'demo'
         df = df.applymap(str)
-        # to refresh the outputs
-        self.results = {} # column-indexed
+        self.results = {}
         self.all_posteriors = {_dataset_name: {}}
 
-        _column_names = df.columns
-
         # Creates a configuration object for the experiments
-        config = Config(self.types, _dataset_name=_dataset_name, _column_names=_column_names)
+        config = Config(self.types, _dataset_name=_dataset_name, _column_names=df.columns)
 
         # Ptype model for inference
         if self.model is None:
