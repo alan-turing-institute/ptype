@@ -447,8 +447,7 @@ def print_table_latex(x, current_experiment_folder):
 
 
 def evaluate_types(_dataset_name, _ptype, _header=None,):
-    predicted_types = _ptype.predicted_types
-    dataset_path    = '../data/' + _dataset_name + '.csv'
+    dataset_path = '../data/' + _dataset_name + '.csv'
     annotation_path = '../annotations/' + _dataset_name + '.csv'
 
     df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)
@@ -457,10 +456,10 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
     true_values = annotations['Type'].values.tolist()
     true_values = [true_value.split('-')[0] for true_value in true_values]
 
-    predictions = predicted_types.values()
+    predictions = [col.predicted_type for col in _ptype.results.values()]
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
 
-    column_names = list(predicted_types.keys())
+    column_names = list(_ptype.results.keys())
 
     correct_, false_ = 0., 0.
     for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):

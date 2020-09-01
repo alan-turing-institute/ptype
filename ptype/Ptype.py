@@ -123,7 +123,6 @@ class Ptype:
         # to refresh the outputs
         self.results = {} # column-indexed
         self.all_posteriors = {_dataset_name: {}}
-        self.predicted_types = {}
 
         # dictionaries of lists
         self.missing_types = {}
@@ -219,7 +218,6 @@ class Ptype:
             inferred_column_type = 'all identical'
         else:
             inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
-        self.predicted_types[column_name] = inferred_column_type
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
@@ -423,7 +421,6 @@ class Ptype:
     def change_column_type_annotations(self, cols, new_types):
         for col, new_type in zip(cols, new_types):
             print('The column type of ' + col + ' is changed from ' + self.results[col].predicted_type + ' to ' + new_type)
-#            self.predicted_types[col] = new_type
             self.results[col].predicted_type = new_type
 
     def change_missing_data_annotations(self, col, _missing_data):

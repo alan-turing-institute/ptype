@@ -50,7 +50,7 @@ def get_predictions(_data_path):
         print('Normal:\n', df_normal)
 
         # store types
-        type_predictions[dataset_name] = ptype.predicted_types
+        type_predictions[dataset_name] = {col_name: col.predicted_type for col_name, col in ptype.results.items()}
 
     return type_predictions
 
