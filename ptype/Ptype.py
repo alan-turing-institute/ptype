@@ -14,7 +14,7 @@ from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
 
-class ColResult:
+class Column:
     def __init__(self, series):
         self.series = series
         self.p_t = {}
@@ -146,13 +146,13 @@ class Ptype:
         if self.verbose:
             print_to_file('processing ' + self.model.experiment_config.dataset_name)
 
-        # Normalizing the parameters to make sure they're probabilities
-        self.normalize_params()
+        # Normalize the parameters to make sure they're probabilities
+        self.PFSMRunner.normalize_params()
 
-        # Generates a binary mask matrix to check if a word is supported by a PFSM or not. (this is just to optimize the implementation.)
+        # Generate binary mask matrix to check if a word is supported by a PFSM or not (this is just to optimize the implementation)
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
-        # Calculate probabilities for each column, run inference and store results.
+        # Calculate probabilities for each column, run inference and store results
         for _, col_name in enumerate(list(self.model.experiment_config.column_names)):
             probabilities, counts = self.generate_probs_a_column(col_name)
             if self.verbose:
@@ -208,7 +208,7 @@ class Ptype:
 
         :param col:
         """
-        result = ColResult(self.model.data[col])
+        result = Column(self.model.data[col])
         result.p_t = self.model.p_t
 
         # In case of a posterior vector whose entries are equal
@@ -313,13 +313,6 @@ class Ptype:
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
 
         return probabilities, counts
-
-    def normalize_params(self):
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            if i not in [0, 1]:
-                self.PFSMRunner.machines[i].I = PtypeModel.normalize_initial(machine.I_z)
-                self.PFSMRunner.machines[i].F, self.PFSMRunner.machines[i].T = self.model.normalize_final(machine.F_z,
-                                                                                                          machine.T_z)
 
     def calculate_error_df(self, dfs, labelss):
         # find the unique values in all of the columns once
