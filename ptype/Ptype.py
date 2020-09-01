@@ -125,7 +125,6 @@ class Ptype:
         self.all_posteriors = {_dataset_name: {}}
 
         # dictionaries of lists
-        self.missing_types = {}
         self.anomaly_types = {}
 
         self.p_z_columns = {}
@@ -221,7 +220,6 @@ class Ptype:
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
-        self.missing_types[column_name] = missings
         self.anomaly_types[column_name] = anomalies
         self.p_z_columns[column_name] = self.model.p_z[:, np.argmax(self.model.p_t), :]
         self.p_t_columns[column_name] = self.model.p_t
@@ -376,23 +374,6 @@ class Ptype:
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
 
-    def remove_missing_and_anomalies(self, x, col_name):
-        y = np.unique([str(int_element) for int_element in x.tolist()])
-        entries_to_discard = self.missing_types[col_name] + self.anomaly_types[col_name]
-        normal_entries = list(set(range(len(y))) - set(entries_to_discard))
-        normal_data_values = y[normal_entries]
-
-        return x.loc[x.isin(normal_data_values)]
-
-    def get_unnormal_data_indices(self, x, y, col_name, mode=True):
-        if mode:
-            indices_in_unique = self.missing_types[col_name]
-        else:
-            indices_in_unique = self.anomaly_types[col_name]
-        unnormal_data_values = [y[ind] for ind in indices_in_unique]
-
-        return x.index[x.isin(unnormal_data_values)].tolist()
-
     def get_unique_vals(self, col, return_counts=False):
         """ List of the unique values found in a column."""
         return np.unique(
@@ -430,31 +411,34 @@ class Ptype:
         self.results[col].change_anomaly_annotations(anomalies)
 
     def replace_missing(self, col, v):
-        unique_vals = self.get_unique_vals(col)
-
-        for i in self.missing_types[col]:
-            self.model.data = self.model.data.replace({col: unique_vals[i]}, v)
-
         self.results[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
+
+    def remove_missing_and_anomalies(self, col, col_name):
+        y = np.unique([str(int_element) for int_element in col.tolist()])
+        entries_to_discard = self.results[col_name].missing_types + self.results[col_name].anomaly_types
+        normal_entries = list(set(range(len(y))) - set(entries_to_discard))
+        normal_data_values = y[normal_entries]
+
+        return col.loc[col.isin(normal_data_values)]
 
     def get_categorical_columns(self):
         cats = {}
         for col_name in self.model.data.columns:
-            x = self.model.data[col_name]
-            x = self.remove_missing_and_anomalies(x, col_name)
+            col = self.model.data[col_name]
+            col = self.remove_missing_and_anomalies(col, col_name)
 
             # just dropping certain values
             for encoding in ['NULL', 'null', 'Null', '#NA', '#N/A', 'NA', 'NA ', ' NA', 'N A', 'N/A', 'N/ A', 'N /A',
                              'N/A',
                              'na', ' na', 'na ', 'n a', 'n/a', 'N/O', 'NAN', 'NaN', 'nan', '-NaN', '-nan', '-', '!',
                              '?', '*', '.']:
-                x = x.apply(lambda y: str(y).replace(encoding, ''))
+                col = col.apply(lambda y: str(y).replace(encoding, ''))
 
-            x = x.replace('', np.nan)
-            x = x.dropna()
-            x = list(x.values)
+            col = col.replace('', np.nan)
+            col = col.dropna()
+            col = list(col.values)
 
-            res = self.get_categorical_signal_gaussian(x)
+            res = self.get_categorical_signal_gaussian(col)
             if res[0]:
                 cats[col_name] = [res[1], res[2]]
