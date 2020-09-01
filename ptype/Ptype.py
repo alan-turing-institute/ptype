@@ -22,8 +22,6 @@ class ColResult:
         self.normal_values = []
         self.missing_values = []
         self.anomalous_values = []
-        self.p_z_columns = []
-        self.p_t_columns = []
 
     def get_unique_vals(self, return_counts=False):
         """ List of the unique values found in a column."""
@@ -124,12 +122,6 @@ class Ptype:
         self.results = {} # column-indexed
         self.all_posteriors = {_dataset_name: {}}
 
-        # dictionaries of lists
-        self.anomaly_types = {}
-
-        self.p_z_columns = {}
-        self.p_t_columns = {}
-
         _column_names = df.columns
 
         # Creates a configuration object for the experiments
@@ -220,9 +212,6 @@ class Ptype:
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
-        self.anomaly_types[column_name] = anomalies
-        self.p_z_columns[column_name] = self.model.p_z[:, np.argmax(self.model.p_t), :]
-        self.p_t_columns[column_name] = self.model.p_t
 
     def column_results(self, col):
         """ First stores the posterior distribution of the column type, and the predicted column type.
@@ -245,8 +234,6 @@ class Ptype:
         result.normal_values = normals
         result.missing_values = missings
         result.anomalous_values = anomalies
-        result.p_z_columns = self.model.p_z[:, np.argmax(self.model.p_t), :]
-        result.p_t_columns = self.model.p_t
         return result
 
     def save_posteriors(self, filename='all_posteriors.pkl'):
