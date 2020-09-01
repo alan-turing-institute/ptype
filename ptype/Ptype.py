@@ -18,16 +18,22 @@ class ColResult:
     def __init__(self, series):
         self.series = series
         self.p_t = {}
-        self.predicted_types = None
-        self.normal_types = []
-        self.missing_types = []
-        self.anomaly_types = []
+        self.predicted_type = None
+        self.normal_values = []
+        self.missing_values = []
+        self.anomalous_values = []
         self.p_z_columns = []
         self.p_t_columns = []
 
     def get_unique_vals(self, return_counts=False):
         """ List of the unique values found in a column."""
         return np.unique([str(x) for x in self.series.tolist()], return_counts=return_counts)
+
+    def has_missing(self):
+        return self.missing_values != []
+
+    def has_anomalous(self):
+        return self.anomalous_values != []
 
     def show_results_for(self, indices, desc):
         if len(indices) == 0:
@@ -44,12 +50,12 @@ class ColResult:
 
     def show(self):
         print('col: ' + str(self.series.name))
-        print('\tpredicted type: ' + self.predicted_types)
+        print('\tpredicted type: ' + self.predicted_type)
         print('\tposterior probs: ', self.p_t)
 
-        normal = self.show_results_for(self.normal_types, "some normal data values: ")
-        missing = self.show_results_for(self.missing_types, "missing values:")
-        anomalies = self.show_results_for(self.anomaly_types, "anomalies:")
+        normal = self.show_results_for(self.normal_values, "some normal data values: ")
+        missing = self.show_results_for(self.missing_values, "missing values:")
+        anomalies = self.show_results_for(self.anomalous_values, "anomalies:")
 
         total = normal + missing + anomalies
 
@@ -60,26 +66,26 @@ class ColResult:
     def get_normal_predictions(self):
         """Values identified as 'normal'."""
         vs = self.get_unique_vals()
-        return [vs[i] for i in self.normal_types]
+        return [vs[i] for i in self.normal_values]
 
     def get_missing_data_predictions(self):
         """Values identified as 'missing'."""
         vs = self.get_unique_vals()
-        return [vs[i] for i in self.missing_types]
+        return [vs[i] for i in self.missing_values]
 
     def get_anomaly_predictions(self):
         """The values identified as 'anomalies'."""
         vs = self.get_unique_vals()
-        return [vs[i] for i in self.anomaly_types]
+        return [vs[i] for i in self.anomalous_values]
 
     def remove_from_missing (self, indices):
-        self.missing_types = list(set(self.missing_types) - set(indices))
+        self.missing_values = list(set(self.missing_values) - set(indices))
 
     def remove_from_anomalies (self, indices):
-        self.anomaly_types = list(set(self.anomaly_types) - set(indices))
+        self.anomalous_values = list(set(self.anomalous_values) - set(indices))
 
     def add_to_normal (self, indices):
-        self.normal_types = list(set(self.normal_types).union(set(indices)))
+        self.normal_values = list(set(self.normal_values).union(set(indices)))
 
     def change_missing_data_annotations(self, missing_data):
         indices = [np.where(self.get_unique_vals() == v)[0][0] for v in missing_data]
@@ -93,7 +99,7 @@ class ColResult:
 
     def replace_missing(self, v):
         vs = self.get_unique_vals()
-        for i in self.missing_types:
+        for i in self.missing_values:
             self.series.replace(vs[i], v, inplace=True)
 
 
@@ -177,7 +183,7 @@ class Ptype:
     def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
-            lambda x: str(x) + '(' + self.predicted_types[x] + ')')
+            lambda col: str(col) + '(' + self.predicted_types[col] + ')')
         return df_output
 
     def show_results(self, cols=None):
@@ -238,13 +244,13 @@ class Ptype:
             inferred_column_type = 'all identical'
         else:
             inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
-        result.predicted_types = inferred_column_type
+        result.predicted_type = inferred_column_type
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
-        result.normal_types = normals
-        result.missing_types = missings
-        result.anomaly_types = anomalies
+        result.normal_values = normals
+        result.missing_values = missings
+        result.anomalous_values = anomalies
         result.p_z_columns = self.model.p_z[:, np.argmax(self.model.p_t), :]
         result.p_t_columns = self.model.p_t
         return result
@@ -408,22 +414,19 @@ class Ptype:
         return self.results[col].get_anomaly_predictions()
 
     def get_columns_with_type(self, _type):
-        return [col for col in self.predicted_types.keys() if self.predicted_types[col] == _type]
+        return [col for col in self.predicted_types.keys() if self.results[col].predicted_type == _type]
 
     def get_columns_with_missing(self):
-        return [col for col in self.predicted_types.keys() if self.missing_types[col] != []]
+        return [col for col in self.predicted_types.keys() if self.results[col].has_missing()]
 
     def get_columns_with_anomalies(self):
-        return [col for col in self.predicted_types.keys() if self.anomaly_types[col] != []]
-
-    def get_empty_columns(self):
-        return [col for col in self.predicted_types.keys() if self.normal_types[col] == []]
+        return [col for col in self.predicted_types.keys() if self.results[col].has_anomalous()]
 
     def change_column_type_annotations(self, cols, new_types):
         for col, new_type in zip(cols, new_types):
             print('The column type of ' + col + ' is changed from ' + self.predicted_types[col] + ' to ' + new_type)
             self.predicted_types[col] = new_type
-            self.results[col].predicted_types = new_type
+            self.results[col].predicted_type = new_type
 
     def remove_from_missing (self, col, indices):
         self.missing_types[col] = list(set(self.missing_types[col]) - set(indices))
