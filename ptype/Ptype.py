@@ -619,6 +619,15 @@ class Ptype:
                 column_name] + ' to ' + new_column_type)
             self.predicted_types[column_name] = new_column_type
 
+            p_t = self.p_t_columns[column_name]
+            for i, t in self.types.items():
+                if new_column_type in t:
+                    p_t[i - 1] = 1.0
+                else:
+                    p_t[i - 1] = 0.0
+            p_t = p_t / np.sum(p_t)
+            self.p_t_columns[column_name] = p_t
+
     def change_missing_data_annotations(self, _column_name, _missing_data):
         missing_indices = [np.where(self.get_unique_vals(_column_name) == missing_d)[0][0] for missing_d in _missing_data]
 
@@ -628,6 +637,12 @@ class Ptype:
         # remove those entries from missing_types
         self.missing_types[_column_name] = list(set(self.missing_types[_column_name]) - set(missing_indices))
 
+        # update the row type posterior
+        p_z = self.p_z_columns[_column_name]
+        for index in missing_indices:
+            p_z[index][1] = 0.0
+        self.p_z_columns[_column_name] = p_z / p_z.sum(axis=1)[:, np.newaxis]
+
     def change_anomaly_annotations(self, _column_name, anomalies):
         anomaly_indices = [np.where(self.get_unique_vals(_column_name) == anomaly)[0][0] for anomaly in anomalies]
 
@@ -636,6 +651,12 @@ class Ptype:
 
         # remove those entries from missing_types
         self.anomaly_types[_column_name] = list(set(self.anomaly_types[_column_name]) - set(anomaly_indices))
+
+        # update the row type posterior
+        p_z = self.p_z_columns[_column_name]
+        for index in anomaly_indices:
+            p_z[index][2] = 0.0
+        self.p_z_columns[_column_name] = p_z / p_z.sum(axis=1)[:, np.newaxis]
 
     def merge_missing_data(self, _column_name, _missing_data):
         unique_vals = self.get_unique_vals(_column_name)
