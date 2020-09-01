@@ -456,10 +456,10 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
     true_values = annotations['Type'].values.tolist()
     true_values = [true_value.split('-')[0] for true_value in true_values]
 
-    predictions = [col.predicted_type for col in _ptype.results.values()]
+    predictions = [col.predicted_type for col in _ptype.cols.values()]
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
 
-    column_names = list(_ptype.results.keys())
+    column_names = list(_ptype.cols.keys())
 
     correct_, false_ = 0., 0.
     for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):
@@ -475,12 +475,12 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
             print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 
             indices = _ptype.missing_types[column_name]
-            if len(indices) !=0 :
+            if len(indices) != 0:
                 print('\tsome missing data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 
             indices = _ptype.anomaly_types[column_name]
-            if len(indices) !=0 :
+            if len(indices) != 0:
                 print('\tsome anomalous data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 

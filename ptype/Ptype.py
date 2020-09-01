@@ -114,12 +114,12 @@ class Ptype:
         self.data_frames = None
         self.all_posteriors = {}
         self.verbose = False
-        self.results = {}  # column-indexed
+        self.cols = {}  # column-indexed
 
     def set_data(self, df):
         _dataset_name = 'demo'
         df = df.applymap(str)
-        self.results = {}
+        self.cols = {}
         self.all_posteriors = {_dataset_name: {}}
 
         # Creates a configuration object for the experiments
@@ -159,28 +159,28 @@ class Ptype:
                 print_to_file('\tinference is running...')
             self.model.run_inference(probabilities, counts)
             self.all_posteriors[self.model.experiment_config.dataset_name][col_name] = self.model.p_t
-            self.results[col_name] = self.column_results(col_name)
+            self.cols[col_name] = self.column_results(col_name)
 
         # Export column types, and missing data
         save = False
         if save:
-            self.write_type_predictions_2_csv(col.predicted_type for col in self.results.values())
+            self.write_type_predictions_2_csv(col.predicted_type for col in self.cols.values())
 
     ####################### OUTPUT METHODS #########################
     def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
-            lambda col: str(col) + '(' + self.results[col].predicted_type + ')')
+            lambda col: str(col) + '(' + self.cols[col].predicted_type + ')')
         return df_output
 
     def show_results(self, cols=None):
         if cols is None:
-            cols = self.results.keys()
+            cols = self.cols.keys()
 
         print('\ttypes: ', list(self.types.values()), '\n')
 
         for col in cols:
-            self.results[col].show()
+            self.cols[col].show()
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
@@ -317,7 +317,7 @@ class Ptype:
     def normalize_params(self):
         for i, machine in enumerate(self.PFSMRunner.machines):
             if i not in [0, 1]:
-                self.PFSMRunner.machines[i].I = self.model.normalize_initial(machine.I_z)
+                self.PFSMRunner.machines[i].I = PtypeModel.normalize_initial(machine.I_z)
                 self.PFSMRunner.machines[i].F, self.PFSMRunner.machines[i].T = self.model.normalize_final(machine.F_z,
                                                                                                           machine.T_z)
 
@@ -358,41 +358,41 @@ class Ptype:
         )
 
     def get_normal_predictions(self, col):
-        return self.results[col].get_normal_predictions()
+        return self.cols[col].get_normal_predictions()
 
     def get_missing_data_predictions(self, col):
-        return self.results[col].get_missing_data_predictions()
+        return self.cols[col].get_missing_data_predictions()
 
     def get_anomaly_predictions(self, col):
-        return self.results[col].get_anomaly_predictions()
+        return self.cols[col].get_anomaly_predictions()
 
     def get_columns_with_type(self, _type):
-        return [col for col in self.results.keys() if self.results[col].predicted_type == _type]
+        return [col for col in self.cols.keys() if self.cols[col].predicted_type == _type]
 
     def get_columns_with_missing(self):
-        return [col for col in self.results.keys() if self.results[col].has_missing()]
+        return [col for col in self.cols.keys() if self.cols[col].has_missing()]
 
     def get_columns_with_anomalies(self):
-        return [col for col in self.results.keys() if self.results[col].has_anomalous()]
+        return [col for col in self.cols.keys() if self.cols[col].has_anomalous()]
 
     def change_column_type_annotations(self, cols, new_types):
         for col, new_type in zip(cols, new_types):
-            print('The column type of ' + col + ' is changed from ' + self.results[col].predicted_type + ' to ' + new_type)
-            self.results[col].predicted_type = new_type
+            print('The column type of ' + col + ' is changed from ' + self.cols[col].predicted_type + ' to ' + new_type)
+            self.cols[col].predicted_type = new_type
 
     def change_missing_data_annotations(self, col, _missing_data):
-        self.results[col].change_missing_data_annotations(_missing_data)
+        self.cols[col].change_missing_data_annotations(_missing_data)
 
     def change_anomaly_annotations(self, col, anomalies):
-        self.results[col].change_anomaly_annotations(anomalies)
+        self.cols[col].change_anomaly_annotations(anomalies)
 
     def replace_missing(self, col, v):
-        self.results[col].replace_missing(v)
+        self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
 
     def remove_missing_and_anomalies(self, col, col_name):
         y = np.unique([str(int_element) for int_element in col.tolist()])
-        entries_to_discard = self.results[col_name].missing_types + self.results[col_name].anomaly_types
+        entries_to_discard = self.cols[col_name].missing_types + self.cols[col_name].anomaly_types
         normal_entries = list(set(range(len(y))) - set(entries_to_discard))
         normal_data_values = y[normal_entries]
 
