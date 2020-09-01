@@ -414,13 +414,13 @@ class Ptype:
         return self.results[col].get_anomaly_predictions()
 
     def get_columns_with_type(self, _type):
-        return [col for col in self.predicted_types.keys() if self.results[col].predicted_type == _type]
+        return [col for col in self.results.keys() if self.results[col].predicted_type == _type]
 
     def get_columns_with_missing(self):
-        return [col for col in self.predicted_types.keys() if self.results[col].has_missing()]
+        return [col for col in self.results.keys() if self.results[col].has_missing()]
 
     def get_columns_with_anomalies(self):
-        return [col for col in self.predicted_types.keys() if self.results[col].has_anomalous()]
+        return [col for col in self.results.keys() if self.results[col].has_anomalous()]
 
     def change_column_type_annotations(self, cols, new_types):
         for col, new_type in zip(cols, new_types):
