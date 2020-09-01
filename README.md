@@ -66,7 +66,7 @@ ptype.change_missing_data_annotations()
 ptype.change_anomaly_annotations()
 ```
 
-### d. Merging Different Encodings of Missing Data
+### d. Replacing Missing Data by Specific Value
 ```python
-ptype.merge_missing_data()
+ptype.replace_missing()
 ```
