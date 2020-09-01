@@ -1,8 +1,4 @@
-# Mainly text manipulation utils
-from ptype.utils import create_folders
-
-# Latex, and visualization utils
-from ptype.utils import print_to_file, save_object
+from ptype.utils import create_folders, print_to_file, save_object
 
 import csv
 import numpy as np
@@ -134,13 +130,11 @@ class Ptype:
     ###################### MAIN METHODS #######################
     def run_inference(self, _data_frame):
         """ Runs inference for each column in a dataframe.
-            The outputs are stored in dictionaries (see store_outputs).
+            The outputs are stored in dictionaries.
             The column types are saved to a csv file.
 
         :param _data_frame:
-
         """
-
         self.set_data(_data_frame)
 
         if self.verbose:
@@ -193,14 +187,6 @@ class Ptype:
             anomalies = list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0])
 
         return [normals, missings, anomalies]
-
-    def store_outputs(self, column_name):
-        """ First stores the posterior distribution of the column type, and the predicted column type.
-            Secondly, it stores the indices of the rows categorized according to the row types.
-
-        :param column_name:
-        """
-        self.all_posteriors[self.model.experiment_config.dataset_name][column_name] = self.model.p_t
 
     def column_results(self, col):
         """ First stores the posterior distribution of the column type, and the predicted column type.
