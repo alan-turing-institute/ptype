@@ -76,6 +76,10 @@ class ColResult:
         self.add_to_normal(indices)
         self.remove_from_anomalies(indices)
 
+    def replace_missing(self, v):
+        vs = self.get_unique_vals()
+        for i in self.missing_types:
+            self.series.replace(vs[i], v, inplace=True)
 
 class Ptype:
     avg_racket_time = None
@@ -91,9 +95,9 @@ class Ptype:
         self.all_posteriors = {}
         self.verbose = False
 
-    def set_data(self, _data_frame):
+    def set_data(self, df):
         _dataset_name = 'demo'
-        _data_frame = _data_frame.applymap(str)
+        df = df.applymap(str)
         # to refresh the outputs
         self.results = {} # column-indexed
         self.all_posteriors = {_dataset_name: {}}
@@ -107,16 +111,16 @@ class Ptype:
         self.p_z_columns = {}
         self.p_t_columns = {}
 
-        _column_names = _data_frame.columns
+        _column_names = df.columns
 
         # Creates a configuration object for the experiments
         config = Config(self.types, _dataset_name=_dataset_name, _column_names=_column_names)
 
         # Ptype model for inference
         if self.model is None:
-            self.model = PtypeModel(config, _data_frame=_data_frame)
+            self.model = PtypeModel(config, df)
         else:
-            self.model.set_params(config, _data_frame=_data_frame)
+            self.model.set_params(config, df)
 
     ###################### MAIN METHODS #######################
     def run_inference(self, _data_frame):
@@ -434,13 +438,13 @@ class Ptype:
 
         self.results[col].change_anomaly_annotations(anomalies)
 
-    def merge_missing_data(self, col, _missing_data):
+    def replace_missing(self, col, v):
         unique_vals = self.get_unique_vals(col)
-        missing_indices = self.missing_types[col]
 
-        for missing_index in missing_indices:
-            self.model.data = self.model.data.replace({col: unique_vals[missing_index]}, _missing_data)
+        for i in self.missing_types[col]:
+            self.model.data = self.model.data.replace({col: unique_vals[i]}, v)
 
+        self.results[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
 
     def get_categorical_columns(self):
