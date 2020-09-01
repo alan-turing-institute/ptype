@@ -57,6 +57,21 @@ class ColResult:
         print('\tfraction of missing:', round(missing / total, 2), '\n')
         print('\tfraction of anomalies:', round(anomalies / total, 2), '\n')
 
+    def get_normal_predictions(self):
+        """Values identified as 'normal'."""
+        vs = self.get_unique_vals()
+        return [vs[i] for i in self.normal_types]
+
+    def get_missing_data_predictions(self):
+        """Values identified as 'missing'."""
+        vs = self.get_unique_vals()
+        return [vs[i] for i in self.missing_types]
+
+    def get_anomaly_predictions(self):
+        """The values identified as 'anomalies'."""
+        vs = self.get_unique_vals()
+        return [vs[i] for i in self.anomaly_types]
+
     def remove_from_missing (self, indices):
         self.missing_types = list(set(self.missing_types) - set(indices))
 
@@ -80,6 +95,7 @@ class ColResult:
         vs = self.get_unique_vals()
         for i in self.missing_types:
             self.series.replace(vs[i], v, inplace=True)
+
 
 class Ptype:
     avg_racket_time = None
@@ -383,19 +399,13 @@ class Ptype:
         )
 
     def get_normal_predictions(self, col):
-        """The values identified as 'normal' in a given column."""
-        vs = self.get_unique_vals(col)
-        return [vs[ind] for ind in self.normal_types[col]]
+        return self.results[col].get_normal_predictions()
 
     def get_missing_data_predictions(self, col):
-        """The values identified as 'missing' in a given column."""
-        vs = self.get_unique_vals(col)
-        return [vs[ind] for ind in self.missing_types[col]]
+        return self.results[col].get_missing_data_predictions()
 
     def get_anomaly_predictions(self, col):
-        """The values identified as 'anomalies' in a given column."""
-        vs = self.get_unique_vals(col)
-        return [vs[ind] for ind in self.anomaly_types[col]]
+        return self.results[col].get_anomaly_predictions()
 
     def get_columns_with_type(self, _type):
         return [col for col in self.predicted_types.keys() if self.predicted_types[col] == _type]
