@@ -155,13 +155,13 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
         # Calculate probabilities for each column, run inference and store results.
-        for _, col in enumerate(list(self.model.experiment_config.column_names)):
-            probabilities, counts = self.generate_probs_a_column(col)
+        for _, col_name in enumerate(list(self.model.experiment_config.column_names)):
+            probabilities, counts = self.generate_probs_a_column(col_name)
             if self.verbose:
                 print_to_file('\tinference is running...')
             self.model.run_inference(probabilities, counts)
-            self.store_outputs(col)
-            self.results[col] = self.column_results(col)
+            self.all_posteriors[self.model.experiment_config.dataset_name][col_name] = self.model.p_t
+            self.results[col_name] = self.column_results(col_name)
 
         # Export column types, and missing data
         save = False
@@ -203,15 +203,6 @@ class Ptype:
         :param column_name:
         """
         self.all_posteriors[self.model.experiment_config.dataset_name][column_name] = self.model.p_t
-
-        # In case of a posterior vector whose entries are equal
-        if len(set([i for i in self.model.p_t])) == 1:
-            inferred_column_type = 'all identical'
-        else:
-            inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
-
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
 
     def column_results(self, col):
         """ First stores the posterior distribution of the column type, and the predicted column type.
