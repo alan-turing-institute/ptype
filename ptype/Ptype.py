@@ -176,18 +176,18 @@ class Ptype:
         # Export column types, and missing data
         save = False
         if save:
-            self.write_type_predictions_2_csv(list(self.predicted_types.values()))
+            self.write_type_predictions_2_csv(col.predicted_type for col in self.results.values())
 
     ####################### OUTPUT METHODS #########################
     def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
-            lambda col: str(col) + '(' + self.predicted_types[col] + ')')
+            lambda col: str(col) + '(' + self.results[col].predicted_type + ')')
         return df_output
 
     def show_results(self, cols=None):
         if cols is None:
-            cols = self.predicted_types
+            cols = self.results.keys()
 
         print('\ttypes: ', list(self.types.values()), '\n')
 
@@ -422,8 +422,8 @@ class Ptype:
 
     def change_column_type_annotations(self, cols, new_types):
         for col, new_type in zip(cols, new_types):
-            print('The column type of ' + col + ' is changed from ' + self.predicted_types[col] + ' to ' + new_type)
-            self.predicted_types[col] = new_type
+            print('The column type of ' + col + ' is changed from ' + self.results[col].predicted_type + ' to ' + new_type)
+#            self.predicted_types[col] = new_type
             self.results[col].predicted_type = new_type
 
     def change_missing_data_annotations(self, col, _missing_data):
