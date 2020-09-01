@@ -126,7 +126,6 @@ class Ptype:
         self.predicted_types = {}
 
         # dictionaries of lists
-        self.normal_types = {}
         self.missing_types = {}
         self.anomaly_types = {}
 
@@ -224,7 +223,6 @@ class Ptype:
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
-        self.normal_types[column_name] = normals
         self.missing_types[column_name] = missings
         self.anomaly_types[column_name] = anomalies
         self.p_z_columns[column_name] = self.model.p_z[:, np.argmax(self.model.p_t), :]
@@ -428,27 +426,10 @@ class Ptype:
             self.predicted_types[col] = new_type
             self.results[col].predicted_type = new_type
 
-    def remove_from_missing (self, col, indices):
-        self.missing_types[col] = list(set(self.missing_types[col]) - set(indices))
-
-    def remove_from_anomalies (self, col, indices):
-        self.anomaly_types[col] = list(set(self.anomaly_types[col]) - set(indices))
-
-    def add_to_normal (self, col, indices):
-        self.normal_types[col] = list(set(self.normal_types[col]).union(set(indices)))
-
     def change_missing_data_annotations(self, col, _missing_data):
-        indices = [np.where(self.get_unique_vals(col) == v)[0][0] for v in _missing_data]
-        self.add_to_normal(col, indices)
-        self.remove_from_missing(col, indices)
-
         self.results[col].change_missing_data_annotations(_missing_data)
 
     def change_anomaly_annotations(self, col, anomalies):
-        indices = [np.where(self.get_unique_vals(col) == v)[0][0] for v in anomalies]
-        self.add_to_normal(col, indices)
-        self.remove_from_anomalies(col, indices)
-
         self.results[col].change_anomaly_annotations(anomalies)
 
     def replace_missing(self, col, v):
