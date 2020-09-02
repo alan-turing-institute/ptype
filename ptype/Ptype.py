@@ -336,21 +336,6 @@ class Ptype:
             return_counts=return_counts
         )
 
-    def get_normal_predictions(self, col):
-        return self.cols[col].get_normal_predictions()
-
-    def get_missing_data_predictions(self, col):
-        return self.cols[col].get_missing_data_predictions()
-
-    def get_anomaly_predictions(self, col):
-        return self.cols[col].get_anomaly_predictions()
-
-    def change_missing_data_annotations(self, col, _missing_data):
-        self.cols[col].change_missing_data_annotations(_missing_data)
-
-    def change_anomaly_annotations(self, col, anomalies):
-        self.cols[col].change_anomaly_annotations(anomalies)
-
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
