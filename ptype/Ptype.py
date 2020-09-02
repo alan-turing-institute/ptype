@@ -336,64 +336,6 @@ class Ptype:
             return_counts=return_counts
         )
 
-    def get_normal_predictions(self, col):
-        return self.cols[col].get_normal_predictions()
-
-    def get_missing_data_predictions(self, col):
-        return self.cols[col].get_missing_data_predictions()
-
-    def get_anomaly_predictions(self, col):
-        return self.cols[col].get_anomaly_predictions()
-
-    def get_columns_with_type(self, _type):
-        return [col for col in self.cols.keys() if self.cols[col].predicted_type == _type]
-
-    def get_columns_with_missing(self):
-        return [col for col in self.cols.keys() if self.cols[col].has_missing()]
-
-    def get_columns_with_anomalies(self):
-        return [col for col in self.cols.keys() if self.cols[col].has_anomalous()]
-
-    def change_column_type_annotations(self, cols, new_types):
-        for col, new_type in zip(cols, new_types):
-            print('The column type of ' + col + ' is changed from ' + self.cols[col].predicted_type + ' to ' + new_type)
-            self.cols[col].predicted_type = new_type
-
-    def change_missing_data_annotations(self, col, _missing_data):
-        self.cols[col].change_missing_data_annotations(_missing_data)
-
-    def change_anomaly_annotations(self, col, anomalies):
-        self.cols[col].change_anomaly_annotations(anomalies)
-
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
-
-    def remove_missing_and_anomalies(self, col, col_name):
-        y = np.unique([str(int_element) for int_element in col.tolist()])
-        entries_to_discard = self.cols[col_name].missing_types + self.cols[col_name].anomaly_types
-        normal_entries = list(set(range(len(y))) - set(entries_to_discard))
-        normal_data_values = y[normal_entries]
-
-        return col.loc[col.isin(normal_data_values)]
-
-    def get_categorical_columns(self):
-        cats = {}
-        for col_name in self.model.data.columns:
-            col = self.model.data[col_name]
-            col = self.remove_missing_and_anomalies(col, col_name)
-
-            # just dropping certain values
-            for encoding in ['NULL', 'null', 'Null', '#NA', '#N/A', 'NA', 'NA ', ' NA', 'N A', 'N/A', 'N/ A', 'N /A',
-                             'N/A',
-                             'na', ' na', 'na ', 'n a', 'n/a', 'N/O', 'NAN', 'NaN', 'nan', '-NaN', '-nan', '-', '!',
-                             '?', '*', '.']:
-                col = col.apply(lambda y: str(y).replace(encoding, ''))
-
-            col = col.replace('', np.nan)
-            col = col.dropna()
-            col = list(col.values)
-
-            res = self.get_categorical_signal_gaussian(col)
-            if res[0]:
-                cats[col_name] = [res[1], res[2]]

@@ -11,17 +11,17 @@ def read_data(_data_path, dataset_name):
 
 def as_normal(ptype):
     return lambda series: \
-        series.map(lambda v: v if v in ptype.get_normal_predictions(series.name) else pd.NA)
+        series.map(lambda v: v if v in ptype.cols[series.name].get_normal_predictions() else pd.NA)
 
 
 def as_missing(ptype):
     return lambda series: \
-        series.map(lambda v: v if v in ptype.get_missing_data_predictions(series.name) else pd.NA)
+        series.map(lambda v: v if v in ptype.cols[series.name].get_missing_data_predictions() else pd.NA)
 
 
 def as_anomaly(ptype):
     return lambda series: \
-        series.map(lambda v: v if v in ptype.get_anomaly_predictions(series.name) else pd.NA)
+        series.map(lambda v: v if v in ptype.cols[series.name].get_anomaly_predictions() else pd.NA)
 
 
 def get_predictions(_data_path):
