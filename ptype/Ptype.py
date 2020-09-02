@@ -345,20 +345,6 @@ class Ptype:
     def get_anomaly_predictions(self, col):
         return self.cols[col].get_anomaly_predictions()
 
-    def get_columns_with_type(self, _type):
-        return [col for col in self.cols.keys() if self.cols[col].predicted_type == _type]
-
-    def get_columns_with_missing(self):
-        return [col for col in self.cols.keys() if self.cols[col].has_missing()]
-
-    def get_columns_with_anomalies(self):
-        return [col for col in self.cols.keys() if self.cols[col].has_anomalous()]
-
-    def change_column_type_annotations(self, cols, new_types):
-        for col, new_type in zip(cols, new_types):
-            print('The column type of ' + col + ' is changed from ' + self.cols[col].predicted_type + ' to ' + new_type)
-            self.cols[col].predicted_type = new_type
-
     def change_missing_data_annotations(self, col, _missing_data):
         self.cols[col].change_missing_data_annotations(_missing_data)
 
