@@ -368,32 +368,3 @@ class Ptype:
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
-
-    def remove_missing_and_anomalies(self, col, col_name):
-        y = np.unique([str(int_element) for int_element in col.tolist()])
-        entries_to_discard = self.cols[col_name].missing_types + self.cols[col_name].anomaly_types
-        normal_entries = list(set(range(len(y))) - set(entries_to_discard))
-        normal_data_values = y[normal_entries]
-
-        return col.loc[col.isin(normal_data_values)]
-
-    def get_categorical_columns(self):
-        cats = {}
-        for col_name in self.model.data.columns:
-            col = self.model.data[col_name]
-            col = self.remove_missing_and_anomalies(col, col_name)
-
-            # just dropping certain values
-            for encoding in ['NULL', 'null', 'Null', '#NA', '#N/A', 'NA', 'NA ', ' NA', 'N A', 'N/A', 'N/ A', 'N /A',
-                             'N/A',
-                             'na', ' na', 'na ', 'n a', 'n/a', 'N/O', 'NAN', 'NaN', 'nan', '-NaN', '-nan', '-', '!',
-                             '?', '*', '.']:
-                col = col.apply(lambda y: str(y).replace(encoding, ''))
-
-            col = col.replace('', np.nan)
-            col = col.dropna()
-            col = list(col.values)
-
-            res = self.get_categorical_signal_gaussian(col)
-            if res[0]:
-                cats[col_name] = [res[1], res[2]]
