@@ -216,7 +216,7 @@ class Ptype:
         return result
 
     def store_features(self, col_name, counts):
-        posterior = self.all_posteriors[col_name]
+        posterior = self.all_posteriors[self.model.experiment_config.dataset_name][col_name]
 
         sorted_posterior = [
             posterior[3],
