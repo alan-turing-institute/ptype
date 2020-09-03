@@ -230,10 +230,10 @@ class Ptype:
             str(int_element) for int_element in self.model.data[col_name].tolist()
         ]
         U = len(np.unique(entries))
-        U_clean = len(self.normal_values[col_name])
+        U_clean = len(self.cols[col_name].normal_values)
 
         N = len(entries)
-        N_clean = sum([counts[index] for index in self.normal_values[col_name]])
+        N_clean = sum([counts[index] for index in self.cols[col_name].normal_values])
 
         u_ratio = U / N
         if U_clean == 0 and N_clean == 0:
