@@ -1,3 +1,5 @@
+import pandas as pd
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
     if dataset_name in ['mass_6.csv', ]:
@@ -6,14 +8,30 @@ def read_data(_data_path, dataset_name):
         encoding = 'utf-8'
     return csv.csv2df(_data_path + dataset_name, encoding=encoding, dtype=str, skipinitialspace=True)
 
+
+def as_normal(ptype):
+    return lambda series: \
+        series.map(lambda v: v if v in ptype.cols[series.name].get_normal_predictions() else pd.NA)
+
+
+def as_missing(ptype):
+    return lambda series: \
+        series.map(lambda v: v if v in ptype.cols[series.name].get_missing_data_predictions() else pd.NA)
+
+
+def as_anomaly(ptype):
+    return lambda series: \
+        series.map(lambda v: v if v in ptype.cols[series.name].get_anomaly_predictions() else pd.NA)
+
+
 def get_predictions(_data_path):
     dataset_names = get_datasets()
 
     # create ptype
-    types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
-             5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
-             8: 'date-non-std'}
-    ptype = Ptype(_types=types)
+    ptype = Ptype(_types=
+                  {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
+                   5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
+                   8: 'date-non-std'})
 
     # run ptype on each dataset
     type_predictions = {}
@@ -22,43 +40,36 @@ def get_predictions(_data_path):
         df = read_data(_data_path, dataset_name)
         ptype.run_inference(_data_frame=df)
 
-        # TEMPORARY
-        print(list(df.index))
-        for _, column_name in enumerate(list(ptype.model.experiment_config.column_names)):
-            print('Column name:' + column_name)
-            column = df[column_name]
-            print('Column:' + df[column_name])
-            for _, v in column.iteritems():
-                print(v)
-
-#            print(ptype.normal_types[column_name])
-#            print(ptype.missing_types[column_name])
-#            print(ptype.anomaly_types[column_name])
-
-            print(sorted(ptype.normal_types[column_name] +
-                         ptype.missing_types[column_name] +
-                         ptype.anomaly_types[column_name]))
+        df_missing = df.apply(as_missing(ptype), axis=0)
+        df_anomaly = df.apply(as_anomaly(ptype), axis=0)
+        df_normal = df.apply(as_normal(ptype), axis=0)
+        print(dataset_name)
+        print('Original data:\n', df)
+        print('Missing data:\n', df_missing)
+        print('Anomalies:\n', df_anomaly)
+        print('Normal:\n', df_normal)
 
         # store types
-        type_predictions[dataset_name] = ptype.predicted_types
+        type_predictions[dataset_name] = {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
 
     return type_predictions
 
 
-def main(_data_folder='data/',
-         _annotations_file='annotations/annotations.json',
-         _predictions_file='tests/column_type_predictions.json'):
+def main():
+    data_folder = 'data/'
+    annotations_file = 'annotations/annotations.json'
+    predictions_file = 'tests/column_type_predictions.json'
 
-    annotations = json.load(open(_annotations_file))
-    type_predictions = get_predictions(_data_folder)
+    annotations = json.load(open(annotations_file))
+    type_predictions = get_predictions(data_folder)
 
-    with open(_predictions_file, 'r', encoding='utf-8-sig') as read_file:
+    with open(predictions_file, 'r', encoding='utf-8-sig') as read_file:
         expected = json.load(read_file)
     if not(type_predictions == expected):
         # prettyprint new JSON, omiting optional BOM char
-        with open(_predictions_file + '.new', 'w', encoding='utf-8-sig') as write_file:
+        with open(predictions_file + '.new', 'w', encoding='utf-8-sig') as write_file:
             json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
-        raise Exception(f'{_predictions_file} comparison failed.')
+        raise Exception(f'{predictions_file} comparison failed.')
 
     evaluate_predictions(annotations, type_predictions)
 
@@ -69,6 +80,9 @@ if __name__ == "__main__":
 
     import json
     import clevercsv as csv
+    import os
 
     main()
+    if os.system("pytest --nbval notebooks/*.ipynb") != 0:
+        raise Exception("Notebook test(s) failed.")
     print("Tests passed.")

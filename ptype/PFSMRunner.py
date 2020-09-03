@@ -1,14 +1,16 @@
 import sys
-sys.path.insert(0,'src/')
 
 from ptype.PFSM_DiscriminativeLearning import IntegersNewAuto, StringsNewAuto, AnomalyNew, FloatsNewAuto, MissingsNew, BooleansNew, Genders, \
     ISO_8601NewAuto, Date_EUNewAuto, Nonstd_DateNewAuto, SubTypeNonstdDateNewAuto, IPAddress, EmailAddress
-
 from ptype.utils import contains_all
-MACHINES = {'integer':IntegersNewAuto(), 'string':StringsNewAuto(), 'float':FloatsNewAuto(), 'boolean':BooleansNew(),
-            'gender':Genders(), 'date-iso-8601':ISO_8601NewAuto(), 'date-eu':Date_EUNewAuto(),
-            'date-non-std-subtype':SubTypeNonstdDateNewAuto(), 'date-non-std': Nonstd_DateNewAuto(), 
-            'IPAddress':IPAddress(), 'EmailAddress':EmailAddress()}
+from ptype.Model import PtypeModel
+
+sys.path.insert(0,'src/')
+MACHINES = {'integer': IntegersNewAuto(), 'string': StringsNewAuto(), 'float': FloatsNewAuto(), 'boolean': BooleansNew(),
+            'gender': Genders(), 'date-iso-8601': ISO_8601NewAuto(), 'date-eu': Date_EUNewAuto(),
+            'date-non-std-subtype': SubTypeNonstdDateNewAuto(), 'date-non-std': Nonstd_DateNewAuto(),
+            'IPAddress': IPAddress(), 'EmailAddress': EmailAddress()}
+
 
 class PFSMRunner:
     def __init__(self, types):
@@ -47,14 +49,8 @@ class PFSMRunner:
         self.remove_unique_values()
         self.set_unique_values(unique_values)
 
-
-
-
-
-
-
-
-
-
-
-
+    def normalize_params(self):
+        for i, machine in enumerate(self.machines):
+            if i not in [0, 1]:
+                self.machines[i].I = PtypeModel.normalize_initial(machine.I_z)
+                self.machines[i].F, self.machines[i].T = PtypeModel.normalize_final(machine.F_z, machine.T_z)
