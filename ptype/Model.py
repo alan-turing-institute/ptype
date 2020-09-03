@@ -172,7 +172,6 @@ class PtypeModel:
 
         return w, j
 
-
     def f_col(self, i_, column_name, y_i,):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
@@ -485,7 +484,7 @@ class PtypeModel:
             t -= 1
 
             # normalize just to make sure it is normalized
-            runner.machines[2 + t].I_z = self.normalize_initial_z(runner.machines[2 + t].I_z)
+            runner.machines[2 + t].I_z = PtypeModel.normalize_initial_z(runner.machines[2 + t].I_z)
 
             for state in runner.machines[2 + t].I:
                 if runner.machines[2 + t].I[state] != LOG_EPS:
@@ -493,7 +492,7 @@ class PtypeModel:
 
             for a in runner.machines[2 + t].T_z:
                 # normalize just to make sure it is normalized
-                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = self.normalize_a_state_new(runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, a)
+                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = PtypeModel.normalize_a_state_new(runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, a)
 
                 for b in runner.machines[2 + t].T[a]:
                     for c in runner.machines[2 + t].T[a][b]:
@@ -530,15 +529,16 @@ class PtypeModel:
                     counter += 1
 
             if normalize:
-                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = self.normalize_a_state_new(runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state)
+                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = PtypeModel.normalize_a_state_new(runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state)
                 runner.machines[2 + t].F, runner.machines[2 + t].T = runner.machines[2 + t].F_z, runner.machines[2 + t].T_z
 
-                runner.machines[2 + t].I_z = self.normalize_initial(runner.machines[2 + t].I_z)
+                runner.machines[2 + t].I_z = PtypeModel.normalize_initial(runner.machines[2 + t].I_z)
                 runner.machines[2 + t].I = runner.machines[2 + t].I_z
 
         return runner, temp
 
     ### NORMALIZATION METHODS ###
+    @staticmethod
     def normalize_a_state(self, F, T, a):
         # find maximum log probability
         log_mx = LOG_EPS
@@ -570,7 +570,8 @@ class PtypeModel:
 
         return F, T
 
-    def normalize_a_state_new(self, F, T, a):
+    @staticmethod
+    def normalize_a_state_new(F, T, a):
         # find maximum log probability
         params = []
         for b in T[a]:
@@ -595,7 +596,8 @@ class PtypeModel:
 
         return F, T
 
-    def normalize_initial(self, I):
+    @staticmethod
+    def normalize_initial(I):
         # find maximum log probability
         log_mx = LOG_EPS
         for a in I:
@@ -614,7 +616,8 @@ class PtypeModel:
 
         return I
 
-    def normalize_initial_z(self, I_z):
+    @staticmethod
+    def normalize_initial_z(I_z):
         # I = deepcopy(I)
         # find maximum log probability
         log_mx = LOG_EPS
@@ -634,8 +637,9 @@ class PtypeModel:
 
         return I_z
 
-    def normalize_final(self, F, T):
+    @staticmethod
+    def normalize_final(F, T):
         for state in F:
-            F, T = self.normalize_a_state_new(F, T, state)
+            F, T = PtypeModel.normalize_a_state_new(F, T, state)
 
         return F, T

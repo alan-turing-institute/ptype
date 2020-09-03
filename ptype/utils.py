@@ -154,10 +154,6 @@ def multi_logdot(Xs):
 ###############################################################
 ###################### DATA I/O METHODS #######################
 ###############################################################
-def read_dataset(_data_path, _header=None):
-    return pd.read_csv(_data_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False, header=_header, skipinitialspace=True)
-
-
 # writing data
 def write_data(data, filepath='../../automata/example.dat'):
     f = open(filepath, 'w')
@@ -222,7 +218,7 @@ def copy_columns_between_dicts(dict_source, dict_target, columns):
 
 
 ###############################################################
-#################### VISUALIZATION METHODS ####################
+#################### VISUALISATION METHODS ####################
 ###############################################################
 def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None, vmax_=None, xticklabels=None, yticklabels=None, cmap=plt.cm.gray_r):
     if figsize is None:
@@ -389,7 +385,7 @@ def plot_roc_multiple_dots(Xs, _type, _path='experiments/0_predictions/roc.eps',
 def print_figure_latex(column_name, f):
     print("\\begin{figure}[!h] \n \\centering \n \\includegraphics[width = \\textwidth]{" + column_name +
           "/outputs/type_posteriors.eps} \n \\caption{The posterior probability distribution of the column type for column named " +
-          column_name.replace("_", "\_") + ".} \n \\label{fig:" + column_name+ "} \n \\end{figure}",file=f)
+          column_name.replace("_", "\\_") + ".} \n \\label{fig:" + column_name + "} \n \\end{figure}", file=f)
 
 
 def print_line_latex(txt, f):
@@ -407,12 +403,12 @@ def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells,
     with open(current_experiment_folder + "/outputs/table_row_type_dist.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_row_type_dist.columns)) + "|}\n")
         for i, row in table_row_type_dist.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
@@ -424,12 +420,12 @@ def print_statistics_table_latex(x, current_experiment_folder):
     with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
         for i, row in table_histogram.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
@@ -441,18 +437,17 @@ def print_table_latex(x, current_experiment_folder):
     with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
         f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
         for i, row in table_histogram.iterrows():
-            f.write("\hline ")
+            f.write("\\hline ")
             if i == 0:
                 f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
-        f.write("\hline ")
+        f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
 def evaluate_types(_dataset_name, _ptype, _header=None,):
-    predicted_types = _ptype.predicted_types
-    dataset_path    = '../data/' + _dataset_name + '.csv'
+    dataset_path = '../data/' + _dataset_name + '.csv'
     annotation_path = '../annotations/' + _dataset_name + '.csv'
 
     df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)
@@ -461,10 +456,10 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
     true_values = annotations['Type'].values.tolist()
     true_values = [true_value.split('-')[0] for true_value in true_values]
 
-    predictions = predicted_types.values()
+    predictions = [col.predicted_type for col in _ptype.cols.values()]
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
 
-    column_names = list(predicted_types.keys())
+    column_names = list(_ptype.cols.keys())
 
     correct_, false_ = 0., 0.
     for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):
@@ -480,12 +475,12 @@ def evaluate_types(_dataset_name, _ptype, _header=None,):
             print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 
             indices = _ptype.missing_types[column_name]
-            if len(indices) !=0 :
+            if len(indices) != 0:
                 print('\tsome missing data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 
             indices = _ptype.anomaly_types[column_name]
-            if len(indices) !=0 :
+            if len(indices) != 0:
                 print('\tsome anomalous data values: ', [unique_vals[ind] for ind in indices][:20])
                 print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
 
@@ -537,7 +532,7 @@ def evaluate_model_type(annotations, predictions):
     type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
 
     predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
-                         prediction in predictions]
+                   prediction in predictions]
 
     # find columns whose types are not supported by ptype
     ignored_columns = np.where((np.array(annotations) != 'all identical') &
@@ -586,24 +581,6 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
         Js[t] = J
 
     return Js, overall_accuracy
-
-
-def run_experiment(total_cols,
-                   dataset_names,
-                   types=None):
-    if types is None:
-        types = {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
-                 5: 'date-iso-8601', 6: 'date-eu',
-                 7: 'date-non-std-subtype', 8: 'date-non-std'}
-    ptype = Ptype(_types=types)
-    for dataset_name in dataset_names:
-        df = read_dataset(dataset_name, TEMP_PATHS)
-        ptype.run_inference(_data_frame=df, _dataset_name=dataset_name)
-
-    df, overall_accuracy = get_evaluations(_annotations_path=_annotations_path, _predictions_path=_predictions_path, _training=False, _sets=test_datasets)
-
-    overall_accuracy_to_print = {method: "{:.2f}".format(overall_accuracy[method] / (total_cols)) for method in overall_accuracy}
-    return [df, overall_accuracy_to_print]
 
 
 def get_datasets():

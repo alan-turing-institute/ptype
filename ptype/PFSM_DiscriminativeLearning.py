@@ -545,7 +545,7 @@ class AnomalyNew(Machine):
 
 ############# INTEGERS #################
 class IntegersNewAuto(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 4*1e-5
         self.states = []
         self.T = {}
@@ -559,7 +559,7 @@ class IntegersNewAuto(Machine):
         self.copy_to_z()
 
 class EmailAddress(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 1e-4
         self.states = []
         self.T = {}
@@ -573,7 +573,7 @@ class EmailAddress(Machine):
         self.copy_to_z()
 
 class IPAddress(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 1e-4
         self.states = []
         self.T = {}
@@ -587,7 +587,7 @@ class IPAddress(Machine):
         self.copy_to_z()
 
 class UKPostcodeAddress(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 1e-4
         self.states = []
         self.T = {}
@@ -601,7 +601,7 @@ class UKPostcodeAddress(Machine):
         self.copy_to_z()
 
 class UKPhoneNumbers(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 1e-4
         self.states = []
         self.T = {}
@@ -694,7 +694,7 @@ class StringsNewAuto(Machine):
                     return self.word_prob
 
 class FloatsNewAuto(Machine):
-    def __init__(self, ):
+    def __init__(self):
         self.STOP_P = 4 * 1e-5
         self.states = []
         self.T = {}
