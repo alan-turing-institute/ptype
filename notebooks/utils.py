@@ -32,7 +32,7 @@ def plot_bar(classes, values, title, xlabel=None, ylabel=None, y_lim_max=1.0):
 
 def plot_column_type_posterior(ptype, column):
     # p_t has subtypes of date separately and is not ordered alphabetically
-    p_t = ptype.p_t_columns[column]
+    p_t = ptype.all_posteriors['demo'][column]
 
     # types with subtypes
     types = list(ptype.types.values())
