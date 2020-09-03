@@ -156,7 +156,7 @@ class Ptype:
             self.cols[col_name] = self.column_results(col_name)
 
             # Store canonical types
-            self.store_features(column_name, counts)
+            self.store_features(col_name, counts)
 
         # Export column types, and missing data
         save = False
