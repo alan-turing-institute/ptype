@@ -109,6 +109,7 @@ class Ptype:
         self.model = None
         self.data_frames = None
         self.all_posteriors = {}
+        self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
 
@@ -154,6 +155,9 @@ class Ptype:
             self.model.run_inference(probabilities, counts)
             self.all_posteriors[self.model.experiment_config.dataset_name][col_name] = self.model.p_t
             self.cols[col_name] = self.column_results(col_name)
+
+            # Store additional features for canonical type inference
+            self.store_features(col_name, counts)
 
         # Export column types, and missing data
         save = False
@@ -211,6 +215,36 @@ class Ptype:
         result.anomalous_values = anomalies
         return result
 
+    def store_features(self, col_name, counts):
+        posterior = self.all_posteriors[self.model.experiment_config.dataset_name][col_name]
+
+        sorted_posterior = [
+            posterior[3],
+            posterior[4:].sum(),
+            posterior[2],
+            posterior[0],
+            posterior[1],
+        ]
+
+        entries = [
+            str(int_element) for int_element in self.model.data[col_name].tolist()
+        ]
+        U = len(np.unique(entries))
+        U_clean = len(self.cols[col_name].normal_values)
+
+        N = len(entries)
+        N_clean = sum([counts[index] for index in self.cols[col_name].normal_values])
+
+        u_ratio = U / N
+        if U_clean == 0 and N_clean == 0:
+            u_ratio_clean = 0.0
+        else:
+            u_ratio_clean = U_clean / N_clean
+
+        self.features[col_name] = np.array(
+            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean,]
+        )
+        
     def save_posteriors(self, filename='all_posteriors.pkl'):
         save_object(self.all_posteriors, filename)
 
