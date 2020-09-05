@@ -275,9 +275,7 @@ class Ptype:
         LOG_EPS = -1e150
 
         # make uniform
-        machines = self.PFSMRunner.machines
-        for i, machine in enumerate(machines):
-
+        for i, machine in enumerate(self.PFSMRunner.machines):
             # discards missing and anomaly types
             if i >= 2:
                 # make uniform
@@ -293,15 +291,11 @@ class Ptype:
                 machine.F = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
                 machine.F_z = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
 
-        self.PFSMRunner.machines = machines
-
     def initialize_params_randomly(self):
         LOG_EPS = -1e150
 
         # make uniform
-        machines = self.PFSMRunner.machines
-        for i, machine in enumerate(machines):
-
+        for i, machine in enumerate(self.PFSMRunner.machines):
             # discards missing and anomaly types
             if i >= 2:
                 # make uniform
@@ -316,8 +310,6 @@ class Ptype:
 
                 machine.F_z = {a: np.log(np.random.uniform(0., 1.)) if machine.F[a] != LOG_EPS else LOG_EPS for a in
                                machine.F}
-
-        self.PFSMRunner.machines = machines
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
