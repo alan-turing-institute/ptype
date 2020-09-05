@@ -41,7 +41,7 @@ class Column:
 
         return count
 
-    def show(self):
+    def show_results(self):
         print('col: ' + str(self.series.name))
         print('\tpredicted type: ' + self.predicted_type)
         print('\tposterior probs: ', self.p_t)
@@ -169,10 +169,6 @@ class Ptype:
         df_output.columns = df_output.columns.map(
             lambda col: str(col) + '(' + self.cols[col].predicted_type + ')')
         return df_output
-
-    def show_results(self, cols=None):
-        for col in self.cols.keys() if cols is None else cols:
-            self.cols[col].show()
 
     def detect_missing_anomalies(self, inferred_column_type):
         normals, missings, anomalies = [], [], []
