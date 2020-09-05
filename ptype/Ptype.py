@@ -148,7 +148,7 @@ class Ptype:
 
         # Calculate probabilities for each column, run inference and store results
         for _, col_name in enumerate(list(self.model.experiment_config.column_names)):
-            probabilities, counts = self.generate_probs_a_column(col_name)
+            probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
                 print_to_file('\tinference is running...')
             self.model.run_inference(probabilities, counts)
@@ -319,16 +319,17 @@ class Ptype:
 
         self.PFSMRunner.machines = machines
 
-    def generate_probs_a_column(self, col_name):
+    def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
-        :param col_name: name of a column
+        :param column_name: name of a column
         :return probabilities: an IxJ sized np array, where probabilities[i][j] is the probability generated for i^th unique value by the j^th PFSM.
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
+
         """
-        unique_values, counts = self.cols[col_name].get_unique_vals(return_counts=True)
-        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values)
-        probabilities = np.array([probabilities_dict[str(x)] for x in unique_values])
+        unique_values_in_a_column, counts = self.get_unique_vals(column_name, return_counts=True)
+        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values_in_a_column)
+        probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
 
         return probabilities, counts
 
@@ -360,6 +361,13 @@ class Ptype:
             print(N, K, np.log(N))
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
+
+    def get_unique_vals(self, col, return_counts=False):
+        """ List of the unique values found in a column."""
+        return np.unique(
+            [str(x) for x in self.model.data[col].tolist()],
+            return_counts=return_counts
+        )
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
