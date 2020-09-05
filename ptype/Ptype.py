@@ -182,28 +182,28 @@ class Ptype:
 
         return [normals, missings, anomalies]
 
-    def column_results(self, col):
+    def column_results(self, col_name):
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
 
-         :param col:
+         :param col_name:
         """
-        result = Column(self.model.data[col])
-        result.p_t = self.model.p_t
+        col = Column(self.model.data[col_name])
+        col.p_t = self.model.p_t
 
         # In case of a posterior vector whose entries are equal
         if len(set([i for i in self.model.p_t])) == 1:
             inferred_column_type = 'all identical'
         else:
             inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
-        result.predicted_type = inferred_column_type
+        col.predicted_type = inferred_column_type
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
-        result.normal_values = normals
-        result.missing_values = missings
-        result.anomalous_values = anomalies
-        return result
+        col.normal_values = normals
+        col.missing_values = missings
+        col.anomalous_values = anomalies
+        return col
 
     def store_features(self, col_name, counts):
         posterior = self.all_posteriors[self.model.experiment_config.dataset_name][col_name]
@@ -282,6 +282,13 @@ class Ptype:
                 machine.F = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
                 machine.F_z = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
 
+    def get_unique_vals(self, col, return_counts=False):
+        """ List of the unique values found in a column."""
+        return np.unique(
+            [str(x) for x in self.model.data[col].tolist()],
+            return_counts=return_counts
+        )
+
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
@@ -324,13 +331,6 @@ class Ptype:
             print(N, K, np.log(N))
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
-
-    def get_unique_vals(self, col, return_counts=False):
-        """ List of the unique values found in a column."""
-        return np.unique(
-            [str(x) for x in self.model.data[col].tolist()],
-            return_counts=return_counts
-        )
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
