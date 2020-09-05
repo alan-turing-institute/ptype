@@ -171,12 +171,7 @@ class Ptype:
         return df_output
 
     def show_results(self, cols=None):
-        if cols is None:
-            cols = self.cols.keys()
-
-        print('\ttypes: ', list(self.types.values()), '\n')
-
-        for col in cols:
+        for col in self.cols.keys() if cols is None else cols:
             self.cols[col].show()
 
     def detect_missing_anomalies(self, inferred_column_type):
