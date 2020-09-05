@@ -186,7 +186,7 @@ class Ptype:
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
 
-        :param col:
+         :param col:
         """
         result = Column(self.model.data[col])
         result.p_t = self.model.p_t
@@ -281,26 +281,6 @@ class Ptype:
 
                 machine.F = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
                 machine.F_z = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
-
-    def initialize_params_randomly(self):
-        LOG_EPS = -1e150
-
-        # make uniform
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            # discards missing and anomaly types
-            if i >= 2:
-                # make uniform
-                # machine.I = {a: np.log(np.random.uniform(0.,1.)) if machine.I[a] != LOG_EPS else LOG_EPS for a in machine.I}
-                machine.I_z = {a: np.log(np.random.uniform(0., 1.)) if machine.I[a] != LOG_EPS else LOG_EPS for a in
-                               machine.I}
-
-                for a in machine.T:
-                    for b in machine.T[a]:
-                        for c in machine.T[a][b]:
-                            machine.T_z[a][b][c] = np.log(np.random.uniform(0., 1.))
-
-                machine.F_z = {a: np.log(np.random.uniform(0., 1.)) if machine.F[a] != LOG_EPS else LOG_EPS for a in
-                               machine.F}
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
