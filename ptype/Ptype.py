@@ -10,19 +10,23 @@ from scipy.stats import norm
 
 
 def get_unique_vals(col, return_counts=False):
-    """ List of the unique values found in a column."""
+    """List of the unique values found in a column."""
     return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
 
 
 class Column:
     def __init__(self, series):
         self.series = series
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(series, return_counts=True)
         self.p_t = {}
         self.predicted_type = None
         self.normal_values = []
         self.missing_values = []
         self.anomalous_values = []
+        self.cache_unique_vals()
+
+    def cache_unique_vals(self):
+        """Call this to (re)initialise the cache of my unique values."""
+        self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
 
     def has_missing(self):
         return self.missing_values != []
@@ -87,6 +91,7 @@ class Column:
     def replace_missing(self, v):
         for i in self.missing_values:
             self.series.replace(self.unique_vals[i], v, inplace=True)
+        self.cache_unique_vals()
 
 
 class Ptype:
