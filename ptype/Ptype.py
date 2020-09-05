@@ -70,42 +70,23 @@ class Column:
 
     def get_normal_predictions(self):
         """Values identified as 'normal'."""
-        return [self.unique_vals[i] for i in self.normal_values]
+        return [v for i, v in enumerate(self.unique_vals) if self.unique_vals_status[i] == Status.TYPE]
 
     def get_missing_data_predictions(self):
-        """Values identified as 'missing'."""
-        return [self.unique_vals[i] for i in self.missing_values]
+        return [v for i, v in enumerate(self.unique_vals) if self.unique_vals_status[i] == Status.MISSING]
 
     def get_anomaly_predictions(self):
-        """The values identified as 'anomalies'."""
-        return [self.unique_vals[i] for i in self.anomalous_values]
-
-    def remove_from_missing (self, indices):
-        self.missing_values = list(set(self.missing_values) - set(indices))
-
-    def remove_from_anomalies (self, indices):
-        self.anomalous_values = list(set(self.anomalous_values) - set(indices))
-
-    def add_to_normal (self, indices):
-        self.normal_values = list(set(self.normal_values).union(set(indices)))
+        return [v for i, v in enumerate(self.unique_vals) if self.unique_vals_status[i] == Status.ANOMALOUS]
 
     def change_missing_data_annotations(self, missing_data):
-        indices = [np.where(self.unique_vals == v)[0][0] for v in missing_data]
         for i in [np.where(self.unique_vals == v)[0][0] for v in missing_data]:
             self.unique_vals_status = Status.TYPE
-        self.add_to_normal(indices)
-        self.remove_from_missing(indices)
-
+#
     def change_anomaly_annotations(self, anomalies):
-        indices = [np.where(self.unique_vals == v)[0][0] for v in anomalies]
         for i in [np.where(self.unique_vals == v)[0][0] for v in anomalies]:
             self.unique_vals_status = Status.TYPE
-        self.add_to_normal(indices)
-        self.remove_from_anomalies(indices)
-
+#
     def replace_missing(self, v):
-        for i in self.missing_values:
-            self.series.replace(self.unique_vals[i], v, inplace=True)
         for i, u in enumerate(self.unique_vals):
             if self.unique_vals_status[i] == Status.MISSING:
                 self.series.replace(u, v, inplace=True)
