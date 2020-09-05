@@ -22,6 +22,8 @@ class Column:
         self.normal_values = []
         self.missing_values = []
         self.anomalous_values = []
+        self.unique_vals = []
+        self.unique_vals_counts = []
         self.cache_unique_vals()
 
     def cache_unique_vals(self):
