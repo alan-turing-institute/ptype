@@ -72,7 +72,6 @@ def main(
 
 if __name__ == "__main__":
     import clevercsv as csv
-    import joblib
     import json
 
     from ptype.utils import get_datasets, evaluate_predictions

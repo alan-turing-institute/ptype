@@ -2,7 +2,6 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 import csv
 import numpy as np
-import os
 
 from ptype.Config import Config
 from ptype.Model import PtypeModel
@@ -164,7 +163,7 @@ class Ptype:
         if save:
             self.write_type_predictions_2_csv(col.predicted_type for col in self.cols.values())
 
-    ####################### OUTPUT METHODS #########################
+    # OUTPUT METHODS #########################
     def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
@@ -244,7 +243,7 @@ class Ptype:
         self.features[col_name] = np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean,]
         )
-        
+
     def save_posteriors(self, filename='all_posteriors.pkl'):
         save_object(self.all_posteriors, filename)
 
@@ -259,7 +258,7 @@ class Ptype:
                                                            column_type_predictions):
                 writer.writerow([column_name, '', '', column_type_prediction, '', '', ''])
 
-    ####################### HELPERS #########################
+    # HELPERS #########################
     def setup_a_column(self, i, column_name):
         if self.verbose:
             print_to_file('column # ' + str(i) + ' ' + column_name)
@@ -320,17 +319,16 @@ class Ptype:
 
         self.PFSMRunner.machines = machines
 
-    def generate_probs_a_column(self, column_name):
+    def generate_probs_a_column(self, col_name):
         """ Generates probabilities for the unique data values in a column.
 
-        :param column_name: name of a column
+        :param col_name: name of a column
         :return probabilities: an IxJ sized np array, where probabilities[i][j] is the probability generated for i^th unique value by the j^th PFSM.
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
-
         """
-        unique_values_in_a_column, counts = self.get_unique_vals(column_name, return_counts=True)
-        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values_in_a_column)
-        probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
+        unique_values, counts = self.cols[col_name].get_unique_vals(return_counts=True)
+        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values)
+        probabilities = np.array([probabilities_dict[str(x)] for x in unique_values])
 
         return probabilities, counts
 
@@ -362,13 +360,6 @@ class Ptype:
             print(N, K, np.log(N))
 
         return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
-
-    def get_unique_vals(self, col, return_counts=False):
-        """ List of the unique values found in a column."""
-        return np.unique(
-            [str(x) for x in self.model.data[col].tolist()],
-            return_counts=return_counts
-        )
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
