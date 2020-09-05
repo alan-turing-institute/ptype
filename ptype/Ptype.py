@@ -27,9 +27,6 @@ class Column:
         self.series = series
         self.p_t = {}
         self.predicted_type = None
-        self.normal_values = []
-        self.missing_values = []
-        self.anomalous_values = []
         self.unique_vals = []
         self.unique_vals_counts = []
         self.unique_vals_status = []
@@ -40,12 +37,13 @@ class Column:
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
 
     def has_missing(self):
-        return self.missing_values != []
+        return self.get_missing_data_predictions() != []
 
     def has_anomalous(self):
-        return self.anomalous_values != []
+        return self.get_anomaly_predictions() != []
 
-    def show_results_for(self, indices, desc):
+    def show_results_for(self, status, desc):
+        indices = [i for i, _ in enumerate(self.unique_vals) if self.unique_vals_status[i] == status]
         if len(indices) == 0:
             return 0
         else:
@@ -58,9 +56,9 @@ class Column:
         print('\tpredicted type: ' + self.predicted_type)
         print('\tposterior probs: ', self.p_t)
 
-        normal = self.show_results_for(self.normal_values, "some normal data values: ")
-        missing = self.show_results_for(self.missing_values, "missing values:")
-        anomalies = self.show_results_for(self.anomalous_values, "anomalies:")
+        normal = self.show_results_for(Status.TYPE, "some normal data values: ")
+        missing = self.show_results_for(Status.MISSING, "missing values:")
+        anomalies = self.show_results_for(Status.ANOMALOUS, "anomalies:")
 
         total = normal + missing + anomalies
 
@@ -78,13 +76,15 @@ class Column:
     def get_anomaly_predictions(self):
         return [v for i, v in enumerate(self.unique_vals) if self.unique_vals_status[i] == Status.ANOMALOUS]
 
+    # These can be combined now. What should this do when the supplied missing values aren't compatible
+    # with the predicted type?
     def change_missing_data_annotations(self, missing_data):
         for i in [np.where(self.unique_vals == v)[0][0] for v in missing_data]:
-            self.unique_vals_status = Status.TYPE
+            self.unique_vals_status[i] = Status.TYPE
 #
     def change_anomaly_annotations(self, anomalies):
         for i in [np.where(self.unique_vals == v)[0][0] for v in anomalies]:
-            self.unique_vals_status = Status.TYPE
+            self.unique_vals_status[i] = Status.TYPE
 #
     def replace_missing(self, v):
         for i, u in enumerate(self.unique_vals):
