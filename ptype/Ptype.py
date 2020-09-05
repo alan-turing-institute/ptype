@@ -1,6 +1,7 @@
 from ptype.utils import create_folders, print_to_file, save_object
 
 import csv
+from enum import Enum
 import numpy as np
 
 from ptype.Config import Config
@@ -14,6 +15,13 @@ def get_unique_vals(col, return_counts=False):
     return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
 
 
+# Use same names and values as the constants in Model.py. Could consolidate.
+class Status(Enum):
+    TYPE = 1
+    MISSING = 2
+    ANOMALOUS = 3
+
+
 class Column:
     def __init__(self, series):
         self.series = series
@@ -24,6 +32,7 @@ class Column:
         self.anomalous_values = []
         self.unique_vals = []
         self.unique_vals_counts = []
+        self.unique_vals_status = []
         self.cache_unique_vals()
 
     def cache_unique_vals(self):
@@ -82,17 +91,24 @@ class Column:
 
     def change_missing_data_annotations(self, missing_data):
         indices = [np.where(self.unique_vals == v)[0][0] for v in missing_data]
+        for i in [np.where(self.unique_vals == v)[0][0] for v in missing_data]:
+            self.unique_vals_status = Status.TYPE
         self.add_to_normal(indices)
         self.remove_from_missing(indices)
 
     def change_anomaly_annotations(self, anomalies):
         indices = [np.where(self.unique_vals == v)[0][0] for v in anomalies]
+        for i in [np.where(self.unique_vals == v)[0][0] for v in anomalies]:
+            self.unique_vals_status = Status.TYPE
         self.add_to_normal(indices)
         self.remove_from_anomalies(indices)
 
     def replace_missing(self, v):
         for i in self.missing_values:
             self.series.replace(self.unique_vals[i], v, inplace=True)
+        for i, u in enumerate(self.unique_vals):
+            if self.unique_vals_status[i] == Status.MISSING:
+                self.series.replace(u, v, inplace=True)
         self.cache_unique_vals()
 
 
@@ -203,6 +219,15 @@ class Ptype:
         col.normal_values = normals
         col.missing_values = missings
         col.anomalous_values = anomalies
+
+        col.unique_vals_status = [None] * len(col.unique_vals)
+        for i in normals:
+            col.unique_vals_status[i] = Status.TYPE
+        for i in missings:
+            col.unique_vals_status[i] = Status.MISSING
+        for i in anomalies:
+            col.unique_vals_status[i] = Status.ANOMALOUS
+
         return col
 
     def store_features(self, col_name, counts):
