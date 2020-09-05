@@ -9,6 +9,11 @@ from ptype.PFSMRunner import PFSMRunner
 from scipy.stats import norm
 
 
+def get_unique_vals(col, return_counts=False):
+    """ List of the unique values found in a column."""
+    return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
+
+
 class Column:
     def __init__(self, series):
         self.series = series
@@ -17,10 +22,6 @@ class Column:
         self.normal_values = []
         self.missing_values = []
         self.anomalous_values = []
-
-    def get_unique_vals(self, return_counts=False):
-        """ List of the unique values found in a column."""
-        return np.unique([str(x) for x in self.series.tolist()], return_counts=return_counts)
 
     def has_missing(self):
         return self.missing_values != []
@@ -32,7 +33,7 @@ class Column:
         if len(indices) == 0:
             count = 0
         else:
-            unique_vals, unique_vals_counts = self.get_unique_vals(return_counts=True)
+            unique_vals, unique_vals_counts = get_unique_vals(self.series, return_counts=True)
             vs = [unique_vals[ind] for ind in indices][:20]
             vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
             count = sum(unique_vals_counts[indices])
@@ -58,17 +59,17 @@ class Column:
 
     def get_normal_predictions(self):
         """Values identified as 'normal'."""
-        vs = self.get_unique_vals()
+        vs = get_unique_vals(self.series)
         return [vs[i] for i in self.normal_values]
 
     def get_missing_data_predictions(self):
         """Values identified as 'missing'."""
-        vs = self.get_unique_vals()
+        vs = get_unique_vals(self.series)
         return [vs[i] for i in self.missing_values]
 
     def get_anomaly_predictions(self):
         """The values identified as 'anomalies'."""
-        vs = self.get_unique_vals()
+        vs = get_unique_vals(self.series)
         return [vs[i] for i in self.anomalous_values]
 
     def remove_from_missing (self, indices):
@@ -81,17 +82,17 @@ class Column:
         self.normal_values = list(set(self.normal_values).union(set(indices)))
 
     def change_missing_data_annotations(self, missing_data):
-        indices = [np.where(self.get_unique_vals() == v)[0][0] for v in missing_data]
+        indices = [np.where(get_unique_vals(self.series) == v)[0][0] for v in missing_data]
         self.add_to_normal(indices)
         self.remove_from_missing(indices)
 
     def change_anomaly_annotations(self, anomalies):
-        indices = [np.where(self.get_unique_vals() == v)[0][0] for v in anomalies]
+        indices = [np.where(get_unique_vals(self.series) == v)[0][0] for v in anomalies]
         self.add_to_normal(indices)
         self.remove_from_anomalies(indices)
 
     def replace_missing(self, v):
-        vs = self.get_unique_vals()
+        vs = get_unique_vals(self.series)
         for i in self.missing_values:
             self.series.replace(vs[i], v, inplace=True)
 
@@ -282,13 +283,6 @@ class Ptype:
                 machine.F = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
                 machine.F_z = {a: np.log(.5) if machine.F[a] != LOG_EPS else LOG_EPS for a in machine.F}
 
-    def get_unique_vals(self, col, return_counts=False):
-        """ List of the unique values found in a column."""
-        return np.unique(
-            [str(x) for x in self.model.data[col].tolist()],
-            return_counts=return_counts
-        )
-
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
@@ -297,7 +291,7 @@ class Ptype:
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_values_in_a_column, counts = self.get_unique_vals(column_name, return_counts=True)
+        unique_values_in_a_column, counts = get_unique_vals(self.model.data[column_name], return_counts=True)
         probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_values_in_a_column)
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column])
 
