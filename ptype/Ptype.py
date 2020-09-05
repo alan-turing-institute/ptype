@@ -17,6 +17,7 @@ def get_unique_vals(col, return_counts=False):
 class Column:
     def __init__(self, series):
         self.series = series
+        self.unique_vals, self.unique_vals_counts = get_unique_vals(series, return_counts=True)
         self.p_t = {}
         self.predicted_type = None
         self.normal_values = []
@@ -31,16 +32,11 @@ class Column:
 
     def show_results_for(self, indices, desc):
         if len(indices) == 0:
-            count = 0
+            return 0
         else:
-            unique_vals, unique_vals_counts = get_unique_vals(self.series, return_counts=True)
-            vs = [unique_vals[ind] for ind in indices][:20]
-            vs_counts = [unique_vals_counts[ind] for ind in indices][:20]
-            count = sum(unique_vals_counts[indices])
-            print('\t' + desc, vs)
-            print('\ttheir counts: ', vs_counts)
-
-        return count
+            print('\t' + desc, [self.unique_vals[i] for i in indices][:20])
+            print('\ttheir counts: ', [self.unique_vals_counts[i] for i in indices][:20])
+            return sum(self.unique_vals_counts[indices])
 
     def show_results(self):
         print('col: ' + str(self.series.name))
@@ -59,18 +55,15 @@ class Column:
 
     def get_normal_predictions(self):
         """Values identified as 'normal'."""
-        vs = get_unique_vals(self.series)
-        return [vs[i] for i in self.normal_values]
+        return [self.unique_vals[i] for i in self.normal_values]
 
     def get_missing_data_predictions(self):
         """Values identified as 'missing'."""
-        vs = get_unique_vals(self.series)
-        return [vs[i] for i in self.missing_values]
+        return [self.unique_vals[i] for i in self.missing_values]
 
     def get_anomaly_predictions(self):
         """The values identified as 'anomalies'."""
-        vs = get_unique_vals(self.series)
-        return [vs[i] for i in self.anomalous_values]
+        return [self.unique_vals[i] for i in self.anomalous_values]
 
     def remove_from_missing (self, indices):
         self.missing_values = list(set(self.missing_values) - set(indices))
@@ -82,19 +75,18 @@ class Column:
         self.normal_values = list(set(self.normal_values).union(set(indices)))
 
     def change_missing_data_annotations(self, missing_data):
-        indices = [np.where(get_unique_vals(self.series) == v)[0][0] for v in missing_data]
+        indices = [np.where(self.unique_vals == v)[0][0] for v in missing_data]
         self.add_to_normal(indices)
         self.remove_from_missing(indices)
 
     def change_anomaly_annotations(self, anomalies):
-        indices = [np.where(get_unique_vals(self.series) == v)[0][0] for v in anomalies]
+        indices = [np.where(self.unique_vals == v)[0][0] for v in anomalies]
         self.add_to_normal(indices)
         self.remove_from_anomalies(indices)
 
     def replace_missing(self, v):
-        vs = get_unique_vals(self.series)
         for i in self.missing_values:
-            self.series.replace(vs[i], v, inplace=True)
+            self.series.replace(self.unique_vals[i], v, inplace=True)
 
 
 class Ptype:
