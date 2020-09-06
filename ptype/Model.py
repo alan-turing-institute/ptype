@@ -733,8 +733,8 @@ class PtypeModel:
     def set_data(self, data):
         self.data = data
 
-    def set_params(self, _experiment_config, _data_frame):
-        self.config = _experiment_config
+    def set_params(self, config, _data_frame):
+        self.config = config
         self.data = _data_frame
 
     def set_likelihoods(self, likelihoods):

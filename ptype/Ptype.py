@@ -169,7 +169,7 @@ class Ptype:
         self.set_data(_data_frame)
 
         if self.verbose:
-            print_to_file("processing " + self.model.experiment_config.dataset_name)
+            print_to_file("processing " + self.model.config.dataset_name)
 
         # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
@@ -178,12 +178,12 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
         # Calculate probabilities for each column, run inference and store results
-        for _, col_name in enumerate(list(self.model.experiment_config.column_names)):
+        for _, col_name in enumerate(list(self.model.config.column_names)):
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.all_posteriors[self.model.experiment_config.dataset_name][
+            self.all_posteriors[self.model.config.dataset_name][
                 col_name
             ] = self.model.p_t
             self.cols[col_name] = self.column_results(col_name)
@@ -345,7 +345,7 @@ class Ptype:
         if len(set([i for i in self.model.p_t])) == 1:
             inferred_column_type = "all identical"
         else:
-            inferred_column_type = self.model.experiment_config.types_as_list[
+            inferred_column_type = self.model.config.types_as_list[
                 np.argmax(self.model.p_t)
             ]
         col.predicted_type = inferred_column_type
@@ -372,9 +372,7 @@ class Ptype:
         return col
 
     def store_features(self, col_name, counts):
-        posterior = self.all_posteriors[self.model.experiment_config.dataset_name][
-            col_name
-        ]
+        posterior = self.all_posteriors[self.model.config.dataset_name][col_name]
 
         sorted_posterior = [
             posterior[3],
@@ -408,9 +406,9 @@ class Ptype:
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(
-            self.model.experiment_config.main_experiments_folder
+            self.model.config.main_experiments_folder
             + "/type_predictions/"
-            + self.model.experiment_config.dataset_name
+            + self.model.config.dataset_name
             + "/type_predictions.csv",
             "w",
         ) as f:
@@ -427,7 +425,7 @@ class Ptype:
                 ]
             )
             for column_name, column_type_prediction in zip(
-                self.model.experiment_config.column_names, column_type_predictions
+                self.model.config.column_names, column_type_predictions
             ):
                 writer.writerow(
                     [column_name, "", "", column_type_prediction, "", "", ""]
@@ -439,14 +437,14 @@ class Ptype:
             print_to_file("column # " + str(i) + " " + column_name)
 
         # Sets parameters for folders of each column
-        self.model.experiment_config.current_column = i
-        self.model.experiment_config.current_column_name = column_name.replace(" ", "")
-        self.model.experiment_config.current_experiment_folder = (
-            self.model.experiment_config.main_experiments_folder
+        self.model.config.current_column = i
+        self.model.config.current_column_name = column_name.replace(" ", "")
+        self.model.config.current_experiment_folder = (
+            self.model.config.main_experiments_folder
             + "/"
-            + self.model.experiment_config.dataset_name
+            + self.model.config.dataset_name
             + "/"
-            + self.model.experiment_config.current_column_name
+            + self.model.config.current_column_name
         )
 
         # Removes existing folders accordingly

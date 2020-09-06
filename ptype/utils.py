@@ -205,7 +205,7 @@ def create_folders(model, _start_over_report):
     :param _start_over_report: True/False. True allows creating a new report and False allows appending to the existing report
     :return:
     """
-    main_folder = model.experiment_config.current_experiment_folder
+    main_folder = model.config.current_experiment_folder
 
     # Create inputs, outputs, and results folders
     pathlib.Path(main_folder).mkdir(parents=True, exist_ok=True)
@@ -216,9 +216,9 @@ def create_folders(model, _start_over_report):
     # Either creates a new file or appends to an existing one
     if _start_over_report:
         with open(
-            model.experiment_config.main_experiments_folder
+            model.config.main_experiments_folder
             + "/"
-            + model.experiment_config.dataset_name
+            + model.config.dataset_name
             + "/report.tex",
             "w",
         ) as f:
@@ -229,7 +229,7 @@ def create_folders(model, _start_over_report):
             # Prints title, and section header, etc.
             print(
                 "\\title{The Report for the File Named "
-                + model.experiment_config.dataset_name
+                + model.config.dataset_name
                 + "} \n \\maketitle",
                 file=f,
             )
@@ -237,21 +237,21 @@ def create_folders(model, _start_over_report):
             print("The number of rows is " + str(model.data.shape[0]) + ".", file=f)
             print(
                 "\section{Column Name: "
-                + model.experiment_config.current_column_name.replace("_", "\_")
+                + model.config.current_column_name.replace("_", "\_")
                 + "}",
                 file=f,
             )
     else:
         with open(
-            model.experiment_config.main_experiments_folder
+            model.config.main_experiments_folder
             + "/"
-            + model.experiment_config.dataset_name
+            + model.config.dataset_name
             + "/report.tex",
             "a",
         ) as f:
             print(
                 "\section{Column Name: "
-                + model.experiment_config.current_column_name.replace("_", "\_")
+                + model.config.current_column_name.replace("_", "\_")
                 + "}",
                 file=f,
             )
