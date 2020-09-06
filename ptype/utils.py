@@ -694,9 +694,9 @@ def get_type_counts(
 
         true_values = [
             true_value.replace("date-eu", "date")
-                .replace("date-iso-8601", "date")
-                .replace("date-non-std-subtype", "date")
-                .replace("date-non-std", "date")
+            .replace("date-iso-8601", "date")
+            .replace("date-non-std-subtype", "date")
+            .replace("date-non-std", "date")
             for true_value in true_values
         ]
         ptype_predictions = [
@@ -771,7 +771,7 @@ def evaluate_model_type(annotations, predictions):
 
 def get_evaluations(_annotations, _predictions, methods=["ptype",]):
 
-    dataset_names = list(_annotations.keys())
+    dataset_names = list(_predictions.keys())
     types = ["boolean", "date", "float", "integer", "string"]
 
     Js = {}
