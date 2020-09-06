@@ -14,6 +14,7 @@ class Column:
     def __init__(self, series):
         self.series = series
         self.p_t = {}
+        self.p_z = {}
         self.predicted_type = None
         self.normal_values = []
         self.missing_values = []
@@ -207,6 +208,9 @@ class Ptype:
         else:
             inferred_column_type = self.model.experiment_config.types_as_list[np.argmax(self.model.p_t)]
         result.predicted_type = inferred_column_type
+
+        # need to handle the uniform case
+        result.p_z = self.model.p_z[:,np.argmax(self.model.p_t),:]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)

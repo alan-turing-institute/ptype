@@ -69,7 +69,7 @@ def plot_row_type_posterior(ptype, column, t="missing"):
         i = 1
     elif t == "anomaly":
         i = 2
-    p_z = ptype.p_z_columns[column]
+    p_z = ptype.cols[column].p_z
     unique_values, counts = np.unique(
         [str(int_element) for int_element in ptype.model.data[column].tolist()],
         return_counts=True,
