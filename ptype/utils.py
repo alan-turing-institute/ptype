@@ -692,6 +692,13 @@ def get_type_counts(
         true_values = annotations[dataset_name]
         ptype_predictions = predictions[dataset_name].values()
 
+        true_values = [
+            true_value.replace("date-eu", "date")
+                .replace("date-iso-8601", "date")
+                .replace("date-non-std-subtype", "date")
+                .replace("date-non-std", "date")
+            for true_value in true_values
+        ]
         ptype_predictions = [
             prediction.replace("date-eu", "date")
             .replace("date-iso-8601", "date")
