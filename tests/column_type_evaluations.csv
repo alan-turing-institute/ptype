@@ -1,7 +1,7 @@
 ,ptype
-overall-accuracy,0.94
-boolean,0.0
-date,0.33
+overall-accuracy,0.95
+boolean,0.92
+date,0.5
 float,0.92
-integer,0.96
-string,0.91
+integer,0.95
+string,0.95

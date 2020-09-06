@@ -1,15 +1,37 @@
 import sys
 
-from ptype.PFSM_DiscriminativeLearning import IntegersNewAuto, StringsNewAuto, AnomalyNew, FloatsNewAuto, MissingsNew, BooleansNew, Genders, \
-    ISO_8601NewAuto, Date_EUNewAuto, Nonstd_DateNewAuto, SubTypeNonstdDateNewAuto, IPAddress, EmailAddress
+from ptype.PFSM_DiscriminativeLearning import (
+    IntegersNewAuto,
+    StringsNewAuto,
+    AnomalyNew,
+    FloatsNewAuto,
+    MissingsNew,
+    BooleansNew,
+    Genders,
+    ISO_8601NewAuto,
+    Date_EUNewAuto,
+    Nonstd_DateNewAuto,
+    SubTypeNonstdDateNewAuto,
+    IPAddress,
+    EmailAddress,
+)
 from ptype.utils import contains_all
 from ptype.Model import PtypeModel
 
-sys.path.insert(0,'src/')
-MACHINES = {'integer': IntegersNewAuto(), 'string': StringsNewAuto(), 'float': FloatsNewAuto(), 'boolean': BooleansNew(),
-            'gender': Genders(), 'date-iso-8601': ISO_8601NewAuto(), 'date-eu': Date_EUNewAuto(),
-            'date-non-std-subtype': SubTypeNonstdDateNewAuto(), 'date-non-std': Nonstd_DateNewAuto(),
-            'IPAddress': IPAddress(), 'EmailAddress': EmailAddress()}
+sys.path.insert(0, "src/")
+MACHINES = {
+    "integer": IntegersNewAuto(),
+    "string": StringsNewAuto(),
+    "float": FloatsNewAuto(),
+    "boolean": BooleansNew(),
+    "gender": Genders(),
+    "date-iso-8601": ISO_8601NewAuto(),
+    "date-eu": Date_EUNewAuto(),
+    "date-non-std-subtype": SubTypeNonstdDateNewAuto(),
+    "date-non-std": Nonstd_DateNewAuto(),
+    "IPAddress": IPAddress(),
+    "EmailAddress": EmailAddress(),
+}
 
 
 class PFSMRunner:
@@ -24,7 +46,10 @@ class PFSMRunner:
         """
         probs = {}
         for input_string in data:
-            probs[str(input_string)] = [self.machines[j].calculate_probability(str(input_string)) for j in range(len(self.machines))]
+            probs[str(input_string)] = [
+                self.machines[j].calculate_probability(str(input_string))
+                for j in range(len(self.machines))
+            ]
 
         return probs
 
@@ -53,4 +78,6 @@ class PFSMRunner:
         for i, machine in enumerate(self.machines):
             if i not in [0, 1]:
                 self.machines[i].I = PtypeModel.normalize_initial(machine.I_z)
-                self.machines[i].F, self.machines[i].T = PtypeModel.normalize_final(machine.F_z, machine.T_z)
+                self.machines[i].F, self.machines[i].T = PtypeModel.normalize_final(
+                    machine.F_z, machine.T_z
+                )
