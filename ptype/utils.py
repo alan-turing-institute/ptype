@@ -687,7 +687,7 @@ def get_type_counts(
     dataset_counts = OrderedDict()
     total_test = {t: 0 for t in _types}
 
-    for dataset_name in annotations:
+    for dataset_name in predictions:
 
         true_values = annotations[dataset_name]
         ptype_predictions = predictions[dataset_name].values()
