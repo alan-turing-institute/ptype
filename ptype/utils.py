@@ -14,11 +14,15 @@ import _pickle as pickle
 
 LOG_EPS = -1e150
 
-report_begin_str = "\\documentclass[a4paper]{article} \n \\usepackage[english]{babel} \n \\usepackage[utf8x]" \
-                       "{inputenc} \n \\usepackage[T1]{fontenc} \n \\usepackage[a4paper, top = 3cm, bottom = 2cm, " \
-                       "left = 3cm, right = 3cm, marginparwidth = 1.75cm]{geometry}"
-report_being_str2 = "\\usepackage{amsmath} \n \\usepackage{amsthm} \n \\usepackage{amsfonts} \n \\usepackage{graphicx} \n \\usepackage[colorinlistoftodos]{todonotes} \n \\usepackage[colorlinks = true, allcolors = blue]{hyperref} \n \\usepackage{multirow} \n \\usepackage{siunitx, etoolbox} \n \\usepackage{subcaption} \n \\usepackage{tikz} \n \\usepackage{standalone} \n \\usetikzlibrary{arrows, automata} \n \\usepackage{listings} \n " \
-                    "\\usepackage{color} \n \\usepackage{textcomp} \n \\theoremstyle{definition} \n \\newtheorem{definition}{Definition} \n \\sisetup{ \n table - align - uncertainty = true, \n separate - uncertainty = true, \n} \n \\renewrobustcmd{\\bfseries}{\\fontseries{b}\\selectfont} \n \\renewrobustcmd {\\boldmath}{} \n \\begin{document}"
+report_begin_str = (
+    "\\documentclass[a4paper]{article} \n \\usepackage[english]{babel} \n \\usepackage[utf8x]"
+    "{inputenc} \n \\usepackage[T1]{fontenc} \n \\usepackage[a4paper, top = 3cm, bottom = 2cm, "
+    "left = 3cm, right = 3cm, marginparwidth = 1.75cm]{geometry}"
+)
+report_being_str2 = (
+    "\\usepackage{amsmath} \n \\usepackage{amsthm} \n \\usepackage{amsfonts} \n \\usepackage{graphicx} \n \\usepackage[colorinlistoftodos]{todonotes} \n \\usepackage[colorlinks = true, allcolors = blue]{hyperref} \n \\usepackage{multirow} \n \\usepackage{siunitx, etoolbox} \n \\usepackage{subcaption} \n \\usepackage{tikz} \n \\usepackage{standalone} \n \\usetikzlibrary{arrows, automata} \n \\usepackage{listings} \n "
+    "\\usepackage{color} \n \\usepackage{textcomp} \n \\theoremstyle{definition} \n \\newtheorem{definition}{Definition} \n \\sisetup{ \n table - align - uncertainty = true, \n separate - uncertainty = true, \n} \n \\renewrobustcmd{\\bfseries}{\\fontseries{b}\\selectfont} \n \\renewrobustcmd {\\boldmath}{} \n \\begin{document}"
+)
 
 ###################### TEXT MANIPULATION METHODS #######################
 def chop_microseconds(delta):
@@ -26,7 +30,7 @@ def chop_microseconds(delta):
 
 
 def convert_to_bold(string):
-    return '\033[1m' + string + '\033[0m'
+    return "\033[1m" + string + "\033[0m"
 
 
 def convert_to_bold_for_latex(string):
@@ -34,15 +38,15 @@ def convert_to_bold_for_latex(string):
 
 
 def remove_digits(s):
-    return ''.join(i for i in s if not i.isdigit())
+    return "".join(i for i in s if not i.isdigit())
 
 
 def remove_whitespaces_head_and_tail(s):
     if len(s) != 0:
         # remove leading and trailing whitespace
-        if s[0] == ' ':
+        if s[0] == " ":
             s = s[1:]
-        if s[-1] == ' ':
+        if s[-1] == " ":
             s = s[:-1]
     return s
 
@@ -66,6 +70,7 @@ def contains_all(_str, _list):
     return res
     # return 0 not in [s in list for s in str]
 
+
 ###################### STABLE CALCULATION METHODS #######################
 def log_sum_probs(log_p1, log_p2):
     log_mx = np.max([log_p1, log_p2])
@@ -82,7 +87,11 @@ def log_weighted_sum_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
     xs = [x_1, x_2, x_3]
     log_mx = np.max(xs, axis=0)
 
-    sm = (log_p1!=LOG_EPS) * np.exp(x_1 - log_mx) + (log_p2!=LOG_EPS) * np.exp(x_2 - log_mx) + (log_p3!=LOG_EPS) * np.exp(x_3 - log_mx)
+    sm = (
+        (log_p1 != LOG_EPS) * np.exp(x_1 - log_mx)
+        + (log_p2 != LOG_EPS) * np.exp(x_2 - log_mx)
+        + (log_p3 != LOG_EPS) * np.exp(x_3 - log_mx)
+    )
 
     return log_mx + np.log(sm)
 
@@ -95,9 +104,12 @@ def log_weighted_sum_probs_check(pi_2, log_p2, pi_3, log_p3):
     xs = [x_2, x_3]
     log_mx = np.max(xs, axis=0)
 
-    sm = (log_p2!=LOG_EPS) * np.exp(x_2 - log_mx) + (log_p3!=LOG_EPS) * np.exp(x_3 - log_mx)
+    sm = (log_p2 != LOG_EPS) * np.exp(x_2 - log_mx) + (log_p3 != LOG_EPS) * np.exp(
+        x_3 - log_mx
+    )
 
     return log_mx + np.log(sm)
+
 
 def log_weighted_sum_normalize_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
 
@@ -108,9 +120,14 @@ def log_weighted_sum_normalize_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
     xs = [x_1, x_2, x_3]
     log_mx = np.max(xs, axis=0)
 
-    sm = (log_p1!=LOG_EPS) * np.exp(x_1 - log_mx) + (log_p2!=LOG_EPS) * np.exp(x_2 - log_mx) + (log_p3!=LOG_EPS) * np.exp(x_3 - log_mx)
+    sm = (
+        (log_p1 != LOG_EPS) * np.exp(x_1 - log_mx)
+        + (log_p2 != LOG_EPS) * np.exp(x_2 - log_mx)
+        + (log_p3 != LOG_EPS) * np.exp(x_3 - log_mx)
+    )
     return x_1, x_2, x_3, log_mx, sm
     # return np.exp(x_1-log_mx), np.exp(x_2-log_mx), np.exp(x_3-log_mx), sm
+
 
 def log_weighted_sum_probs_min(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
 
@@ -121,14 +138,18 @@ def log_weighted_sum_probs_min(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
     xs = [x_1, x_2, x_3]
     log_mn = np.min(xs, axis=0)
 
-    sm = (log_p1!=LOG_EPS) * np.exp(x_1 + log_mn) + (log_p2!=LOG_EPS) * np.exp(x_2 + log_mn) + (log_p3!=LOG_EPS) * np.exp(x_3 + log_mn)
+    sm = (
+        (log_p1 != LOG_EPS) * np.exp(x_1 + log_mn)
+        + (log_p2 != LOG_EPS) * np.exp(x_2 + log_mn)
+        + (log_p3 != LOG_EPS) * np.exp(x_3 + log_mn)
+    )
 
     return log_mx + np.log(sm)
 
 
 def normalize_log_probs(probs):
     reduced_probs = np.exp(probs - max(probs))
-    return reduced_probs/reduced_probs.sum()
+    return reduced_probs / reduced_probs.sum()
 
 
 def logdot(a, b):
@@ -147,7 +168,7 @@ def multi_logdot(Xs):
     max_Xs = [np.max(X) for X in Xs]
     exp_Xs = [np.exp(X - max_X) for X, max_X in zip(Xs, max_Xs)]
     res = np.linalg.multi_dot(exp_Xs)
-    res[np.where(res==0)] = LOG_EPS
+    res[np.where(res == 0)] = LOG_EPS
     return np.log(res) + sum(max_Xs)
 
 
@@ -155,28 +176,28 @@ def multi_logdot(Xs):
 ###################### DATA I/O METHODS #######################
 ###############################################################
 # writing data
-def write_data(data, filepath='../../automata/example.dat'):
-    f = open(filepath, 'w')
+def write_data(data, filepath="../../automata/example.dat"):
+    f = open(filepath, "w")
     for line in data:
-        f.write(str(line)+"\n")
+        f.write(str(line) + "\n")
     f.close()
 
 
 def save_object(obj, filename):
-    with open(filename, 'wb') as output:  # Overwrites any existing file.
+    with open(filename, "wb") as output:  # Overwrites any existing file.
         pickle.dump(obj, output)
 
 
 def load_object(filename):
-    with open(filename, 'rb') as output:
+    with open(filename, "rb") as output:
         obj = pickle.load(output)
 
     return obj
 
 
-def print_to_file(txt, filename='long_my_output.txt'):
-    with open(filename, 'a+') as f:
-        f.write(txt + '\n')
+def print_to_file(txt, filename="output.txt"):
+    with open(filename, "a+") as f:
+        f.write(txt + "\n")
 
 
 def create_folders(model, _start_over_report):
@@ -188,26 +209,52 @@ def create_folders(model, _start_over_report):
 
     # Create inputs, outputs, and results folders
     pathlib.Path(main_folder).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(main_folder + '/inputs' ).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(main_folder + '/outputs').mkdir(parents=True, exist_ok=True)
-    pathlib.Path(main_folder + '/results').mkdir(parents=True, exist_ok=True)
+    pathlib.Path(main_folder + "/inputs").mkdir(parents=True, exist_ok=True)
+    pathlib.Path(main_folder + "/outputs").mkdir(parents=True, exist_ok=True)
+    pathlib.Path(main_folder + "/results").mkdir(parents=True, exist_ok=True)
 
     # Either creates a new file or appends to an existing one
     if _start_over_report:
-        with open(model.experiment_config.main_experiments_folder + '/' + model.experiment_config.dataset_name
-                          + '/report.tex', 'w') as f:
+        with open(
+            model.experiment_config.main_experiments_folder
+            + "/"
+            + model.experiment_config.dataset_name
+            + "/report.tex",
+            "w",
+        ) as f:
             # Prints latex file structure
             print(report_begin_str, file=f)
             print(report_being_str2, file=f)
 
             # Prints title, and section header, etc.
-            print('\\title{The Report for the File Named '+ model.experiment_config.dataset_name +'} \n \\maketitle', file=f)
-            print('The number of columns is ' + str(model.data.shape[1]) + '.', file=f)
-            print('The number of rows is ' + str(model.data.shape[0]) + '.', file=f)
-            print('\section{Column Name: ' + model.experiment_config.current_column_name.replace("_","\_")+ '}', file=f)
+            print(
+                "\\title{The Report for the File Named "
+                + model.experiment_config.dataset_name
+                + "} \n \\maketitle",
+                file=f,
+            )
+            print("The number of columns is " + str(model.data.shape[1]) + ".", file=f)
+            print("The number of rows is " + str(model.data.shape[0]) + ".", file=f)
+            print(
+                "\section{Column Name: "
+                + model.experiment_config.current_column_name.replace("_", "\_")
+                + "}",
+                file=f,
+            )
     else:
-        with open(model.experiment_config.main_experiments_folder + '/' + model.experiment_config.dataset_name + '/report.tex', 'a') as f:
-            print('\section{Column Name: ' + model.experiment_config.current_column_name.replace("_","\_") + '}', file=f)
+        with open(
+            model.experiment_config.main_experiments_folder
+            + "/"
+            + model.experiment_config.dataset_name
+            + "/report.tex",
+            "a",
+        ) as f:
+            print(
+                "\section{Column Name: "
+                + model.experiment_config.current_column_name.replace("_", "\_")
+                + "}",
+                file=f,
+            )
 
 
 # copies some columns directly
@@ -220,9 +267,19 @@ def copy_columns_between_dicts(dict_source, dict_target, columns):
 ###############################################################
 #################### VISUALISATION METHODS ####################
 ###############################################################
-def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None, vmax_=None, xticklabels=None, yticklabels=None, cmap=plt.cm.gray_r):
+def plot_matrix(
+    X,
+    title="Title",
+    xlabel="xlabel",
+    ylabel="ylabel",
+    figsize=None,
+    vmax_=None,
+    xticklabels=None,
+    yticklabels=None,
+    cmap=plt.cm.gray_r,
+):
     if figsize is None:
-        plt.figure(figsize=(18,6))
+        plt.figure(figsize=(18, 6))
     else:
         plt.figure(figsize=figsize)
     if vmax_ is None:
@@ -239,7 +296,7 @@ def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None
     else:
         plt.xticks(range(len(xticklabels)), xticklabels, rotation=90)
 
-    plt.imshow(X, interpolation='none', vmax=VMAX, vmin=0, aspect='auto', cmap=cmap)
+    plt.imshow(X, interpolation="none", vmax=VMAX, vmin=0, aspect="auto", cmap=cmap)
     plt.colorbar()
     plt.xlabel(xlabel, fontsize=20)
     plt.ylabel(ylabel, fontsize=20)
@@ -250,27 +307,32 @@ def plot_matrix(X, title='Title', xlabel='xlabel', ylabel='ylabel', figsize=None
 def plot_normal_type_histogram(x, current_experiment_folder):
     plt.figure()
     plt.hist(np.array(x), bins=20)
-    plt.ylabel('data values')
-    plt.savefig(current_experiment_folder + '/outputs/histogram.eps', dpi=1000)
+    plt.ylabel("data values")
+    plt.savefig(current_experiment_folder + "/outputs/histogram.eps", dpi=1000)
     plt.close()
 
 
-def bar_plot_type_posteriors(x, y, current_experiment_folder, _display=False, _save=False):
+def bar_plot_type_posteriors(
+    x, y, current_experiment_folder, _display=False, _save=False
+):
     # plots the column posterior in order to show the prediction for column's type
     N = len(y)
     y_pos = np.arange(N)
-    plt.figure(figsize=(N*1.2,4))
-    plt.bar(y_pos, x, align='center', alpha=0.5, width=0.4)
+    plt.figure(figsize=(N * 1.2, 4))
+    plt.bar(y_pos, x, align="center", alpha=0.5, width=0.4)
     plt.xticks(y_pos, y)
     plt.ylim(0, 1)
-    plt.ylabel('Probability')
-    plt.title('Posterior of column type: p(t=k|X)')
+    plt.ylabel("Probability")
+    plt.title("Posterior of column type: p(t=k|X)")
     if _save:
-        plt.savefig(current_experiment_folder + '/outputs/type_posteriors.eps', dpi=1000)
+        plt.savefig(
+            current_experiment_folder + "/outputs/type_posteriors.eps", dpi=1000
+        )
     if _display:
         plt.show()
     else:
         plt.close()
+
 
 # source: http://scipy-cookbook.readthedocs.io/items/Matplotlib_HintonDiagrams.html
 def _blob(x, y, area, colour):
@@ -282,7 +344,6 @@ def _blob(x, y, area, colour):
     xcorners = np.array([x - hs, x + hs, x + hs, x - hs])
     ycorners = np.array([y - hs, y - hs, y + hs, y + hs])
     plt.fill(xcorners, ycorners, colour, edgecolor=colour)
-
 
 
 # def plot_hinton(W, method=None, _max_value=None, xticklabels=None, yticklabels=None, path=None):
@@ -314,35 +375,52 @@ def _blob(x, y, area, colour):
 #
 #     # plt.show()
 
-def plot_roc(fpr, tpr, _type, _method='', _path='experiments/0_predictions/roc.eps', _save=False, _show=True):
+
+def plot_roc(
+    fpr,
+    tpr,
+    _type,
+    _method="",
+    _path="experiments/0_predictions/roc.eps",
+    _save=False,
+    _show=True,
+):
     roc_auc = auc(fpr, tpr)
     plt.figure()
-    plt.plot(fpr, tpr, color='darkorange', label='ROC curve '+_method+'(area = %0.2f)' % roc_auc)
+    plt.plot(
+        fpr,
+        tpr,
+        color="darkorange",
+        label="ROC curve " + _method + "(area = %0.2f)" % roc_auc,
+    )
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC for ' + _type)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC for " + _type)
     plt.legend(loc="lower right")
     if _show:
         plt.show()
     if _save:
         plt.savefig(_path, dpi=1000)
 
-def plot_roc_multiple(Xs, _type, _path='experiments/0_predictions/roc.eps', _save=False, _show=True):
+
+def plot_roc_multiple(
+    Xs, _type, _path="experiments/0_predictions/roc.eps", _save=False, _show=True
+):
     plt.figure()
     for method in list(Xs.keys()):
-        fpr = Xs[method][_type]['fpr']
-        tpr = Xs[method][_type]['tpr']
+        fpr = Xs[method][_type]["fpr"]
+        tpr = Xs[method][_type]["tpr"]
         roc_auc = auc(fpr, tpr)
 
-        plt.plot(fpr, tpr, label='ROC curve ' + method + ' (area = %0.2f)' % roc_auc)
+        plt.plot(fpr, tpr, label="ROC curve " + method + " (area = %0.2f)" % roc_auc)
 
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC for ' + _type)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC for " + _type)
     plt.legend(loc="lower right")
     if _show:
         plt.show()
@@ -350,62 +428,93 @@ def plot_roc_multiple(Xs, _type, _path='experiments/0_predictions/roc.eps', _sav
         plt.savefig(_path, dpi=1000)
 
 
-def plot_roc_multiple_dots(Xs, _type, _path='experiments/0_predictions/roc.eps', _save=False, _show=True):
-        plt.figure()
-        tprs = []
-        fprs = []
-        groups = []
-        for method in list(Xs.keys()):
-            tprs.append(Xs[method][_type][0])
-            fprs.append(Xs[method][_type][1])
-            groups.append(method)
+def plot_roc_multiple_dots(
+    Xs, _type, _path="experiments/0_predictions/roc.eps", _save=False, _show=True
+):
+    plt.figure()
+    tprs = []
+    fprs = []
+    groups = []
+    for method in list(Xs.keys()):
+        tprs.append(Xs[method][_type][0])
+        fprs.append(Xs[method][_type][1])
+        groups.append(method)
 
-        df = pd.DataFrame({
-            'x': fprs,
-            'y': tprs,
-            'group': groups
-        })
+    df = pd.DataFrame({"x": fprs, "y": tprs, "group": groups})
 
-        sns.regplot(data=df, x="x", y="y", fit_reg=False, marker="+", color="skyblue")
+    sns.regplot(data=df, x="x", y="y", fit_reg=False, marker="+", color="skyblue")
 
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC for ' + _type)
-        if _show:
-            plt.show()
-        if _save:
-            plt.savefig(_path, dpi=1000)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC for " + _type)
+    if _show:
+        plt.show()
+    if _save:
+        plt.savefig(_path, dpi=1000)
 
 
 ###############################################################
 #################### LATEX METHODS ############################
 ###############################################################
 def print_figure_latex(column_name, f):
-    print("\\begin{figure}[!h] \n \\centering \n \\includegraphics[width = \\textwidth]{" + column_name +
-          "/outputs/type_posteriors.eps} \n \\caption{The posterior probability distribution of the column type for column named " +
-          column_name.replace("_", "\\_") + ".} \n \\label{fig:" + column_name + "} \n \\end{figure}", file=f)
+    print(
+        "\\begin{figure}[!h] \n \\centering \n \\includegraphics[width = \\textwidth]{"
+        + column_name
+        + "/outputs/type_posteriors.eps} \n \\caption{The posterior probability distribution of the column type for column named "
+        + column_name.replace("_", "\\_")
+        + ".} \n \\label{fig:"
+        + column_name
+        + "} \n \\end{figure}",
+        file=f,
+    )
 
 
 def print_line_latex(txt, f):
     print(txt, file=f)
 
 
-def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells, num_missings, num_catch_alls, num_data):
-    table_row_type_dist = pd.DataFrame(columns=['', 'Number of Entries', 'Proportion to the Total Num. of Rows'])
+def print_row_type_dist_table_latex(
+    current_experiment_folder, num_normal_cells, num_missings, num_catch_alls, num_data
+):
+    table_row_type_dist = pd.DataFrame(
+        columns=["", "Number of Entries", "Proportion to the Total Num. of Rows"]
+    )
 
-    table_row_type_dist.loc[0] = ['Row Type', 'Number of Entries', 'Proportion to the Total Num. of Rows']
-    table_row_type_dist.loc[1] = ['Normal', num_normal_cells, round(1. * num_normal_cells / num_data, 2)]
-    table_row_type_dist.loc[2] = ['Missing', num_missings, round((1. * num_missings) / num_data, 2)]
-    table_row_type_dist.loc[3] = ['Catch-all', num_catch_alls, round((1. * num_catch_alls) / num_data, 2)]
+    table_row_type_dist.loc[0] = [
+        "Row Type",
+        "Number of Entries",
+        "Proportion to the Total Num. of Rows",
+    ]
+    table_row_type_dist.loc[1] = [
+        "Normal",
+        num_normal_cells,
+        round(1.0 * num_normal_cells / num_data, 2),
+    ]
+    table_row_type_dist.loc[2] = [
+        "Missing",
+        num_missings,
+        round((1.0 * num_missings) / num_data, 2),
+    ]
+    table_row_type_dist.loc[3] = [
+        "Catch-all",
+        num_catch_alls,
+        round((1.0 * num_catch_alls) / num_data, 2),
+    ]
 
     with open(current_experiment_folder + "/outputs/table_row_type_dist.tex", "w") as f:
-        f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_row_type_dist.columns)) + "|}\n")
+        f.write(
+            "\\begin{tabular}{|"
+            + " | ".join(["c"] * len(table_row_type_dist.columns))
+            + "|}\n"
+        )
         for i, row in table_row_type_dist.iterrows():
             f.write("\\hline ")
             if i == 0:
-                f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
+                f.write(
+                    " & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n"
+                )
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
         f.write("\\hline ")
@@ -413,16 +522,28 @@ def print_row_type_dist_table_latex(current_experiment_folder, num_normal_cells,
 
 
 def print_statistics_table_latex(x, current_experiment_folder):
-    table_histogram = pd.DataFrame(columns=['Min.', 'Max.', 'Mean', 'Std'])
-    table_histogram.loc[0] = ['Min.', 'Max.', 'Avg.', 'Std.']
-    table_histogram.loc[1] = [round(np.min(x), 2), round(np.max(x), 2),
-                              round(np.mean(x), 2), round(np.std(x), 2)]
-    with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
-        f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
+    table_histogram = pd.DataFrame(columns=["Min.", "Max.", "Mean", "Std"])
+    table_histogram.loc[0] = ["Min.", "Max.", "Avg.", "Std."]
+    table_histogram.loc[1] = [
+        round(np.min(x), 2),
+        round(np.max(x), 2),
+        round(np.mean(x), 2),
+        round(np.std(x), 2),
+    ]
+    with open(
+        current_experiment_folder + "/outputs/table_histogram_detail.tex", "w"
+    ) as f:
+        f.write(
+            "\\begin{tabular}{|"
+            + " | ".join(["c"] * len(table_histogram.columns))
+            + "|}\n"
+        )
         for i, row in table_histogram.iterrows():
             f.write("\\hline ")
             if i == 0:
-                f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
+                f.write(
+                    " & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n"
+                )
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
         f.write("\\hline ")
@@ -430,66 +551,129 @@ def print_statistics_table_latex(x, current_experiment_folder):
 
 
 def print_table_latex(x, current_experiment_folder):
-    table_histogram = pd.DataFrame(columns=['Min.', 'Max.', 'Mean', 'Std'])
-    table_histogram.loc[0] = ['Min.', 'Max.', 'Avg.', 'Std.']
-    table_histogram.loc[1] = [round(np.min(x), 2), round(np.max(x), 2),
-                              round(np.mean(x), 2), round(np.std(x), 2)]
-    with open(current_experiment_folder + "/outputs/table_histogram_detail.tex", "w") as f:
-        f.write("\\begin{tabular}{|" + " | ".join(["c"] * len(table_histogram.columns)) + "|}\n")
+    table_histogram = pd.DataFrame(columns=["Min.", "Max.", "Mean", "Std"])
+    table_histogram.loc[0] = ["Min.", "Max.", "Avg.", "Std."]
+    table_histogram.loc[1] = [
+        round(np.min(x), 2),
+        round(np.max(x), 2),
+        round(np.mean(x), 2),
+        round(np.std(x), 2),
+    ]
+    with open(
+        current_experiment_folder + "/outputs/table_histogram_detail.tex", "w"
+    ) as f:
+        f.write(
+            "\\begin{tabular}{|"
+            + " | ".join(["c"] * len(table_histogram.columns))
+            + "|}\n"
+        )
         for i, row in table_histogram.iterrows():
             f.write("\\hline ")
             if i == 0:
-                f.write(" & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n")
+                f.write(
+                    " & ".join(["\\bfseries " + str(x) for x in row.values]) + " \\\\\n"
+                )
             else:
                 f.write(" & ".join([str(x) for x in row.values]) + " \\\\\n")
         f.write("\\hline ")
         f.write("\\end{tabular}")
 
 
-def evaluate_types(_dataset_name, _ptype, _header=None,):
-    dataset_path = '../data/' + _dataset_name + '.csv'
-    annotation_path = '../annotations/' + _dataset_name + '.csv'
+def evaluate_types(
+    _dataset_name, _ptype, _header=None,
+):
+    dataset_path = "../data/" + _dataset_name + ".csv"
+    annotation_path = "../annotations/" + _dataset_name + ".csv"
 
-    df = pd.read_csv(dataset_path, sep=',', encoding='ISO-8859-1', dtype=str, header=_header, keep_default_na=False, skipinitialspace=True)
-    annotations = pd.read_csv(annotation_path, sep=',', encoding='ISO-8859-1', dtype=str, keep_default_na=False)
+    df = pd.read_csv(
+        dataset_path,
+        sep=",",
+        encoding="ISO-8859-1",
+        dtype=str,
+        header=_header,
+        keep_default_na=False,
+        skipinitialspace=True,
+    )
+    annotations = pd.read_csv(
+        annotation_path,
+        sep=",",
+        encoding="ISO-8859-1",
+        dtype=str,
+        keep_default_na=False,
+    )
 
-    true_values = annotations['Type'].values.tolist()
-    true_values = [true_value.split('-')[0] for true_value in true_values]
+    true_values = annotations["Type"].values.tolist()
+    true_values = [true_value.split("-")[0] for true_value in true_values]
 
     predictions = [col.predicted_type for col in _ptype.cols.values()]
-    predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype','date').replace('date-non-std','date') for prediction in predictions]
+    predictions = [
+        prediction.replace("date-eu", "date")
+        .replace("date-iso-8601", "date")
+        .replace("date-non-std-subtype", "date")
+        .replace("date-non-std", "date")
+        for prediction in predictions
+    ]
 
     column_names = list(_ptype.cols.keys())
 
-    correct_, false_ = 0., 0.
+    correct_, false_ = 0.0, 0.0
     for i, (prediction, true_value) in enumerate(zip(predictions, true_values)):
         column_name = column_names[i]
-        unique_vals, unique_vals_counts = np.unique([str(int_element) for int_element in df[df.columns[i]].tolist()], return_counts=True)
+        unique_vals, unique_vals_counts = np.unique(
+            [str(int_element) for int_element in df[df.columns[i]].tolist()],
+            return_counts=True,
+        )
         if prediction == true_value:
             correct_ += 1
         else:
             false_ += 1
-            print('column name : ', column_names[i])
+            print("column name : ", column_names[i])
             indices = _ptype.normal_types[column_name]
-            print('\tsome normal data values: ', [unique_vals[ind] for ind in indices][:20])
-            print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+            print(
+                "\tsome normal data values: ",
+                [unique_vals[ind] for ind in indices][:20],
+            )
+            print("\ttheir counts: ", [unique_vals_counts[ind] for ind in indices][:20])
 
             indices = _ptype.missing_types[column_name]
             if len(indices) != 0:
-                print('\tsome missing data values: ', [unique_vals[ind] for ind in indices][:20])
-                print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+                print(
+                    "\tsome missing data values: ",
+                    [unique_vals[ind] for ind in indices][:20],
+                )
+                print(
+                    "\ttheir counts: ",
+                    [unique_vals_counts[ind] for ind in indices][:20],
+                )
 
             indices = _ptype.anomaly_types[column_name]
             if len(indices) != 0:
-                print('\tsome anomalous data values: ', [unique_vals[ind] for ind in indices][:20])
-                print('\ttheir counts: ', [unique_vals_counts[ind] for ind in indices][:20])
+                print(
+                    "\tsome anomalous data values: ",
+                    [unique_vals[ind] for ind in indices][:20],
+                )
+                print(
+                    "\ttheir counts: ",
+                    [unique_vals_counts[ind] for ind in indices][:20],
+                )
 
-            print('\ttrue/annotated type : ', true_value, '\n\tpredicted type : ', prediction)
-            print('\tposterior probs: ', _ptype.p_t_columns[list(_ptype.p_t_columns.keys())[i]])
-            print('\ttypes: ', list(_ptype.types.values()), '\n')
+            print(
+                "\ttrue/annotated type : ",
+                true_value,
+                "\n\tpredicted type : ",
+                prediction,
+            )
+            print(
+                "\tposterior probs: ",
+                _ptype.p_t_columns[list(_ptype.p_t_columns.keys())[i]],
+            )
+            print("\ttypes: ", list(_ptype.types.values()), "\n")
 
-
-    print('correct/total = ', round(correct_/len(column_names),2), '(' + str(int(correct_)) + '/' + str(len(column_names)) + ')')
+    print(
+        "correct/total = ",
+        round(correct_ / len(column_names), 2),
+        "(" + str(int(correct_)) + "/" + str(len(column_names)) + ")",
+    )
 
 
 ###### added later - needs a pass over
@@ -497,7 +681,9 @@ def not_vector(X):
     return np.array([not x for x in X])
 
 
-def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float', 'integer', 'string']):
+def get_type_counts(
+    predictions, annotations, _types=["boolean", "date", "float", "integer", "string"]
+):
     dataset_counts = OrderedDict()
     total_test = {t: 0 for t in _types}
 
@@ -506,11 +692,20 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
         true_values = annotations[dataset_name]
         ptype_predictions = predictions[dataset_name].values()
 
-        ptype_predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
-                             prediction in ptype_predictions]
+        ptype_predictions = [
+            prediction.replace("date-eu", "date")
+            .replace("date-iso-8601", "date")
+            .replace("date-non-std-subtype", "date")
+            .replace("date-non-std", "date")
+            for prediction in ptype_predictions
+        ]
 
-        ignored_columns = np.where((np.array(true_values) != 'all identical') & (np.array(true_values) != 'gender') & (np.array(ptype_predictions) != 'all identical') & (
-            np.array(ptype_predictions) != 'unknown'))[0]
+        ignored_columns = np.where(
+            (np.array(true_values) != "all identical")
+            & (np.array(true_values) != "gender")
+            & (np.array(ptype_predictions) != "all identical")
+            & (np.array(ptype_predictions) != "unknown")
+        )[0]
 
         counts = Counter(np.array(true_values)[ignored_columns])
         for t in _types:
@@ -520,25 +715,36 @@ def get_type_counts(predictions, annotations, _types=['boolean', 'date', 'float'
         # Counters are unordered, so for deterministic output we sort via a list
         dataset_counts[dataset_name] = dict(sorted(counts.items()))
 
-        total_test = {t: total_test[t] + dataset_counts[dataset_name][t] for t in _types}
+        total_test = {
+            t: total_test[t] + dataset_counts[dataset_name][t] for t in _types
+        }
 
-    total_cols = sum([total_test[t] for t in ['boolean', 'date', 'float', 'integer', 'string']])
+    total_cols = sum(
+        [total_test[t] for t in ["boolean", "date", "float", "integer", "string"]]
+    )
 
     return [total_test, dataset_counts, total_cols]
 
 
 def evaluate_model_type(annotations, predictions):
-    types = ['integer', 'string', 'float', 'boolean', 'date']
-    type_rates = {t: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for t in types}
+    types = ["integer", "string", "float", "boolean", "date"]
+    type_rates = {t: {"TP": 0, "FP": 0, "TN": 0, "FN": 0} for t in types}
 
-    predictions = [prediction.replace('date-eu', 'date').replace('date-iso-8601', 'date').replace('date-non-std-subtype', 'date').replace('date-non-std', 'date') for
-                   prediction in predictions]
+    predictions = [
+        prediction.replace("date-eu", "date")
+        .replace("date-iso-8601", "date")
+        .replace("date-non-std-subtype", "date")
+        .replace("date-non-std", "date")
+        for prediction in predictions
+    ]
 
     # find columns whose types are not supported by ptype
-    ignored_columns = np.where((np.array(annotations) != 'all identical') &
-                               (np.array(annotations) != 'gender') &
-                               (np.array(predictions) != 'all identical') &
-                               (np.array(predictions) != 'unknown'))[0]
+    ignored_columns = np.where(
+        (np.array(annotations) != "all identical")
+        & (np.array(annotations) != "gender")
+        & (np.array(predictions) != "all identical")
+        & (np.array(predictions) != "unknown")
+    )[0]
 
     for t in types:
         # print(t)
@@ -548,18 +754,18 @@ def evaluate_model_type(annotations, predictions):
         y_true = (np.array(annotations) == t)[ignored_columns]
         y_score = (np.array(predictions) == t)[ignored_columns]
 
-        type_rates[t]['TP'] = sum(y_true * y_score)
-        type_rates[t]['FP'] = sum(not_vector(y_true) * y_score)
-        type_rates[t]['TN'] = sum(not_vector(y_true) * not_vector(y_score))
-        type_rates[t]['FN'] = sum(y_true * not_vector(y_score))
+        type_rates[t]["TP"] = sum(y_true * y_score)
+        type_rates[t]["FP"] = sum(not_vector(y_true) * y_score)
+        type_rates[t]["TN"] = sum(not_vector(y_true) * not_vector(y_score))
+        type_rates[t]["FN"] = sum(y_true * not_vector(y_score))
 
     return type_rates
 
 
-def get_evaluations(_annotations, _predictions, methods=['ptype',]):
+def get_evaluations(_annotations, _predictions, methods=["ptype",]):
 
     dataset_names = list(_annotations.keys())
-    types = ['boolean', 'date', 'float', 'integer', 'string']
+    types = ["boolean", "date", "float", "integer", "string"]
 
     Js = {}
     overall_accuracy = {method: 0 for method in methods}
@@ -568,13 +774,14 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
         J = {}
         for method in methods:
 
-            tp, fp, fn = .0, .0, .0
+            tp, fp, fn = 0.0, 0.0, 0.0
             for dataset_name in dataset_names:
-                temp = evaluate_model_type(_annotations[dataset_name],
-                                           _predictions[dataset_name].values())
-                tp += temp[t]['TP']
-                fp += temp[t]['FP']
-                fn += temp[t]['FN']
+                temp = evaluate_model_type(
+                    _annotations[dataset_name], _predictions[dataset_name].values()
+                )
+                tp += temp[t]["TP"]
+                fp += temp[t]["FP"]
+                fn += temp[t]["FN"]
 
             overall_accuracy[method] += tp
             J[method] = float_2dp(tp / (tp + fp + fn))
@@ -586,7 +793,7 @@ def get_evaluations(_annotations, _predictions, methods=['ptype',]):
 def get_datasets():
     dataset_names = []
     for file in glob.glob("data/*.csv"):
-        dataset_names.append(file.split('/')[-1])
+        dataset_names.append(file.split("/")[-1])
 
     return dataset_names
 
@@ -600,22 +807,25 @@ def evaluate_predictions(annotations, type_predictions):
     ### the column type counts of the datasets
     [_, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)
     df = pd.DataFrame(dataset_counts, columns=dataset_counts.keys())
-    column_type_counts = 'tests/column_type_counts.csv'
+    column_type_counts = "tests/column_type_counts.csv"
     expected = pd.read_csv(column_type_counts, index_col=0)
-    if not(expected.equals(df)):
-        df.to_csv(path_or_buf=column_type_counts + '.new')
-        raise Exception(f'{column_type_counts} comparison failed.')
+    if not (expected.equals(df)):
+        df.to_csv(path_or_buf=column_type_counts + ".new")
+        raise Exception(f"{column_type_counts} comparison failed.")
 
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)
-    overall_accuracy_to_print = {method: {'overall-accuracy': float_2dp(overall_accuracy[method] / total_cols)} for method in overall_accuracy}
-    print('overall accuracy: ', overall_accuracy_to_print)
-    print('Jaccard index values: ', {t:Js[t]['ptype'] for t in Js})
+    overall_accuracy_to_print = {
+        method: {"overall-accuracy": float_2dp(overall_accuracy[method] / total_cols)}
+        for method in overall_accuracy
+    }
+    print("overall accuracy: ", overall_accuracy_to_print)
+    print("Jaccard index values: ", {t: Js[t]["ptype"] for t in Js})
 
-    df1 = pd.DataFrame.from_dict(Js, orient='index')
-    df2 = pd.DataFrame.from_dict(overall_accuracy_to_print, orient='index').T
+    df1 = pd.DataFrame.from_dict(Js, orient="index")
+    df2 = pd.DataFrame.from_dict(overall_accuracy_to_print, orient="index").T
     df = df2.append(df1)
-    column_type_evaluations = 'tests/column_type_evaluations.csv'
+    column_type_evaluations = "tests/column_type_evaluations.csv"
     expected = pd.read_csv(column_type_evaluations, index_col=0)
-    if not(expected.equals(df)):
-        df.to_csv(path_or_buf=column_type_evaluations + '.new')
-        raise Exception(f'{column_type_evaluations} comparison failed.')
+    if not (expected.equals(df)):
+        df.to_csv(path_or_buf=column_type_evaluations + ".new")
+        raise Exception(f"{column_type_evaluations} comparison failed.")
