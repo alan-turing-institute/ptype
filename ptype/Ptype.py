@@ -197,7 +197,7 @@ class Ptype:
         col.predicted_type = inferred_column_type
 
         # need to handle the uniform case
-        result.p_z = self.model.p_z[:,np.argmax(self.model.p_t),:]
+        col.p_z = self.model.p_z[:,np.argmax(self.model.p_t),:]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(inferred_column_type)
