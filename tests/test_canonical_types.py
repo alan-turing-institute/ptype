@@ -14,7 +14,7 @@ def read_data(_data_path, dataset_name):
     )
 
 
-def get_predictions(_data_path, _model_folder):
+def get_canonical_predictions(_data_path, _model_folder):
     dataset_names = get_datasets()
 
     # create ptype
@@ -64,7 +64,7 @@ def main(
     _predictions_file="tests/column_type_predictions_categorical.json",
 ):
 
-    type_predictions = get_predictions(_data_folder, _model_folder)
+    type_predictions = get_canonical_predictions(_data_folder, _model_folder)
 
     # prettyprint new JSON, omitting optional BOM char
     with open(_predictions_file, "w", encoding="utf-8-sig") as write_file:
