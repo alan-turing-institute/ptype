@@ -589,7 +589,7 @@ class PtypeModel:
         return -np.reshape(g_j, newshape=(len(g_j),)) / counts_array.sum()
 
     def g_cols(self, w_j_z):
-        print_to_file("g_cols is called")
+        # print_to_file("g_cols is called")
         time_init = time.time()
 
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
@@ -622,7 +622,7 @@ class PtypeModel:
                         runner, str(i), column_name, labels[j] - 1
                     )
 
-        print_to_file(str(time.time() - time_init))
+        # print_to_file(str(time.time() - time_init))
         # print_to_file('grad chek is called.')
         # q_approx = self.grad_chek(w_j_z)
         # print(q_total)

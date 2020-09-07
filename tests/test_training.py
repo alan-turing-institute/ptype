@@ -45,7 +45,7 @@ def get_inputs(dataset_name, types, annotations_file="annotations/annotations.js
     return df, y
 
 
-def main(UNIFORMLY=False):
+def main():
     dataset_names = ["accident2016", "auto", "data_gov_3397_1"]
     print_to_file("number of datasets used = " + str(len(dataset_names)))
 
@@ -68,7 +68,7 @@ def main(UNIFORMLY=False):
 
     ptype = Ptype(_exp_num=0, _types=types)
     ptype.train_machines_multiple_dfs(
-        df_trainings, labels=y_trainings, _uniformly=UNIFORMLY
+        df_trainings, labels=y_trainings, _uniformly=False
     )
 
 

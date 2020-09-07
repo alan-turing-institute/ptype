@@ -63,7 +63,7 @@ def main(
 
     type_predictions = get_predictions(_data_folder, _model_folder)
 
-    # prettyprint new JSON, omiting optional BOM char
+    # prettyprint new JSON, omitting optional BOM char
     with open(_predictions_file + ".new", "w", encoding="utf-8-sig") as write_file:
         json.dump(
             type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False,
