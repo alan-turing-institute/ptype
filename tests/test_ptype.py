@@ -1,5 +1,6 @@
 import clevercsv as csv
 import json
+import os
 import pandas as pd
 from ptype.Ptype import Ptype
 from tests.utils import get_datasets, evaluate_predictions
@@ -60,21 +61,22 @@ def notebook_tests():
 def main():
     data_folder = 'data/'
     annotations_file = 'annotations/annotations.json'
-    predictions_file = 'tests/column_type_predictions.json'
+    expected_folder = "tests/expected"
 
     annotations = json.load(open(annotations_file))
 
     type_predictions = {}
     for dataset_name in get_datasets():
         type_predictions[dataset_name] = get_predictions(data_folder, dataset_name)
+        expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0] + ".json"
+        with open(expected_file, 'r', encoding='utf-8-sig') as read_file:
+            expected = json.load(read_file)
 
-    with open(predictions_file, 'r', encoding='utf-8-sig') as read_file:
-        expected = json.load(read_file)
-    if not(type_predictions == expected):
-        # prettyprint new JSON, omiting optional BOM char
-        with open(predictions_file + '.new', 'w', encoding='utf-8-sig') as write_file:
-            json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
-        raise Exception(f'{predictions_file} comparison failed.')
+        if not(type_predictions[dataset_name] == expected):
+            # prettyprint new JSON, omiting optional BOM char
+            with open(expected_file + '.new', 'w', encoding='utf-8-sig') as write_file:
+                json.dump(type_predictions[dataset_name], write_file, indent=2, sort_keys=True, ensure_ascii=False)
+            raise Exception(f'{expected_file} comparison failed.')
 
     evaluate_predictions(annotations, type_predictions)
 
