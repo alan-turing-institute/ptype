@@ -1,3 +1,5 @@
+import joblib
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
     if dataset_name in [
@@ -38,18 +40,18 @@ def get_predictions(_data_path, _model_folder):
         ptype.run_inference(_data_frame=df)
 
         # infer canonical types
-        for column in ptype.features:
+        for col_name in ptype.cols:
             # get features
-            features = ptype.features[column]
+            features = ptype.features[col_name]
 
             # normalize the features as done before
             features[[7, 8]] = normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
 
             # classify the column
-            ptype.predicted_types[column] = clf.predict(features.reshape(1, -1))[0]
+            ptype.cols[col_name].predicted_type = clf.predict(features.reshape(1, -1))[0]
 
         # store types
-        type_predictions[dataset_name] = ptype.predicted_types
+        type_predictions[dataset_name] = {col_name: ptype.cols[col_name].predicted_type for col_name in ptype.cols}
 
     return type_predictions
 
@@ -78,3 +80,4 @@ if __name__ == "__main__":
     from ptype.Ptype import Ptype
 
     main()
+    print("Canonical types tests passed.")
