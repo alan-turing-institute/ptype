@@ -1,5 +1,6 @@
-joblib
 # TODO: add versions
+joblib
+jsonpickle
 clevercsv
 greenery
 matplotlib

@@ -10,7 +10,7 @@ import pandas as pd
 import pathlib
 import glob
 import _pickle as pickle
-
+import jsonpickle
 
 LOG_EPS = -1e150
 
@@ -186,6 +186,8 @@ def write_data(data, filepath="../../automata/example.dat"):
 def save_object(obj, filename):
     with open(filename, "wb") as output:  # Overwrites any existing file.
         pickle.dump(obj, output)
+    with open(filename + ".json", "w") as file:
+        file.write(jsonpickle.encode(obj,indent=2))
 
 
 def load_object(filename):
