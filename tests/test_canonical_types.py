@@ -1,3 +1,6 @@
+import joblib
+
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
     if dataset_name in [
@@ -38,18 +41,18 @@ def get_predictions(_data_path, _model_folder):
         ptype.run_inference(_data_frame=df)
 
         # infer canonical types
-        for column in ptype.features:
+        for col_name in ptype.cols:
             # get features
-            features = ptype.features[column]
+            features = ptype.features[col_name]
 
             # normalize the features as done before
             features[[7, 8]] = normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
 
             # classify the column
-            ptype.predicted_types[column] = clf.predict(features.reshape(1, -1))[0]
+            ptype.cols[col_name].predicted_type = clf.predict(features.reshape(1, -1))[0]
 
         # store types
-        type_predictions[dataset_name] = ptype.predicted_types
+        type_predictions[dataset_name] = {col_name: ptype.cols[col_name].predicted_type for col_name in ptype.cols}
 
     return type_predictions
 
@@ -58,13 +61,13 @@ def main(
     _data_folder="data/",
     _model_folder="models/",
     _annotations_file="annotations/annotations.json",
-    _predictions_file="tests/column_type_predictions.json",
+    _predictions_file="tests/column_type_predictions_categorical.json",
 ):
 
     type_predictions = get_predictions(_data_folder, _model_folder)
 
-    # prettyprint new JSON, omiting optional BOM char
-    with open(_predictions_file + ".new", "w", encoding="utf-8-sig") as write_file:
+    # prettyprint new JSON, omitting optional BOM char
+    with open(_predictions_file, "w", encoding="utf-8-sig") as write_file:
         json.dump(
             type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False,
         )
@@ -74,7 +77,8 @@ if __name__ == "__main__":
     import clevercsv as csv
     import json
 
-    from ptype.utils import get_datasets, evaluate_predictions
+    from tests.utils import get_datasets
     from ptype.Ptype import Ptype
 
     main()
+    print("Canonical types tests passed.")

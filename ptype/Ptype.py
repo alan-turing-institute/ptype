@@ -267,13 +267,14 @@ class Ptype:
         training_error.append(self.calculate_error_df(data_frames, labels))
 
         save_object(
-            self.PFSMRunner, "models/training_runner_initial.pkl",
+            self.PFSMRunner, "models/training_runner_initial",
         )
         print(training_error)
 
         # Iterates over whole data points
         for it in range(_max_iter):
-            print_to_file("iteration = " + str(it))
+            if self.verbose:
+                print_to_file("iteration = " + str(it))
 
             # Trains machines using all of the training data frames
             self.PFSMRunner = self.train_all_models_multiple_dfs(self.PFSMRunner)
@@ -285,14 +286,15 @@ class Ptype:
 
             if it > 0:
                 if training_error[-2] - training_error[-1] < 1e-4:
-                    print_to_file("converged!")
+                    if self.verbose:
+                        print_to_file("converged!")
                     save_object(
-                        self.PFSMRunner, "models/training_runner_final.pkl",
+                        self.PFSMRunner, "models/training_runner_final",
                     )
 
                     break
 
-        save_object(training_error, "models/training_error.pkl")
+        save_object(training_error, "models/training_error")
 
     def train_all_models_multiple_dfs(self, runner):
         if self.print:

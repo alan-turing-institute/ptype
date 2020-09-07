@@ -22,7 +22,8 @@ test () {
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
   time python tests/test_ptype.py
-  # pytest --nbval notebooks/*.ipynb
+  time python tests/test_canonical_types.py
+  time python tests/test_training.py
 }
 
 build
