@@ -1,0 +1,76 @@
+[
+  {
+    "py/reduce": [
+      {
+        "py/function": "numpy.core.multiarray.scalar"
+      },
+      {
+        "py/tuple": [
+          {
+            "py/reduce": [
+              {
+                "py/type": "numpy.dtype"
+              },
+              {
+                "py/tuple": [
+                  "f8",
+                  false,
+                  true
+                ]
+              },
+              {
+                "py/tuple": [
+                  3,
+                  "<",
+                  null,
+                  null,
+                  null,
+                  -1,
+                  -1,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "py/b64": "1574tm1bZEA="
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "py/reduce": [
+      {
+        "py/function": "numpy.core.multiarray.scalar"
+      },
+      {
+        "py/tuple": [
+          {
+            "py/id": 2
+          },
+          {
+            "py/b64": "1574tm1bZEA="
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "py/reduce": [
+      {
+        "py/function": "numpy.core.multiarray.scalar"
+      },
+      {
+        "py/tuple": [
+          {
+            "py/id": 2
+          },
+          {
+            "py/b64": "1574tm1bZEA="
+          }
+        ]
+      }
+    ]
+  }
+]

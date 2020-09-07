@@ -60,13 +60,13 @@ def main(
     _data_folder="data/",
     _model_folder="models/",
     _annotations_file="annotations/annotations.json",
-    _predictions_file="tests/column_type_predictions.json",
+    _predictions_file="tests/column_type_predictions_categorical.json",
 ):
 
     type_predictions = get_predictions(_data_folder, _model_folder)
 
     # prettyprint new JSON, omitting optional BOM char
-    with open(_predictions_file + ".new", "w", encoding="utf-8-sig") as write_file:
+    with open(_predictions_file, "w", encoding="utf-8-sig") as write_file:
         json.dump(
             type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False,
         )
