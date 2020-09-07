@@ -84,7 +84,8 @@ def main():
 
 
 if __name__ == "__main__":
-    from ptype.utils import get_datasets, evaluate_predictions
+    from tests.utils import get_datasets
+    from ptype.utils import evaluate_predictions
     from ptype.Ptype import Ptype
 
     import json
