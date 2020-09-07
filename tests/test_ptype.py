@@ -1,4 +1,8 @@
+import clevercsv as csv
+import json
 import pandas as pd
+from ptype.Ptype import Ptype
+from tests.utils import get_datasets, evaluate_predictions
 
 
 def read_data(_data_path, dataset_name):
@@ -84,12 +88,5 @@ def main():
 
 
 if __name__ == "__main__":
-    from tests.utils import get_datasets
-    from ptype.utils import evaluate_predictions
-    from ptype.Ptype import Ptype
-
-    import json
-    import clevercsv as csv
-
     main()
     print("Tests passed.")

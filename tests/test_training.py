@@ -78,7 +78,6 @@ if __name__ == "__main__":
     import pandas as pd
 
     from ptype.Ptype import Ptype
-    from ptype.utils import print_to_file
 
     main()
     print("Training tests passed.")
