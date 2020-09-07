@@ -791,11 +791,7 @@ def get_evaluations(_annotations, _predictions, methods=["ptype",]):
 
 
 def get_datasets():
-    dataset_names = []
-    for file in glob.glob("data/*.csv"):
-        dataset_names.append(file.split("/")[-1])
-
-    return dataset_names
+    return [file.split("/")[-1] for file in glob.glob("data/*.csv")]
 
 
 def float_2dp(n: float):

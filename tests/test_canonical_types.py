@@ -76,7 +76,7 @@ if __name__ == "__main__":
     import clevercsv as csv
     import json
 
-    from ptype.utils import get_datasets, evaluate_predictions
+    from ptype.utils import get_datasets
     from ptype.Ptype import Ptype
 
     main()

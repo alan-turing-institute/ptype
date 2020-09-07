@@ -1,8 +1,9 @@
 import pandas as pd
 
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
-    if dataset_name in ['mass_6.csv', ]:
+    if dataset_name in ['mass_6.csv']:
         encoding = 'ISO-8859-1'
     else:
         encoding = 'utf-8'
@@ -55,6 +56,12 @@ def get_predictions(_data_path):
     return type_predictions
 
 
+def notebook_tests():
+    import os
+    if os.system("pytest --nbval notebooks/*.ipynb") != 0:
+        raise Exception("Notebook test(s) failed.")
+
+
 def main():
     data_folder = 'data/'
     annotations_file = 'annotations/annotations.json'
@@ -73,6 +80,8 @@ def main():
 
     evaluate_predictions(annotations, type_predictions)
 
+    notebook_tests()
+
 
 if __name__ == "__main__":
     from ptype.utils import get_datasets, evaluate_predictions
@@ -80,9 +89,6 @@ if __name__ == "__main__":
 
     import json
     import clevercsv as csv
-    import os
 
     main()
-    if os.system("pytest --nbval notebooks/*.ipynb") != 0:
-        raise Exception("Notebook test(s) failed.")
     print("Tests passed.")
