@@ -1,0 +1,20 @@
+{
+  "college_career_rate_2013": "categorical",
+  "college_career_rate_2014": "categorical",
+  "college_career_rate_boro": "categorical",
+  "dbn": "string",
+  "graduation_rate_2013": "categorical",
+  "graduation_rate_2014": "categorical",
+  "graduation_rate_boro": "categorical",
+  "ontrack_year1_2013": "categorical",
+  "ontrack_year1_2014": "categorical",
+  "ontrack_year1_boro": "categorical",
+  "pct_stu_enough_variety_2014": "categorical",
+  "pct_stu_safe_2014": "categorical",
+  "qr_assessing_student_learning": "categorical",
+  "qr_curriculum": "categorical",
+  "qr_high_expectations": "categorical",
+  "qr_instruction": "categorical",
+  "qr_teacher_collaboration": "categorical",
+  "quality_review_year": "categorical"
+}

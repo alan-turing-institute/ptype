@@ -1,0 +1,23 @@
+{
+  "ARC_City": "string",
+  "ARC_State": "categorical",
+  "ARC_Street": "string",
+  "ARC_ZIP": "numeric",
+  "Addr_type": "categorical",
+  "Address": "string",
+  "Loc_name": "categorical",
+  "Match_addr": "string",
+  "Match_type": "categorical",
+  "Municipa_1": "string",
+  "Municipali": "string",
+  "Name": "categorical",
+  "OBJECTID": "numeric",
+  "Ref_ID": "numeric",
+  "Score": "numeric",
+  "Side": "categorical",
+  "Status": "categorical",
+  "User_fld": "categorical",
+  "X": "numeric",
+  "Y": "numeric",
+  "ZipCodes": "numeric"
+}

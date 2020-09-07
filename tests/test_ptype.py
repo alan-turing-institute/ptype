@@ -69,8 +69,7 @@ def get_predictions(dataset_name, infer_canonical_types=False):
     return {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
 
 
-def check_predictions(type_predictions, dataset_name):
-    expected_folder = "tests/expected"
+def check_predictions(type_predictions, expected_folder, dataset_name):
     expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0] + ".json"
     with open(expected_file, 'r', encoding='utf-8-sig') as read_file:
         expected = json.load(read_file)
@@ -89,12 +88,16 @@ def notebook_tests():
 
 
 def main():
+    expected_folder = "tests/expected"
     annotations = json.load(open("annotations/annotations.json"))
 
     type_predictions = {}
     for dataset_name in get_datasets():
-        type_predictions[dataset_name] = get_predictions(dataset_name)
-        check_predictions(type_predictions[dataset_name], dataset_name)
+        predictions = get_predictions(dataset_name)
+        type_predictions[dataset_name] = predictions
+        check_predictions(predictions, expected_folder, dataset_name)
+        predictions = get_predictions(dataset_name, True)
+        check_predictions(predictions, expected_folder + "/canonical", dataset_name)
 
     evaluate_predictions(annotations, type_predictions)
 
