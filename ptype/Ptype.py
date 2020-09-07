@@ -76,16 +76,11 @@ class Column:
     def get_anomaly_predictions(self):
         return [v for i, v in enumerate(self.unique_vals) if self.unique_vals_status[i] == Status.ANOMALOUS]
 
-    # These can be combined now. What should this do when the supplied missing values aren't compatible
-    # with the predicted type?
-    def change_missing_data_annotations(self, missing_data):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in missing_data]:
+    # What to do when supplied values aren't compatible with predicted type?
+    def reclassify_normal(self, vs):
+        for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
-#
-    def change_anomaly_annotations(self, anomalies):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in anomalies]:
-            self.unique_vals_status[i] = Status.TYPE
-#
+
     def replace_missing(self, v):
         for i, u in enumerate(self.unique_vals):
             if self.unique_vals_status[i] == Status.MISSING:
