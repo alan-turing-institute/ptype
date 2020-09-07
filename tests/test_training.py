@@ -47,7 +47,7 @@ def get_inputs(dataset_name, types, annotations_file="annotations/annotations.js
 
 def main():
     dataset_names = ["accident2016", "auto", "data_gov_3397_1"]
-    print_to_file("number of datasets used = " + str(len(dataset_names)))
+    # print_to_file("number of datasets used = " + str(len(dataset_names)))
 
     types = {
         1: "integer",
