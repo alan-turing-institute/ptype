@@ -29,35 +29,26 @@ def as_anomaly(ptype):
         series.map(lambda v: v if v in ptype.cols[series.name].get_anomaly_predictions() else pd.NA)
 
 
-def get_predictions(_data_path):
-    dataset_names = get_datasets()
-
+def get_predictions(_data_path, dataset_name):
     # create ptype
     ptype = Ptype(_types=
                   {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
                    5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
                    8: 'date-non-std'})
 
-    # run ptype on each dataset
-    type_predictions = {}
-    for dataset_name in dataset_names:
+    df = read_data(_data_path, dataset_name)
+    ptype.run_inference(_data_frame=df)
 
-        df = read_data(_data_path, dataset_name)
-        ptype.run_inference(_data_frame=df)
+    df_missing = df.apply(as_missing(ptype), axis=0)
+    df_anomaly = df.apply(as_anomaly(ptype), axis=0)
+    df_normal = df.apply(as_normal(ptype), axis=0)
+    print(dataset_name)
+    print('Original data:\n', df)
+    print('Missing data:\n', df_missing)
+    print('Anomalies:\n', df_anomaly)
+    print('Normal:\n', df_normal)
 
-        df_missing = df.apply(as_missing(ptype), axis=0)
-        df_anomaly = df.apply(as_anomaly(ptype), axis=0)
-        df_normal = df.apply(as_normal(ptype), axis=0)
-        print(dataset_name)
-        print('Original data:\n', df)
-        print('Missing data:\n', df_missing)
-        print('Anomalies:\n', df_anomaly)
-        print('Normal:\n', df_normal)
-
-        # store types
-        type_predictions[dataset_name] = {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
-
-    return type_predictions
+    return {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
 
 
 def notebook_tests():
@@ -72,7 +63,10 @@ def main():
     predictions_file = 'tests/column_type_predictions.json'
 
     annotations = json.load(open(annotations_file))
-    type_predictions = get_predictions(data_folder)
+
+    type_predictions = {}
+    for dataset_name in get_datasets():
+        type_predictions[dataset_name] = get_predictions(data_folder, dataset_name)
 
     with open(predictions_file, 'r', encoding='utf-8-sig') as read_file:
         expected = json.load(read_file)
