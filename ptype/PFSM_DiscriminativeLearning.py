@@ -374,7 +374,7 @@ class Machine(object):
                 if TRAIN_PRINT:
                     print('count =', count)
                     print('log_sm =,', log_sm)
-                    print('final candidiate_path_C = ', self.candidate_path_C)
+                    print('final candidate_path_C = ', self.candidate_path_C)
                     print('self.T[self.a][self.b][self.c]) = ', self.T[self.a][self.b][self.c])
         else:
             x_i_n = word[current_index]
