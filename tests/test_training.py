@@ -81,3 +81,4 @@ if __name__ == "__main__":
     from ptype.utils import print_to_file
 
     main()
+    print("Training tests passed.")
