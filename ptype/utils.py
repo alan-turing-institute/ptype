@@ -8,8 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
-import glob
-import _pickle as pickle
 import jsonpickle
 
 LOG_EPS = -1e150
@@ -788,10 +786,6 @@ def get_evaluations(_annotations, _predictions, methods=["ptype",]):
         Js[t] = J
 
     return Js, overall_accuracy
-
-
-def get_datasets():
-    return [file.split("/")[-1] for file in glob.glob("data/*.csv")]
 
 
 def float_2dp(n: float):
