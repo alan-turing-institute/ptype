@@ -267,7 +267,7 @@ class Ptype:
         training_error.append(self.calculate_error_df(data_frames, labels))
 
         save_object(
-            self.PFSMRunner, "models/training_runner_initial.pkl",
+            self.PFSMRunner, "models/training_runner_initial",
         )
         print(training_error)
 
@@ -289,12 +289,12 @@ class Ptype:
                     if self.verbose:
                         print_to_file("converged!")
                     save_object(
-                        self.PFSMRunner, "models/training_runner_final.pkl",
+                        self.PFSMRunner, "models/training_runner_final",
                     )
 
                     break
 
-        save_object(training_error, "models/training_error.pkl")
+        save_object(training_error, "models/training_error")
 
     def train_all_models_multiple_dfs(self, runner):
         if self.print:

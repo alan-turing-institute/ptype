@@ -184,17 +184,8 @@ def write_data(data, filepath="../../automata/example.dat"):
 
 
 def save_object(obj, filename):
-    with open(filename, "wb") as output:  # Overwrites any existing file.
-        pickle.dump(obj, output)
     with open(filename + ".json", "w") as file:
         file.write(jsonpickle.encode(obj,indent=2))
-
-
-def load_object(filename):
-    with open(filename, "rb") as output:
-        obj = pickle.load(output)
-
-    return obj
 
 
 def print_to_file(txt, filename="output.txt"):
