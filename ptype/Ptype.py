@@ -97,18 +97,11 @@ class Column:
             if self.unique_vals_status[i] == Status.ANOMALOUS
         ]
 
-    # These can be combined now. What should this do when the supplied missing values aren't compatible
-    # with the predicted type?
-    def change_missing_data_annotations(self, missing_data):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in missing_data]:
+    # What to do when the supplied missing values aren't compatible with predicted type?
+    def reclassify_normal(self, vs):
+        for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
 
-    #
-    def change_anomaly_annotations(self, anomalies):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in anomalies]:
-            self.unique_vals_status[i] = Status.TYPE
-
-    #
     def replace_missing(self, v):
         for i, u in enumerate(self.unique_vals):
             if self.unique_vals_status[i] == Status.MISSING:
@@ -315,22 +308,17 @@ class Ptype:
         return df_output
 
     def detect_missing_anomalies(self, inferred_column_type):
-        normals, missings, anomalies = [], [], []
         if inferred_column_type != "all identical":
             row_posteriors = self.model.p_z[:, np.argmax(self.model.p_t), :]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            normals = list(
-                np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]
-            )
-            missings = list(
-                np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
-            )
-            anomalies = list(
-                np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
-            )
-
-        return [normals, missings, anomalies]
+            return [
+                list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0])
+            ]
+        else:
+            return [[], [], []]
 
     def column_results(self, col_name):
         """ First stores the posterior distribution of the column type, and the predicted column type.
