@@ -3,7 +3,8 @@ import joblib
 import json
 import os
 import pandas as pd
-from ptype.Ptype import Ptype
+
+from ptype.Ptype import Ptype, Column2ARFF
 from tests.utils import get_datasets, evaluate_predictions
 
 
@@ -38,12 +39,9 @@ def as_anomaly(ptype):
     )
 
 
-def get_predictions(dataset_name, infer_canonical_types=False):
+def get_predictions(dataset_name):
     data_folder = "data/"
-    model_folder = "models/"
     df = read_data(data_folder, dataset_name)
-    normalizer = joblib.load(model_folder + "robust_scaler.pkl")
-    clf = joblib.load(model_folder + "LR.sav")
 
     ptype = Ptype(
         _types={
@@ -59,15 +57,11 @@ def get_predictions(dataset_name, infer_canonical_types=False):
     )
     ptype.run_inference(_data_frame=df)
 
-    if infer_canonical_types:
-        for col_name in ptype.cols:
-            # normalize the features as done before, then reclassify the column
-            features = ptype.features[col_name]
-            features[[7, 8]] = normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
-            ptype.cols[col_name].predicted_type = clf.predict(features.reshape(1, -1))[
-                0
-            ]
-            # make the posterior over canonical types
+    column2ARFF = Column2ARFF("models/")
+    for col_name in ptype.cols:
+        # normalize the features as done before, then reclassify the column
+        features = ptype.features[col_name]
+        ptype.cols[col_name].arff_type = column2ARFF.get_arff_type(features)
 
     df_missing = df.apply(as_missing(ptype), axis=0)
     df_anomaly = df.apply(as_anomaly(ptype), axis=0)
@@ -78,15 +72,14 @@ def get_predictions(dataset_name, infer_canonical_types=False):
     print("Anomalies:\n", df_anomaly)
     print("Normal:\n", df_normal)
 
-    column_types = {
-        col_name: col.predicted_type for col_name, col in ptype.cols.items()
-    }
+    col_types = {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
+    col_arff_types = {col_name: col.arff_type for col_name, col in ptype.cols.items()}
     row_types = {
         col_name: {v: str(s) for v, s in zip(col.unique_vals, col.unique_vals_status)}
         for col_name, col in ptype.cols.items()
     }
 
-    return (column_types, row_types)
+    return (col_types, col_arff_types, row_types)
 
 
 def check_predictions(type_predictions, expected_folder, dataset_name):
@@ -120,19 +113,17 @@ def main():
 
     type_predictions = {}
     for dataset_name in get_datasets():
-        col_predictions, row_predictions = get_predictions(dataset_name)
+        col_predictions, col_arff_types, row_predictions = get_predictions(dataset_name)
 
-        type_predictions[dataset_name] = col_predictions
         check_predictions(col_predictions, expected_folder, dataset_name)
-
+        check_predictions(col_arff_types, expected_folder + "/arff", dataset_name)
         check_predictions(row_predictions, expected_folder + "/row_types", dataset_name)
 
-        col_predictions, _ = get_predictions(dataset_name, True)
-        check_predictions(col_predictions, expected_folder + "/canonical", dataset_name)
+        type_predictions[dataset_name] = col_predictions
 
     evaluate_predictions(annotations, type_predictions)
 
-    # notebook_tests()
+    notebook_tests()
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
-from ptype.utils import create_folders, print_to_file, save_object
-
 import csv
-from enum import Enum
+import joblib
 import numpy as np
+from enum import Enum
 
 from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
+from ptype.utils import create_folders, print_to_file, save_object
 from scipy.stats import norm
 
 
@@ -26,8 +26,10 @@ class Column:
     def __init__(self, series):
         self.series = series
         self.p_t = {}
+        self.p_t_canonical = {}
         self.p_z = {}
         self.predicted_type = None
+        self.arff_type = None
         self.unique_vals = []
         self.unique_vals_counts = []
         self.unique_vals_status = []
@@ -97,10 +99,10 @@ class Column:
             if self.unique_vals_status[i] == Status.ANOMALOUS
         ]
 
-    # What to do when the supplied missing values aren't compatible with predicted type?
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
+            self.p_z[i, :] = [1.0, 0.0, 0.0]
 
     def replace_missing(self, v):
         for i, u in enumerate(self.unique_vals):
@@ -110,8 +112,6 @@ class Column:
 
 
 class Ptype:
-    avg_racket_time = None
-
     def __init__(self, _exp_num=0, _types=None):
         default_types = {
             1: "integer",
@@ -336,7 +336,7 @@ class Ptype:
         col.p_t = self.model.p_t
 
         # In case of a posterior vector whose entries are equal
-        if len(set([i for i in self.model.p_t])) == 1:
+        if len(set(self.model.p_t)) == 1:
             inferred_column_type = "all identical"
         else:
             inferred_column_type = self.model.config.types_as_list[
@@ -392,7 +392,7 @@ class Ptype:
             u_ratio_clean = U_clean / N_clean
 
         self.features[col_name] = np.array(
-            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean,]
+            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
 
     def save_posteriors(self, filename="all_posteriors.pkl"):
@@ -539,3 +539,54 @@ class Ptype:
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
+
+    def reclassify_column(self, col_name, new_t):
+        self.cols[col_name].predicted_type = new_t
+        self.cols[col_name].p_t = [
+            1.0 if t == new_t else 0.0 for t in self.model.config.types_as_list
+        ]
+        if new_t == "date":
+            self.cols[col_name].p_t[5] = 1.0
+        elif new_t not in self.model.config.types_as_list:
+            print("Given type is unknown!")
+
+        self.all_posteriors["demo"][col_name] = self.cols[col_name].p_t
+        # update the arff types?
+        # what if given type is not recognized
+
+    # def reclassify_normal(self, col_name, vs):
+    #     self.cols[col_name].reclassify_normal(vs)
+    #     t_index = np.argmax(self.cols[col_name].p_t)
+    #     t_index = [i if t==for i, t in enumerate(self.model.config.types_as_list)]
+    #
+    #     for i in [np.where(self.cols[col_name].unique_vals == v)[0][0] for v in vs]:
+    #         self.cols[col_name].unique_vals_status[i] = Status.TYPE
+
+
+class Column2ARFF:
+    def __init__(self, model_folder="models"):
+        self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
+        self.clf = joblib.load(model_folder + "LR.sav")
+
+    def get_arff_type(self, features):
+        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+        arff_type = self.clf.predict(features.reshape(1, -1))[0]
+
+        if arff_type == "categorical":
+            arff_type = "nominal"
+        # find normal values for categorical type
+
+        # arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
+        return arff_type
+
+    def get_arff(self, features):
+        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+        arff_type = self.clf.predict(features.reshape(1, -1))[0]
+
+        if arff_type == "categorical":
+            arff_type = "nominal"
+        # find normal values for categorical type
+
+        arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
+
+        return arff_type, arff_type_posterior
