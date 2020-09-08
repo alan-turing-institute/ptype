@@ -1,4 +1,5 @@
 import clevercsv as csv
+import joblib
 import json
 import os
 import pandas as pd
@@ -30,26 +31,54 @@ def as_anomaly(ptype):
         series.map(lambda v: v if v in ptype.cols[series.name].get_anomaly_predictions() else pd.NA)
 
 
-def get_predictions(_data_path, dataset_name):
-    # create ptype
-    ptype = Ptype(_types=
-                  {1: 'integer', 2: 'string', 3: 'float', 4: 'boolean',
-                   5: 'date-iso-8601', 6: 'date-eu', 7: 'date-non-std-subtype',
-                   8: 'date-non-std'})
+def get_predictions(dataset_name, infer_canonical_types=False):
+    data_folder = "data/"
+    model_folder = "models/"
+    df = read_data(data_folder, dataset_name)
+    normalizer = joblib.load(model_folder + "robust_scaler.pkl")
+    clf = joblib.load(model_folder + "LR.sav")
 
-    df = read_data(_data_path, dataset_name)
+    ptype = Ptype(_types={
+        1: "integer",
+        2: "string",
+        3: "float",
+        4: "boolean",
+        5: "date-iso-8601",
+        6: "date-eu",
+        7: "date-non-std-subtype",
+        8: "date-non-std",
+    })
     ptype.run_inference(_data_frame=df)
+
+    if infer_canonical_types:
+        for col_name in ptype.cols:
+            # normalize the features as done before, then reclassify the column
+            features = ptype.features[col_name]
+            features[[7, 8]] = normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+            ptype.cols[col_name].predicted_type = clf.predict(features.reshape(1, -1))[0]
 
     df_missing = df.apply(as_missing(ptype), axis=0)
     df_anomaly = df.apply(as_anomaly(ptype), axis=0)
     df_normal = df.apply(as_normal(ptype), axis=0)
     print(dataset_name)
-    print('Original data:\n', df)
-    print('Missing data:\n', df_missing)
-    print('Anomalies:\n', df_anomaly)
-    print('Normal:\n', df_normal)
+    print("Original data:\n", df)
+    print("Missing data:\n", df_missing)
+    print("Anomalies:\n", df_anomaly)
+    print("Normal:\n", df_normal)
 
     return {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
+
+
+def check_predictions(type_predictions, expected_folder, dataset_name):
+    expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0] + ".json"
+    with open(expected_file, 'r', encoding='utf-8-sig') as read_file:
+        expected = json.load(read_file)
+
+    if not (type_predictions == expected):
+        # prettyprint new JSON, omiting optional BOM char
+        with open(expected_file + '.new', 'w', encoding='utf-8-sig') as write_file:
+            json.dump(type_predictions, write_file, indent=2, sort_keys=True, ensure_ascii=False)
+        raise Exception(f'{expected_file} comparison failed.')
 
 
 def notebook_tests():
@@ -59,24 +88,16 @@ def notebook_tests():
 
 
 def main():
-    data_folder = 'data/'
-    annotations_file = 'annotations/annotations.json'
     expected_folder = "tests/expected"
-
-    annotations = json.load(open(annotations_file))
+    annotations = json.load(open("annotations/annotations.json"))
 
     type_predictions = {}
     for dataset_name in get_datasets():
-        type_predictions[dataset_name] = get_predictions(data_folder, dataset_name)
-        expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0] + ".json"
-        with open(expected_file, 'r', encoding='utf-8-sig') as read_file:
-            expected = json.load(read_file)
-
-        if not(type_predictions[dataset_name] == expected):
-            # prettyprint new JSON, omiting optional BOM char
-            with open(expected_file + '.new', 'w', encoding='utf-8-sig') as write_file:
-                json.dump(type_predictions[dataset_name], write_file, indent=2, sort_keys=True, ensure_ascii=False)
-            raise Exception(f'{expected_file} comparison failed.')
+        predictions = get_predictions(dataset_name)
+        type_predictions[dataset_name] = predictions
+        check_predictions(predictions, expected_folder, dataset_name)
+        predictions = get_predictions(dataset_name, True)
+        check_predictions(predictions, expected_folder + "/canonical", dataset_name)
 
     evaluate_predictions(annotations, type_predictions)
 
