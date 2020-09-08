@@ -1,0 +1,20 @@
+﻿{
+  "college_career_rate_2013": "nominal",
+  "college_career_rate_2014": "nominal",
+  "college_career_rate_boro": "nominal",
+  "dbn": "string",
+  "graduation_rate_2013": "nominal",
+  "graduation_rate_2014": "nominal",
+  "graduation_rate_boro": "nominal",
+  "ontrack_year1_2013": "nominal",
+  "ontrack_year1_2014": "nominal",
+  "ontrack_year1_boro": "nominal",
+  "pct_stu_enough_variety_2014": "nominal",
+  "pct_stu_safe_2014": "nominal",
+  "qr_assessing_student_learning": "nominal",
+  "qr_curriculum": "nominal",
+  "qr_high_expectations": "nominal",
+  "qr_instruction": "nominal",
+  "qr_teacher_collaboration": "nominal",
+  "quality_review_year": "nominal"
+}

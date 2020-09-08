@@ -30,15 +30,10 @@ def plot_bar(classes, values, title, xlabel=None, ylabel=None, y_lim_max=1.0):
     plt.show()
 
 
-def plot_column_type_posterior(ptype, column):
+def plot_column_type_posterior(p_t, types):
     # p_t has subtypes of date separately and is not ordered alphabetically
-    p_t = ptype.all_posteriors['demo'][column]
-
-    # types with subtypes
-    types = list(ptype.types.values())
-
     organized_p_t = {}
-    for i, t in ptype.types.items():
+    for i, t in types:
         # maps subtypes to types (date-iso-8601 to date)
         t_ = t.split("-")[0]
 
@@ -49,7 +44,7 @@ def plot_column_type_posterior(ptype, column):
             organized_p_t[t_] = p_t[i - 1]
 
     if len(np.unique(p_t)) == 1:
-        organized_p_t = {t:1/len(organized_p_t) for t in organized_p_t}
+        organized_p_t = {t: 1 / len(organized_p_t) for t in organized_p_t}
 
     # sort the posteriors
     sorted_types = sorted(organized_p_t.keys(), key=lambda x: x.lower())
@@ -64,19 +59,26 @@ def plot_column_type_posterior(ptype, column):
     )
 
 
-def plot_row_type_posterior(ptype, column, t="missing"):
+def plot_arff_type_posterior(
+    arff_posterior, types=["date", "nominal", "numeric", "string"]
+):
+    plot_bar(
+        types,
+        arff_posterior,
+        title="posterior dist. of column ARFF type",
+        xlabel="type",
+        ylabel="posterior probability",
+    )
+
+
+def plot_row_type_posterior(col, t="missing"):
     if t == "missing":
         i = 1
     elif t == "anomaly":
         i = 2
-    p_z = ptype.cols[column].p_z
-    unique_values, counts = np.unique(
-        [str(int_element) for int_element in ptype.model.data[column].tolist()],
-        return_counts=True,
-    )
     plot_bar(
-        unique_values,
-        p_z[:, i],
+        col.unique_vals,
+        col.p_z[:, i],
         title="p(z_i=" + t + "|t,x_i): posterior dist. for row type",
         xlabel="unique value",
         ylabel="posterior " + t + " probability",
