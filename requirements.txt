@@ -9,4 +9,5 @@ numpy
 pandas
 scipy
 scikit-learn
+seaborn
 wheel
