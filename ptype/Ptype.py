@@ -1,6 +1,7 @@
 import csv
 import joblib
 import numpy as np
+import pandas as pd
 from enum import Enum
 
 from ptype.Config import Config
@@ -302,12 +303,42 @@ class Ptype:
         return self.model.train_all_z_multiple_dfs_new(runner)
 
     # OUTPUT METHODS #########################
+    def as_normal(self,):
+        return lambda series: series.map(
+            lambda v: v
+            if v in self.cols[series.name].get_normal_predictions()
+            else pd.NA
+        )
+
+    def update_dtypes(self, df):
+        ptype_pandas_mapping = {"integer": "Int64"}
+
+        for col_name in self.model.data:
+            new_dtype = ptype_pandas_mapping[self.cols[col_name].predicted_type]
+            try:
+                df[col_name] = df[col_name].astype(new_dtype)
+            except TypeError:
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
+                    new_dtype
+                )
+            except:
+                print("Something else went wrong")
+        return df
+
     def show_results_df(self):
         df_output = self.model.data.copy()
         df_output.columns = df_output.columns.map(
             lambda col: str(col) + "(" + self.cols[col].predicted_type + ")"
         )
+
         return df_output
+
+    def get_final_df(self):
+        df_final = self.model.data.copy()
+
+        df_final.apply(self.as_normal(), axis=0)
+        df_final = self.update_dtypes(df_final)
+        return df_final
 
     def detect_missing_anomalies(self, inferred_column_type):
         if inferred_column_type != "all identical":
