@@ -14,8 +14,8 @@
               {
                 "py/tuple": [
                   "f8",
-                  0,
-                  1
+                  false,
+                  true
                 ]
               },
               {
