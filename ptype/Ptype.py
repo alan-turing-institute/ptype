@@ -333,10 +333,20 @@ class Ptype:
 
         return df_output
 
+    def show_missing_values(self):
+        missing_values = {}
+        for col_name in self.model.data:
+            missing_values[col_name] = np.unique(
+                self.cols[col_name].get_missing_data_predictions()
+            )
+
+        return pd.Series(missing_values)
+
     def get_final_df(self):
         df_final = self.model.data.copy()
 
         df_final.apply(self.as_normal(), axis=0)
+
         df_final = self.update_dtypes(df_final)
         return df_final
 
