@@ -73,10 +73,6 @@ def float_2dp(n: float):
     return np.float64("{:.2f}".format(n))
 
 
-def get_datasets():
-    return [file.split("/")[-1] for file in glob.glob("data/*.csv")]
-
-
 def get_evaluations(_annotations, _predictions):
     methods = ["ptype"]
     dataset_names = list(_predictions.keys())
