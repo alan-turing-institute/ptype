@@ -66,10 +66,11 @@
     "8": "Status.TYPE",
     "9": "Status.TYPE",
     "98": "Status.TYPE",
-    "NR": "Status.ANOMALOUS",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING",
+    "NR": "Status.ANOMALOUS"
   },
   "Cohort Completion Year": {
+    "": "Status.MISSING",
     "-": "Status.MISSING",
     "2009-10": "Status.TYPE",
     "2010-11": "Status.TYPE",
@@ -79,7 +80,7 @@
     "2014-15": "Status.TYPE",
     "2015-16": "Status.TYPE",
     "All Indica": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Dist Rate": {
     "-": "Status.MISSING",
@@ -181,10 +182,11 @@
     "98%": "Status.TYPE",
     "98.20%": "Status.TYPE",
     "98.40%": "Status.TYPE",
-    "NR": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING",
+    "NR": "Status.TYPE"
   },
   "LRE Ages 3-5 - Full Incl #": {
+    "": "Status.MISSING",
     "-": "Status.MISSING",
     "0": "Status.TYPE",
     "1": "Status.TYPE",
@@ -272,9 +274,11 @@
     "9": "Status.TYPE",
     "91": "Status.TYPE",
     "99": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING",
+    "NA": "Status.MISSING"
   },
   "LRE Ages 3-5 - Full Incl %": {
+    "": "Status.MISSING",
     "-": "Status.MISSING",
     "0%": "Status.TYPE",
     "0.80%": "Status.TYPE",
@@ -560,10 +564,10 @@
     "92.90%": "Status.TYPE",
     "96%": "Status.TYPE",
     "96.60%": "Status.TYPE",
-    "96.70%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "96.70%": "Status.TYPE"
   },
   "LRE Ages 3-5 - Students #": {
+    "": "Status.MISSING",
     "-": "Status.MISSING",
     "0": "Status.TYPE",
     "1": "Status.TYPE",
@@ -719,7 +723,7 @@
     "95": "Status.TYPE",
     "97": "Status.TYPE",
     "98": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "LRE Ages 6-21 - Full Incl #": {
     "-": "Status.MISSING",
@@ -1412,7 +1416,7 @@
     "977": "Status.TYPE",
     "98": "Status.TYPE",
     "99": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "LRE Ages 6-21 - Full Incl %": {
     "-": "Status.MISSING",
@@ -2177,9 +2181,10 @@
     "99.50%": "Status.TYPE",
     "99.60%": "Status.TYPE",
     "99.70%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "LRE Ages 6-21 - Students #": {
+    "": "Status.MISSING",
     "0": "Status.TYPE",
     "1": "Status.TYPE",
     "10": "Status.TYPE",
@@ -3154,7 +3159,7 @@
     "996": "Status.TYPE",
     "998": "Status.TYPE",
     "999": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Org Code": {
     "10000": "Status.TYPE",
@@ -4221,6 +4226,7 @@
     "Wrentham": "Status.TYPE"
   },
   "Sch Yr Rev": {
+    "": "Status.MISSING",
     "2006-07": "Status.TYPE",
     "2007-08": "Status.TYPE",
     "2008-09": "Status.TYPE",
@@ -4228,7 +4234,7 @@
     "2010-11": "Status.TYPE",
     "2011-12": "Status.TYPE",
     "2012-13": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Dropout - Drop #": {
     "-": "Status.MISSING",
@@ -4318,7 +4324,7 @@
     "9": "Status.TYPE",
     "96": "Status.TYPE",
     "97": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Dropout - Drop %": {
     "-": "Status.MISSING",
@@ -4515,7 +4521,7 @@
     "9.70%": "Status.TYPE",
     "9.80%": "Status.TYPE",
     "9.90%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Dropout - Enr #": {
     "-": "Status.MISSING",
@@ -4965,7 +4971,7 @@
     "97": "Status.TYPE",
     "98": "Status.TYPE",
     "99": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Grad Rate - Grad #": {
     "-": "Status.MISSING",
@@ -5103,7 +5109,7 @@
     "97": "Status.TYPE",
     "98": "Status.TYPE",
     "99": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Grad Rate - Grad %": {
     "-": "Status.MISSING",
@@ -5685,7 +5691,7 @@
     "98.30%": "Status.TYPE",
     "98.50%": "Status.TYPE",
     "98.70%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Spec Ed. Grad Rate - Grad Cohort #": {
     "-": "Status.MISSING",
@@ -5887,9 +5893,10 @@
     "98": "Status.TYPE",
     "99": "Status.TYPE",
     "993": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING"
   },
   "Substantial growth of knowledge & skills": {
+    "": "Status.MISSING",
     "-": "Status.MISSING",
     "0": "Status.TYPE",
     "100": "Status.TYPE",
@@ -6006,7 +6013,8 @@
     "96.6": "Status.TYPE",
     "96.7": "Status.TYPE",
     "96.8": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING",
+    "NA": "Status.MISSING"
   },
   "Surv Meet Std #": {
     "-": "Status.MISSING",
@@ -6154,8 +6162,8 @@
     "95": "Status.TYPE",
     "97": "Status.TYPE",
     "99": "Status.TYPE",
-    "NR": "Status.ANOMALOUS",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING",
+    "NR": "Status.ANOMALOUS"
   },
   "Surv Meet Std %": {
     "-": "Status.MISSING",
@@ -6465,22 +6473,22 @@
     "95.8": "Status.TYPE",
     "96%": "Status.TYPE",
     "97%": "Status.TYPE",
-    "NR": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "NA": "Status.MISSING",
+    "NR": "Status.TYPE"
   },
   "Survey Period": {
     "-": "Status.MISSING",
     "All Indicators Annually*": "Status.ANOMALOUS",
     "Fall 2006": "Status.TYPE",
     "Fall 2011": "Status.TYPE",
+    "NA": "Status.MISSING",
     "Spring 2007": "Status.TYPE",
     "Spring 2008": "Status.TYPE",
     "Spring 2009": "Status.TYPE",
     "Spring 2010": "Status.TYPE",
     "Spring 2011": "Status.TYPE",
     "Spring 2012": "Status.TYPE",
-    "Spring 2013": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Spring 2013": "Status.TYPE"
   },
   "Year": {
     "2006": "Status.TYPE",

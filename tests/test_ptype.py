@@ -93,7 +93,7 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
     if not (type_predictions == expected):
         for k in type_predictions:
             if type_predictions[k] != expected[k]:
-                print("Differ on " + k)
+                print("Differs on " + k)
         # prettyprint new JSON, omitting optional BOM char
         with open(expected_file + ".new.json", "w", encoding="utf-8-sig") as write_file:
             json.dump(
