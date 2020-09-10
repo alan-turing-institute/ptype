@@ -20,6 +20,17 @@ types = {
     8: "date-non-std",
 }
 
+# Associate each dataset with file prefix, encoding and header setting for Pandas read_csv.
+datasets = {
+    "accident2016":         ("utf-8", "infer"),
+    "auto":                 ("utf-8", None),
+    "data_gov_3397_1":      ("utf-8", "infer"),
+    "data_gov_10151_1":     ("utf-8", "infer"),
+    "inspection_outcomes":  ("utf-8", "infer"),
+    "mass_6":               ("ISO-8859-1", "infer"),
+    "survey":               ("utf-8", "infer"),
+}
+
 
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
@@ -174,22 +185,10 @@ def notebook_tests():
 
 
 def training_tests():
-    dataset_names = ["accident2016", "auto", "data_gov_3397_1"]
     # print_to_file("number of datasets used = " + str(len(dataset_names)))
 
-    types = {
-        1: "integer",
-        2: "string",
-        3: "float",
-        4: "boolean",
-        5: "date-iso-8601",
-        6: "date-eu",
-        7: "date-non-std-subtype",
-        8: "date-non-std",
-    }
-
     df_trainings, y_trainings = [], []
-    for dataset_name in dataset_names:
+    for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
         df_training, y_training = get_inputs(dataset_name, types)
         df_trainings.append(df_training)
         y_trainings.append(y_training)
