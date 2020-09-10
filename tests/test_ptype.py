@@ -124,7 +124,7 @@ def read_dataset(dataset_name):
 def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     annotations = json.load(open(annotations_file))
     df = read_dataset(dataset_name)
-    labels = annotations[dataset_name + ".csv"]
+    labels = annotations[dataset_name]
 
     # remove unused types
     indices = []

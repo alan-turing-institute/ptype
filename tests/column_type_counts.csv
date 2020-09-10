@@ -1,6 +1,0 @@
-,accident2016.csv,data_gov_3397_1.csv,inspection_outcomes.csv,data_gov_10151_1.csv,mass_6.csv,auto.csv,survey.csv
-boolean,0,0,0,0,0,0,12
-date,2,1,1,0,3,0,1
-float,0,0,0,3,2,7,0
-integer,12,0,2,5,11,9,1
-string,3,17,17,13,7,10,6
