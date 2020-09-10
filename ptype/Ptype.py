@@ -264,8 +264,7 @@ class Ptype:
         ]  # mixture weights of row types
         self.model.current_runner = self.PFSMRunner
 
-        training_error = []
-        training_error.append(self.calculate_error_df(data_frames, labels))
+        training_error = [self.calculate_error_df(data_frames, labels)]
 
         save_object(
             self.PFSMRunner, "models/training_runner_initial",
