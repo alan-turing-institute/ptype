@@ -8,6 +8,18 @@ from ptype.Ptype import Ptype, Column2ARFF
 from tests.utils import get_datasets, evaluate_predictions
 
 
+types = {
+    1: "integer",
+    2: "string",
+    3: "float",
+    4: "boolean",
+    5: "date-iso-8601",
+    6: "date-eu",
+    7: "date-non-std-subtype",
+    8: "date-non-std",
+}
+
+
 def read_data(_data_path, dataset_name):
     # wrong encoding leads to additional characters in the dataframe columns
     if dataset_name in ["mass_6.csv"]:
@@ -43,18 +55,7 @@ def get_predictions(dataset_name):
     data_folder = "data/"
     df = read_data(data_folder, dataset_name)
 
-    ptype = Ptype(
-        _types={
-            1: "integer",
-            2: "string",
-            3: "float",
-            4: "boolean",
-            5: "date-iso-8601",
-            6: "date-eu",
-            7: "date-non-std-subtype",
-            8: "date-non-std",
-        }
-    )
+    ptype = Ptype(_types=types)
     ptype.run_inference(_data_frame=df)
 
     column2ARFF = Column2ARFF("models/")
