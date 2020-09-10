@@ -1,6 +1,6 @@
 ﻿{
   "ARC_City": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "Beechview": "Status.TYPE",
     "Bellevue": "Status.TYPE",
     "Bethel Park": "Status.TYPE",
@@ -82,10 +82,10 @@
     "Wilkinsburg": "Status.TYPE"
   },
   "ARC_State": {
-    " ": "Status.MISSING"
+    "": "Status.MISSING"
   },
   "ARC_Street": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "100 Settlers Ridge Center Dr.": "Status.TYPE",
     "100 Wal Mart Drive": "Status.TYPE",
     "1017 4th Avenue": "Status.TYPE",
@@ -185,7 +185,7 @@
     "Quaker Village Shopping Center": "Status.TYPE"
   },
   "ARC_ZIP": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "15017": "Status.TYPE",
     "15037": "Status.TYPE",
     "15044": "Status.TYPE",
@@ -240,12 +240,12 @@
     "15275": "Status.TYPE"
   },
   "Addr_type": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "Address": "Status.TYPE",
     "StreetAddress": "Status.TYPE"
   },
   "Address": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "100 Settlers Ridge Center Dr.": "Status.TYPE",
     "100 Wal Mart Drive": "Status.TYPE",
     "1017 4th Avenue": "Status.TYPE",
@@ -345,12 +345,12 @@
     "Quaker Village Shopping Center": "Status.TYPE"
   },
   "Loc_name": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "DW_Addressing_": "Status.TYPE",
     "TANA_Streets": "Status.TYPE"
   },
   "Match_addr": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "100 SETTLERS RIDGE CENTER DR, ROBINSON, PA, 15205": "Status.TYPE",
     "100 WALMART DR, NORTH VERSAILLES, PA, 15137": "Status.TYPE",
     "1017 4TH AVE, CORAOPOLIS, PA, 15108": "Status.TYPE",
@@ -447,7 +447,7 @@
     "A": "Status.TYPE"
   },
   "Municipa_1": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "Bethel Park": "Status.TYPE",
     "Bridgeville": "Status.TYPE",
     "Carnegie": "Status.TYPE",
@@ -481,7 +481,7 @@
     "White Oak": "Status.TYPE"
   },
   "Municipali": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "Beechview": "Status.TYPE",
     "Bellevue": "Status.TYPE",
     "Bethel Park": "Status.TYPE",
@@ -563,7 +563,7 @@
     "Wilkinsburg": "Status.TYPE"
   },
   "Name": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "(formerly CE Kelly Commissary)": "Status.ANOMALOUS",
     "Community Market": "Status.TYPE",
     "Coraopolis Cash Market": "Status.TYPE",
@@ -829,7 +829,7 @@
     "98.91": "Status.TYPE"
   },
   "Side": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "L": "Status.TYPE",
     "R": "Status.TYPE"
   },
@@ -839,7 +839,7 @@
     "U": "Status.TYPE"
   },
   "User_fld": {
-    " ": "Status.MISSING",
+    "": "Status.MISSING",
     "0": "Status.TYPE"
   },
   "X": {
