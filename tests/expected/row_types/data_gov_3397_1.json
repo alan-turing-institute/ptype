@@ -80,7 +80,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "college_career_rate_2014": {
     "10%": "Status.TYPE",
@@ -164,7 +164,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "college_career_rate_boro": {
     "41%": "Status.TYPE",
@@ -681,7 +681,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "graduation_rate_2014": {
     "100%": "Status.TYPE",
@@ -748,7 +748,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "graduation_rate_boro": {
     "59%": "Status.TYPE",
@@ -811,7 +811,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "ontrack_year1_2014": {
     "100%": "Status.TYPE",
@@ -865,7 +865,7 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "ontrack_year1_boro": {
     "79%": "Status.TYPE",
@@ -939,7 +939,7 @@
     "94%": "Status.TYPE",
     "95%": "Status.TYPE",
     "97%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "pct_stu_safe_2014": {
     "100%": "Status.TYPE",
@@ -992,45 +992,45 @@
     "97%": "Status.TYPE",
     "98%": "Status.TYPE",
     "99%": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "N/A": "Status.MISSING"
   },
   "qr_assessing_student_learning": {
-    " D": "Status.TYPE",
-    " P": "Status.TYPE",
+    "": "Status.MISSING",
+    "D": "Status.TYPE",
+    "P": "Status.TYPE",
     "UD": "Status.TYPE",
-    "WD": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "WD": "Status.TYPE"
   },
   "qr_curriculum": {
-    " D": "Status.TYPE",
-    " P": "Status.TYPE",
-    "WD": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "": "Status.MISSING",
+    "D": "Status.TYPE",
+    "P": "Status.TYPE",
+    "WD": "Status.TYPE"
   },
   "qr_high_expectations": {
-    " D": "Status.TYPE",
-    " P": "Status.TYPE",
-    "WD": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "": "Status.MISSING",
+    "D": "Status.TYPE",
+    "P": "Status.TYPE",
+    "WD": "Status.TYPE"
   },
   "qr_instruction": {
-    " D": "Status.TYPE",
-    " P": "Status.TYPE",
+    "": "Status.MISSING",
+    "D": "Status.TYPE",
+    "P": "Status.TYPE",
     "UD": "Status.TYPE",
-    "WD": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "WD": "Status.TYPE"
   },
   "qr_teacher_collaboration": {
-    " D": "Status.TYPE",
-    " P": "Status.TYPE",
-    "WD": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "": "Status.MISSING",
+    "D": "Status.TYPE",
+    "P": "Status.TYPE",
+    "WD": "Status.TYPE"
   },
   "quality_review_year": {
+    "": "Status.MISSING",
     "2010-2011": "Status.TYPE",
     "2011-2012": "Status.TYPE",
     "2012-2013": "Status.TYPE",
-    "2013-2014": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "2013-2014": "Status.TYPE"
   }
 }

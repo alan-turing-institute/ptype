@@ -1523,6 +1523,7 @@
     "My refer to the mental health issue of depression.  I might answer differently if I was talking about a more serious issue like schizophrenia": "Status.TYPE",
     "My seniority at the company and rapport with the owners has helped me gain support for seeking help regarding my mental health as well as being able to take time off or work from home when an episode starts.However I don't feel that the company's stance on mental health is as clear as say something like vision or dental.  There's very much a stigma.": "Status.ANOMALOUS",
     "My work is using my brain. I do it incredibly well.I make an effort to avoid diagnosis of anything mental health related because I am convinced it would only affect me negatively.": "Status.TYPE",
+    "NA": "Status.MISSING",
     "Nice job on the text field for gender :-)": "Status.ANOMALOUS",
     "No benefits at this organization but my employer/direct supervisor has had positive and constructive conversations with me about physical and mental health. Supervisor offered solutions advice time/energy to get help if I ever felt that needed it. (though it would have to be at my own expense). I feel safe sharing personal info with this particular person/company but this environment is the exception rather than the norm in my 15+ years as a tech worker. I would never feel safe enough to reveal info about any mental health concerns with any previous employers in the tech industry for fear of  negative perceptions job loss performance dings etc. ": "Status.ANOMALOUS",
     "None of us who are already in marginal groups in tech--the non-young the non-male the non-white--will risk our careers to admit another source of stigma: poor health.": "Status.TYPE",
@@ -1575,7 +1576,6 @@
     "fwiw I am a co founder of this company and the would you X in an interview questions shouldn't reflect how I would treat anyone addressing their own phys/mental health issue to me in such a situation. ": "Status.ANOMALOUS",
     "i'm in a country with social health care so my options are not dependant on my employer. this makes a few of the early questions less relevant than they would be for a resident of the US.": "Status.ANOMALOUS",
     "it is my opinion that bad mental health is a red flag for employers and i would never bring it up.": "Status.TYPE",
-    "nan": "Status.MISSING",
     "password: testered": "Status.TYPE",
     "suffer from CR-PTSD so all answered based on that": "Status.TYPE",
     "thanks for what you're doing. FYI these questions dont quite work for entrepreneurs where employer == cofounders / sr mgmt / me": "Status.ANOMALOUS",
@@ -1644,9 +1644,9 @@
     "Yes": "Status.TYPE"
   },
   "self_employed": {
+    "NA": "Status.MISSING",
     "No": "Status.TYPE",
-    "Yes": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Yes": "Status.TYPE"
   },
   "state": {
     "AL": "Status.TYPE",
@@ -1671,6 +1671,7 @@
     "MN": "Status.TYPE",
     "MO": "Status.TYPE",
     "MS": "Status.TYPE",
+    "NA": "Status.MISSING",
     "NC": "Status.TYPE",
     "NE": "Status.TYPE",
     "NH": "Status.TYPE",
@@ -1693,8 +1694,7 @@
     "WA": "Status.TYPE",
     "WI": "Status.TYPE",
     "WV": "Status.TYPE",
-    "WY": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "WY": "Status.TYPE"
   },
   "supervisor": {
     "No": "Status.TYPE",
@@ -1715,10 +1715,10 @@
     "Yes": "Status.TYPE"
   },
   "work_interfere": {
+    "NA": "Status.MISSING",
     "Never": "Status.TYPE",
     "Often": "Status.TYPE",
     "Rarely": "Status.TYPE",
-    "Sometimes": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Sometimes": "Status.TYPE"
   }
 }

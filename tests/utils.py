@@ -41,14 +41,9 @@ def evaluate_model_type(annotations, predictions):
 
 
 def evaluate_predictions(annotations, type_predictions):
-    ### the column type counts of the datasets
+    # the column type counts of the datasets
     [_, dataset_counts, total_cols] = get_type_counts(type_predictions, annotations)
     df = pd.DataFrame(dataset_counts, columns=dataset_counts.keys())
-    column_type_counts = "tests/column_type_counts.csv"
-    expected = pd.read_csv(column_type_counts, index_col=0)
-    if not (expected.equals(df)):
-        df.to_csv(path_or_buf=column_type_counts + ".new")
-        raise Exception(f"{column_type_counts} comparison failed.")
 
     Js, overall_accuracy = get_evaluations(annotations, type_predictions)
     overall_accuracy_to_print = {
@@ -71,10 +66,6 @@ def evaluate_predictions(annotations, type_predictions):
 def float_2dp(n: float):
     """Round a float to 2 decimal places, preserving float-hood. Probably a better way to do this."""
     return np.float64("{:.2f}".format(n))
-
-
-def get_datasets():
-    return [file.split("/")[-1] for file in glob.glob("data/*.csv")]
 
 
 def get_evaluations(_annotations, _predictions):

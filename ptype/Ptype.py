@@ -264,8 +264,7 @@ class Ptype:
         ]  # mixture weights of row types
         self.model.current_runner = self.PFSMRunner
 
-        training_error = []
-        training_error.append(self.calculate_error_df(data_frames, labels))
+        training_error = [self.calculate_error_df(data_frames, labels)]
 
         save_object(
             self.PFSMRunner, "models/training_runner_initial",
@@ -567,15 +566,6 @@ class Ptype:
                 error += temp
 
         return error
-
-    def get_categorical_signal_gaussian(self, x, sigma=1, threshold=0.03):
-        N = len(x)
-        K = len(np.unique(x))
-
-        if self.verbose:
-            print(N, K, np.log(N))
-
-        return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)

@@ -1629,11 +1629,11 @@
     "31/08/2016": "Status.TYPE"
   },
   "Leadership and management": {
+    "": "Status.MISSING",
     "Good": "Status.TYPE",
     "Inadequate": "Status.TYPE",
     "Outstanding": "Status.TYPE",
-    "Requires improvement": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Requires improvement": "Status.TYPE"
   },
   "Local authority": {
     "Barking and Dagenham": "Status.TYPE",
@@ -1784,12 +1784,13 @@
     "REDACTED": "Status.TYPE"
   },
   "Outcomes for children and young people": {
+    "": "Status.MISSING",
     "Good": "Status.TYPE",
     "Outstanding": "Status.TYPE",
-    "Requires improvement": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Requires improvement": "Status.TYPE"
   },
   "Overall effectiveness": {
+    "": "Status.MISSING",
     "Declined in effectiveness": "Status.TYPE",
     "Good": "Status.TYPE",
     "Improved effectiveness": "Status.TYPE",
@@ -1797,8 +1798,7 @@
     "Not judged": "Status.TYPE",
     "Outstanding": "Status.TYPE",
     "Requires improvement": "Status.TYPE",
-    "Sustained effectiveness": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Sustained effectiveness": "Status.TYPE"
   },
   "Places": {
     "1": "Status.TYPE",
@@ -1859,18 +1859,18 @@
     "Secure children's home": "None"
   },
   "Quality of care": {
-    "nan": "None"
+    "": "None"
   },
   "Registration Status": {
     "Active": "Status.TYPE",
     "Resigned": "Status.TYPE"
   },
   "Safeguarding children and young people": {
+    "": "Status.MISSING",
     "Good": "Status.TYPE",
     "Inadequate": "Status.TYPE",
     "Outstanding": "Status.TYPE",
-    "Requires improvement": "Status.TYPE",
-    "nan": "Status.MISSING"
+    "Requires improvement": "Status.TYPE"
   },
   "Sector": {
     "Health Authority": "Status.TYPE",
