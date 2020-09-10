@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 from ptype.Ptype import Ptype, Column2ARFF
-from tests.utils import get_datasets, evaluate_predictions
+from tests.utils import evaluate_predictions
 
 
 types = {
@@ -32,17 +32,6 @@ datasets = {
 }
 
 
-def read_data(_data_path, dataset_name):
-    # wrong encoding leads to additional characters in the dataframe columns
-    if dataset_name in ["mass_6.csv"]:
-        encoding = "ISO-8859-1"
-    else:
-        encoding = "utf-8"
-    return csv.csv2df(
-        _data_path + dataset_name, encoding=encoding, dtype=str, skipinitialspace=True
-    )
-
-
 def as_normal(ptype):
     return lambda series: series.map(
         lambda v: v if v in ptype.cols[series.name].get_normal_predictions() else pd.NA
@@ -64,8 +53,7 @@ def as_anomaly(ptype):
 
 
 def get_predictions(dataset_name):
-    data_folder = "data/"
-    df = read_data(data_folder, dataset_name)
+    df = read_dataset(dataset_name)
 
     ptype = Ptype(_types=types)
     ptype.run_inference(_data_frame=df)
@@ -100,6 +88,8 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
     with open(expected_file, "r", encoding="utf-8-sig") as read_file:
         expected = json.load(read_file)
 
+    # JSON doesn't support integer keys
+    type_predictions = {str(k): v for k, v in type_predictions.items()}
     if not (type_predictions == expected):
         # prettyprint new JSON, omiting optional BOM char
         with open(expected_file + ".new", "w", encoding="utf-8-sig") as write_file:
@@ -114,28 +104,23 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
 
 
 def read_dataset(dataset_name):
-    if dataset_name in ["auto"]:
-        df = pd.read_csv(
-            "data/" + dataset_name + ".csv",
+    filename = "data/" + dataset_name + ".csv"
+    if dataset_name in datasets:
+        encoding, header = datasets[dataset_name]
+        return pd.read_csv(
+            filename,
             sep=",",
             dtype=str,
-            encoding="ISO-8859-1",
+            encoding=encoding,
             keep_default_na=False,
-            header=None,
+            skipinitialspace=True,
+            header=header,
         )
     else:
-        df = pd.read_csv(
-            "data/" + dataset_name + ".csv",
-            sep=",",
-            dtype=str,
-            encoding="ISO-8859-1",
-            keep_default_na=False,
-        )
-
-    return df
+        raise Exception(f"{filename} not known.")
 
 
-def get_inputs(dataset_name, types, annotations_file="annotations/annotations.json"):
+def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     annotations = json.load(open(annotations_file))
     df = read_dataset(dataset_name)
     labels = annotations[dataset_name + ".csv"]
@@ -165,7 +150,7 @@ def core_tests():
     annotations = json.load(open("annotations/annotations.json"))
 
     type_predictions = {}
-    for dataset_name in get_datasets():
+    for dataset_name in datasets:
         col_predictions, col_arff_types, row_predictions = get_predictions(dataset_name)
 
         check_predictions(col_predictions, expected_folder, dataset_name)
@@ -189,7 +174,7 @@ def training_tests():
 
     df_trainings, y_trainings = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
-        df_training, y_training = get_inputs(dataset_name, types)
+        df_training, y_training = get_inputs(dataset_name)
         df_trainings.append(df_training)
         y_trainings.append(y_training)
 
