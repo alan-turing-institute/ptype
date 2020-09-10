@@ -78,6 +78,15 @@ class Column:
         print("\tfraction of missing:", round(missing / total, 2), "\n")
         print("\tfraction of anomalies:", round(anomalies / total, 2), "\n")
 
+    def get_ratio(self, status):
+        indices = [
+            i
+            for i, _ in enumerate(self.unique_vals)
+            if self.unique_vals_status[i] == status
+        ]
+        total = sum(self.unique_vals_counts)
+        return round(sum(self.unique_vals_counts[indices]) / total, 2)
+
     def get_normal_predictions(self):
         """Values identified as 'normal'."""
         return [
@@ -113,7 +122,7 @@ class Column:
 
 
 class Ptype:
-    def __init__(self, _exp_num=0, _types=None):
+    def __init__(self, _exp_num=0, _types=None, model_folder="models/"):
         default_types = {
             1: "integer",
             2: "string",
@@ -134,6 +143,7 @@ class Ptype:
         self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
+        self.column2ARFF = Column2ARFF(model_folder)
 
     def set_data(self, df):
         _dataset_name = "demo"
@@ -348,6 +358,82 @@ class Ptype:
 
         df_final = self.update_dtypes(df_final)
         return df_final
+
+    def fit_schema(self, df):
+        """Generates a schema for a given data frame.
+
+        This function calculates the ptype outputs for a data frame and
+        store them in a schema.
+
+        Parameters
+        ----------
+        df: Pandas dataframe object.
+
+
+        Returns
+        -------
+        schema: Schema object.
+        """
+        self.run_inference(df)
+
+        # predicts the corresponding ARFF types
+        for col_name in self.cols:
+            features = self.features[col_name]
+            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(features)
+
+        ptype_pandas_mapping = {"integer": "Int64"}
+        schema = {}
+        for col_name in df:
+            col = self.cols[col_name]
+            t = col.predicted_type
+            arff_type = col.arff_type
+            normal_values = list(np.unique(col.get_normal_predictions()))
+            missing_values = list(np.unique(col.get_missing_data_predictions()))
+            anomalies = list(np.unique(col.get_anomaly_predictions()))
+            missingness_ratio = col.get_ratio(Status.MISSING)
+            anomalous_ratio = col.get_ratio(Status.ANOMALOUS)
+
+            schema[col_name] = {
+                "type": t,
+                "dtype": ptype_pandas_mapping[t],
+                "arff_type": arff_type,
+                "missing_values": missing_values,
+                "missingness_ratio": missingness_ratio,
+                "anomalies": anomalies,
+                "anomalous_ratio": anomalous_ratio,
+            }
+            if arff_type is "nominal":
+                schema[col_name]["categorical_values"] = normal_values
+        return schema
+
+    def transform_schema(self, df, schema):
+        """Transforms a data frame according to a schema.
+
+        This function modifies a data frame...
+
+        Parameters
+        ----------
+        df: Pandas dataframe object.
+        schema: Schema object.
+
+        Returns
+        -------
+        df_new: Transformed Pandas dataframe object.
+        """
+        df_new = df.copy()
+
+        # encodes missing data
+        df_new.apply(self.as_normal(schema), axis=0)
+
+        # change dtypes
+        df_new = self.update_dtypes(df_new)
+
+        return df_new
+
+    def as_normal(self, schema):
+        return lambda series: series.map(
+            lambda v: pd.NA if v in schema[series.name]["missing_values"] else v
+        )
 
     def detect_missing_anomalies(self, inferred_column_type):
         if inferred_column_type != "all identical":
