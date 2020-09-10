@@ -558,15 +558,6 @@ class Ptype:
 
         return error
 
-    def get_categorical_signal_gaussian(self, x, sigma=1, threshold=0.03):
-        N = len(x)
-        K = len(np.unique(x))
-
-        if self.verbose:
-            print(N, K, np.log(N))
-
-        return [norm(np.log(N), np.log(N) / 2 * sigma).pdf(K) > threshold, np.log(N), K]
-
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
         self.run_inference(_data_frame=self.model.data)
