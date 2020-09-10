@@ -91,7 +91,10 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
     if not (type_predictions == expected):
-        # prettyprint new JSON, omiting optional BOM char
+        for k in type_predictions:
+            if type_predictions[k] != expected[k]:
+                print("Differ on " + k)
+        # prettyprint new JSON, omitting optional BOM char
         with open(expected_file + ".new.json", "w", encoding="utf-8-sig") as write_file:
             json.dump(
                 type_predictions,

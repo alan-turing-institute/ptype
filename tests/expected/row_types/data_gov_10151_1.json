@@ -82,7 +82,7 @@
     "Wilkinsburg": "Status.TYPE"
   },
   "ARC_State": {
-    "": "Status.MISSING"
+    "": "None"
   },
   "ARC_Street": {
     "": "Status.MISSING",
