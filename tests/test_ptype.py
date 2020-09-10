@@ -84,15 +84,15 @@ def get_predictions(dataset_name):
 
 
 def check_predictions(type_predictions, expected_folder, dataset_name):
-    expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0] + ".json"
-    with open(expected_file, "r", encoding="utf-8-sig") as read_file:
+    expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0]
+    with open(expected_file + ".json", "r", encoding="utf-8-sig") as read_file:
         expected = json.load(read_file)
 
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
     if not (type_predictions == expected):
         # prettyprint new JSON, omiting optional BOM char
-        with open(expected_file + ".new", "w", encoding="utf-8-sig") as write_file:
+        with open(expected_file + ".new.json", "w", encoding="utf-8-sig") as write_file:
             json.dump(
                 type_predictions,
                 write_file,
@@ -100,7 +100,7 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
                 sort_keys=True,
                 ensure_ascii=False,
             )
-        raise Exception(f"{expected_file} comparison failed.")
+        raise Exception(f"{expected_file + '.json'} comparison failed.")
 
 
 def read_dataset(dataset_name):
