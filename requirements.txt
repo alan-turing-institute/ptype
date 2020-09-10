@@ -7,7 +7,6 @@ matplotlib
 nbval
 numpy
 pandas
-pprint
 scipy
 scikit-learn
 seaborn
