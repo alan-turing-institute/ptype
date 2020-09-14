@@ -138,7 +138,6 @@ class Ptype:
         self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
         self.data_frames = None
-        self.all_posteriors = {}
         self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
@@ -155,7 +154,6 @@ class Ptype:
         _dataset_name = "demo"
         df = _data_frame.applymap(str)
         self.cols = {}
-        self.all_posteriors = {_dataset_name: {}}
 
         # Creates a configuration object for the experiments
         config = Config(
@@ -183,8 +181,7 @@ class Ptype:
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.all_posteriors[col_name] = self.model.p_t
-            self.cols[col_name] = self.column_results(col_name)
+            self.cols[col_name] = self.column(col_name)
 
             # Store additional features for canonical type inference
             self.store_features(col_name, counts)
@@ -459,7 +456,7 @@ class Ptype:
         else:
             return [[], [], []]
 
-    def column_results(self, col_name):
+    def column(self, col_name):
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
 
@@ -499,7 +496,7 @@ class Ptype:
         return col
 
     def store_features(self, col_name, counts):
-        posterior = self.all_posteriors[col_name]
+        posterior = self.cols[col_name].p_t
 
         sorted_posterior = [
             posterior[3],
@@ -527,9 +524,6 @@ class Ptype:
         self.features[col_name] = np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
-
-    def save_posteriors(self, filename="all_posteriors.pkl"):
-        save_object(self.all_posteriors, filename)
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(
@@ -631,7 +625,6 @@ class Ptype:
         elif new_t not in self.model.config.types_as_list:
             print("Given type is unknown!")
 
-        self.all_posteriors[col_name] = self.cols[col_name].p_t
         # update the arff types?
         # what if given type is not recognized
 
