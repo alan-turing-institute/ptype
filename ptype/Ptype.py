@@ -383,30 +383,28 @@ class Ptype:
                 schema[col_name]["categorical_values"] = normal_values
         return schema
 
-    # def transform_schema(self, df):
-    #     """Transforms a data frame according to previously inferred schema.
-    #
-    #     This function modifies a data frame...
-    #
-    #     Parameters
-    #     ----------
-    #     df: Pandas dataframe object.
-    #
-    #     Returns
-    #     -------
-    #     df_new: Transformed Pandas dataframe object.
-    #     """
-    #     df_new = df.copy()
-    #
-    #     schema = get schema from somewhere
-    #
-    #     # encodes missing data
-    #     df_new = df_new.apply(self.as_normal(schema), axis=0)
-    #
-    #     # change dtypes
-    #     df_new = self.update_dtypes(df_new, schema)
-    #
-    #     return df_new
+    def transform_schema(self, df, schema):
+         """Transforms a data frame according to previously inferred schema.
+
+         This function modifies a data frame...
+
+         Parameters
+         ----------
+         df: Pandas dataframe object.
+
+         Returns
+         -------
+         df_new: Transformed Pandas dataframe object.
+         """
+         df_new = df.copy()
+
+         # encodes missing data
+         df_new = df_new.apply(self.as_normal(schema), axis=0)
+
+         # change dtypes
+         df_new = self.update_dtypes(df_new, schema)
+
+         return df_new
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
