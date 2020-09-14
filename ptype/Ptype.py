@@ -8,7 +8,6 @@ from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import create_folders, print_to_file, save_object
-from scipy.stats import norm
 
 
 def get_unique_vals(col, return_counts=False):
@@ -139,17 +138,22 @@ class Ptype:
         self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
         self.data_frames = None
-        self.all_posteriors = {}
         self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
         self.column2ARFF = Column2ARFF(model_folder)
 
-    def set_data(self, df):
+    ###################### MAIN METHODS #######################
+    def run_inference(self, _data_frame):
+        """ Runs inference for each column in a dataframe.
+            The outputs are stored in dictionaries.
+            The column types are saved to a csv file.
+
+        :param _data_frame:
+        """
         _dataset_name = "demo"
-        df = df.applymap(str)
+        df = _data_frame.applymap(str)
         self.cols = {}
-        self.all_posteriors = {_dataset_name: {}}
 
         # Creates a configuration object for the experiments
         config = Config(
@@ -161,16 +165,6 @@ class Ptype:
             self.model = PtypeModel(config, df)
         else:
             self.model.set_params(config, df)
-
-    ###################### MAIN METHODS #######################
-    def run_inference(self, _data_frame):
-        """ Runs inference for each column in a dataframe.
-            The outputs are stored in dictionaries.
-            The column types are saved to a csv file.
-
-        :param _data_frame:
-        """
-        self.set_data(_data_frame)
 
         if self.verbose:
             print_to_file("processing " + self.model.config.dataset_name)
@@ -187,10 +181,7 @@ class Ptype:
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.all_posteriors[self.model.config.dataset_name][
-                col_name
-            ] = self.model.p_t
-            self.cols[col_name] = self.column_results(col_name)
+            self.cols[col_name] = self.column(col_name)
 
             # Store additional features for canonical type inference
             self.store_features(col_name, counts)
@@ -225,7 +216,7 @@ class Ptype:
         self.print = _print
 
         if _uniformly:
-            self.initialize_params_uniformly()
+            self.PFSMRunner.initialize_params_uniformly()
 
         if self.model is None:
             self.model = PtypeModel(config=None, data_frame=None)
@@ -233,7 +224,7 @@ class Ptype:
         self.model.types = self.types
 
         # Setup folders and probabilities for all columns
-        self.normalize_params()
+        self.PFSMRunner.normalize_params()
 
         self.model.data_frames = data_frames
 
@@ -325,8 +316,6 @@ class Ptype:
                 df_new[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
                     new_dtype
                 )
-            except:
-                print("Something else went wrong")
         return df_new
 
     def show_results_df(self):
@@ -390,34 +379,32 @@ class Ptype:
                 "anomalies": anomalies,
                 "anomalous_ratio": anomalous_ratio,
             }
-            if arff_type is "nominal":
+            if arff_type == "nominal":
                 schema[col_name]["categorical_values"] = normal_values
         return schema
 
-    # def transform_schema(self, df):
-    #     """Transforms a data frame according to previously inferred schema.
-    #
-    #     This function modifies a data frame...
-    #
-    #     Parameters
-    #     ----------
-    #     df: Pandas dataframe object.
-    #
-    #     Returns
-    #     -------
-    #     df_new: Transformed Pandas dataframe object.
-    #     """
-    #     df_new = df.copy()
-    #
-    #     schema = get schema from somewhere
-    #
-    #     # encodes missing data
-    #     df_new = df_new.apply(self.as_normal(schema), axis=0)
-    #
-    #     # change dtypes
-    #     df_new = self.update_dtypes(df_new, schema)
-    #
-    #     return df_new
+    def transform_schema(self, df, schema):
+         """Transforms a data frame according to previously inferred schema.
+
+         This function modifies a data frame...
+
+         Parameters
+         ----------
+         df: Pandas dataframe object.
+
+         Returns
+         -------
+         df_new: Transformed Pandas dataframe object.
+         """
+         df_new = df.copy()
+
+         # encodes missing data
+         df_new = df_new.apply(self.as_normal(schema), axis=0)
+
+         # change dtypes
+         df_new = self.update_dtypes(df_new, schema)
+
+         return df_new
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -467,7 +454,7 @@ class Ptype:
         else:
             return [[], [], []]
 
-    def column_results(self, col_name):
+    def column(self, col_name):
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
 
@@ -507,7 +494,7 @@ class Ptype:
         return col
 
     def store_features(self, col_name, counts):
-        posterior = self.all_posteriors[self.model.config.dataset_name][col_name]
+        posterior = self.cols[col_name].p_t
 
         sorted_posterior = [
             posterior[3],
@@ -535,9 +522,6 @@ class Ptype:
         self.features[col_name] = np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
-
-    def save_posteriors(self, filename="all_posteriors.pkl"):
-        save_object(self.all_posteriors, filename)
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(
@@ -584,49 +568,6 @@ class Ptype:
 
         # Removes existing folders accordingly
         create_folders(self.model, i == 0)
-
-    def initialize_params_uniformly(self):
-        LOG_EPS = -1e150
-
-        # make uniform
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            # discards missing and anomaly types
-            if i >= 2:
-                # make uniform
-                machine.I = {
-                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                    for a in machine.I
-                }
-                machine.I_z = {
-                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                    for a in machine.I
-                }
-
-                for a in machine.T:
-                    for b in machine.T[a]:
-                        for c in machine.T[a][b]:
-                            machine.T[a][b][c] = np.log(0.5)
-                            machine.T_z[a][b][c] = np.log(0.5)
-
-                machine.F = {
-                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                    for a in machine.F
-                }
-                machine.F_z = {
-                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                    for a in machine.F
-                }
-
-    def normalize_params(self):
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            if i not in [0, 1]:
-                self.PFSMRunner.machines[i].I = PtypeModel.normalize_initial(
-                    machine.I_z
-                )
-                (
-                    self.PFSMRunner.machines[i].F,
-                    self.PFSMRunner.machines[i].T,
-                ) = PtypeModel.normalize_final(machine.F_z, machine.T_z)
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
@@ -682,7 +623,6 @@ class Ptype:
         elif new_t not in self.model.config.types_as_list:
             print("Given type is unknown!")
 
-        self.all_posteriors["demo"][col_name] = self.cols[col_name].p_t
         # update the arff types?
         # what if given type is not recognized
 

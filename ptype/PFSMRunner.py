@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 from ptype.PFSM_DiscriminativeLearning import (
     IntegersNewAuto,
@@ -81,3 +82,35 @@ class PFSMRunner:
                 self.machines[i].F, self.machines[i].T = PtypeModel.normalize_final(
                     machine.F_z, machine.T_z
                 )
+
+    def initialize_params_uniformly(self):
+        LOG_EPS = -1e150
+
+        # make uniform
+        for i, machine in enumerate(self.machines):
+            # discards missing and anomaly types
+            if i >= 2:
+                # make uniform
+                machine.I = {
+                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
+                    for a in machine.I
+                }
+                machine.I_z = {
+                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
+                    for a in machine.I
+                }
+
+                for a in machine.T:
+                    for b in machine.T[a]:
+                        for c in machine.T[a][b]:
+                            machine.T[a][b][c] = np.log(0.5)
+                            machine.T_z[a][b][c] = np.log(0.5)
+
+                machine.F = {
+                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
+                    for a in machine.F
+                }
+                machine.F_z = {
+                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
+                    for a in machine.F
+                }

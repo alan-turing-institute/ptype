@@ -730,9 +730,6 @@ class PtypeModel:
         return np.array(grad_approx)
 
     ### GETTERS - SETTERS ###
-    def set_data(self, data):
-        self.data = data
-
     def set_params(self, config, _data_frame):
         self.config = config
         self.data = _data_frame
