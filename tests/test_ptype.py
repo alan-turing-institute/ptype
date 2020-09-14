@@ -166,7 +166,7 @@ def core_tests():
 def notebook_tests():
     import os
 
-    if os.system("pytest --nbval notebooks/*.ipynb -v") != 0:
+    if os.system("pytest --nbval notebooks/*.ipynb") != 0:
         raise Exception("Notebook test(s) failed.")
 
 
@@ -186,9 +186,9 @@ def training_tests():
 
 
 def main():
-    core_tests()
+#    core_tests()
     notebook_tests()
-    training_tests()
+#    training_tests()
 
 
 if __name__ == "__main__":
