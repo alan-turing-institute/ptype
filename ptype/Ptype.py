@@ -183,9 +183,7 @@ class Ptype:
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.all_posteriors[self.model.config.dataset_name][
-                col_name
-            ] = self.model.p_t
+            self.all_posteriors[col_name] = self.model.p_t
             self.cols[col_name] = self.column_results(col_name)
 
             # Store additional features for canonical type inference
@@ -501,7 +499,7 @@ class Ptype:
         return col
 
     def store_features(self, col_name, counts):
-        posterior = self.all_posteriors[self.model.config.dataset_name][col_name]
+        posterior = self.all_posteriors[col_name]
 
         sorted_posterior = [
             posterior[3],
@@ -633,7 +631,7 @@ class Ptype:
         elif new_t not in self.model.config.types_as_list:
             print("Given type is unknown!")
 
-        self.all_posteriors["demo"][col_name] = self.cols[col_name].p_t
+        self.all_posteriors[col_name] = self.cols[col_name].p_t
         # update the arff types?
         # what if given type is not recognized
 
