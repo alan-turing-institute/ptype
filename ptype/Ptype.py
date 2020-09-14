@@ -144,9 +144,16 @@ class Ptype:
         self.cols = {}  # column-indexed
         self.column2ARFF = Column2ARFF(model_folder)
 
-    def set_data(self, df):
+    ###################### MAIN METHODS #######################
+    def run_inference(self, _data_frame):
+        """ Runs inference for each column in a dataframe.
+            The outputs are stored in dictionaries.
+            The column types are saved to a csv file.
+
+        :param _data_frame:
+        """
         _dataset_name = "demo"
-        df = df.applymap(str)
+        df = _data_frame.applymap(str)
         self.cols = {}
         self.all_posteriors = {_dataset_name: {}}
 
@@ -160,16 +167,6 @@ class Ptype:
             self.model = PtypeModel(config, df)
         else:
             self.model.set_params(config, df)
-
-    ###################### MAIN METHODS #######################
-    def run_inference(self, _data_frame):
-        """ Runs inference for each column in a dataframe.
-            The outputs are stored in dictionaries.
-            The column types are saved to a csv file.
-
-        :param _data_frame:
-        """
-        self.set_data(_data_frame)
 
         if self.verbose:
             print_to_file("processing " + self.model.config.dataset_name)
