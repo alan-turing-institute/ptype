@@ -225,7 +225,7 @@ class Ptype:
         self.print = _print
 
         if _uniformly:
-            self.initialize_params_uniformly()
+            self.PFSMRunner.initialize_params_uniformly()
 
         if self.model is None:
             self.model = PtypeModel(config=None, data_frame=None)
@@ -233,7 +233,7 @@ class Ptype:
         self.model.types = self.types
 
         # Setup folders and probabilities for all columns
-        self.normalize_params()
+        self.PFSMRunner.normalize_params()
 
         self.model.data_frames = data_frames
 
@@ -330,8 +330,6 @@ class Ptype:
                 df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
                     new_dtype
                 )
-            except:
-                print("Something else went wrong")
         return df
 
     def show_results_df(self):
@@ -402,7 +400,7 @@ class Ptype:
                 "anomalies": anomalies,
                 "anomalous_ratio": anomalous_ratio,
             }
-            if arff_type is "nominal":
+            if arff_type == "nominal":
                 schema[col_name]["categorical_values"] = normal_values
         return schema
 
@@ -569,49 +567,6 @@ class Ptype:
 
         # Removes existing folders accordingly
         create_folders(self.model, i == 0)
-
-    def initialize_params_uniformly(self):
-        LOG_EPS = -1e150
-
-        # make uniform
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            # discards missing and anomaly types
-            if i >= 2:
-                # make uniform
-                machine.I = {
-                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                    for a in machine.I
-                }
-                machine.I_z = {
-                    a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                    for a in machine.I
-                }
-
-                for a in machine.T:
-                    for b in machine.T[a]:
-                        for c in machine.T[a][b]:
-                            machine.T[a][b][c] = np.log(0.5)
-                            machine.T_z[a][b][c] = np.log(0.5)
-
-                machine.F = {
-                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                    for a in machine.F
-                }
-                machine.F_z = {
-                    a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                    for a in machine.F
-                }
-
-    def normalize_params(self):
-        for i, machine in enumerate(self.PFSMRunner.machines):
-            if i not in [0, 1]:
-                self.PFSMRunner.machines[i].I = PtypeModel.normalize_initial(
-                    machine.I_z
-                )
-                (
-                    self.PFSMRunner.machines[i].F,
-                    self.PFSMRunner.machines[i].T,
-                ) = PtypeModel.normalize_final(machine.F_z, machine.T_z)
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
