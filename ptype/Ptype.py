@@ -8,7 +8,6 @@ from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import create_folders, print_to_file, save_object
-from scipy.stats import norm
 
 
 def get_unique_vals(col, return_counts=False):
