@@ -210,10 +210,7 @@ class Ptype:
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.cols[col_name] = self.column(col_name)
-
-            # Store additional features for canonical type inference
-            self.store_features(col_name, counts)
+            self.cols[col_name] = self.column(col_name, counts)
 
         # Export column types, and missing data
         save = False
@@ -482,11 +479,9 @@ class Ptype:
         else:
             return [[], [], []]
 
-    def column(self, col_name):
+    def column(self, col_name, counts):
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
-
-         :param col_name:
         """
         col = Column(self.model.data[col_name])
         col.p_t = self.model.p_t
@@ -520,10 +515,8 @@ class Ptype:
         for i in anomalies:
             col.unique_vals_status[i] = Status.ANOMALOUS
 
+        col.store_features(counts)
         return col
-
-    def store_features(self, col_name, counts):
-        return self.cols[col_name].store_features(counts)
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(
