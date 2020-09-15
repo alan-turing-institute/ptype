@@ -2,122 +2,12 @@ import csv
 import joblib
 import numpy as np
 import pandas as pd
-from enum import Enum
 
+from ptype.Column import Column, Status, get_unique_vals
 from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import create_folders, print_to_file, save_object
-
-
-def get_unique_vals(col, return_counts=False):
-    """List of the unique values found in a column."""
-    return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
-
-
-# Use same names and values as the constants in Model.py. Could consolidate.
-class Status(Enum):
-    TYPE = 1
-    MISSING = 2
-    ANOMALOUS = 3
-
-
-class Column:
-    def __init__(self, series):
-        self.series = series
-        self.p_t = {}
-        self.p_t_canonical = {}
-        self.p_z = {}
-        self.predicted_type = None
-        self.arff_type = None
-        self.unique_vals = []
-        self.unique_vals_counts = []
-        self.unique_vals_status = []
-        self.cache_unique_vals()
-
-    def cache_unique_vals(self):
-        """Call this to (re)initialise the cache of my unique values."""
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(
-            self.series, return_counts=True
-        )
-
-    def has_missing(self):
-        return self.get_missing_data_predictions() != []
-
-    def has_anomalous(self):
-        return self.get_anomaly_predictions() != []
-
-    def show_results_for(self, status, desc):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        if len(indices) == 0:
-            return 0
-        else:
-            print("\t" + desc, [self.unique_vals[i] for i in indices][:20])
-            print(
-                "\ttheir counts: ", [self.unique_vals_counts[i] for i in indices][:20]
-            )
-            return sum(self.unique_vals_counts[indices])
-
-    def show_results(self):
-        print("col: " + str(self.series.name))
-        print("\tpredicted type: " + self.predicted_type)
-        print("\tposterior probs: ", self.p_t)
-
-        normal = self.show_results_for(Status.TYPE, "some normal data values: ")
-        missing = self.show_results_for(Status.MISSING, "missing values:")
-        anomalies = self.show_results_for(Status.ANOMALOUS, "anomalies:")
-
-        total = normal + missing + anomalies
-
-        print("\tfraction of normal:", round(normal / total, 2), "\n")
-        print("\tfraction of missing:", round(missing / total, 2), "\n")
-        print("\tfraction of anomalies:", round(anomalies / total, 2), "\n")
-
-    def get_ratio(self, status):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        total = sum(self.unique_vals_counts)
-        return round(sum(self.unique_vals_counts[indices]) / total, 2)
-
-    def get_normal_predictions(self):
-        """Values identified as 'normal'."""
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.TYPE
-        ]
-
-    def get_missing_data_predictions(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.MISSING
-        ]
-
-    def get_anomaly_predictions(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.ANOMALOUS
-        ]
-
-    def reclassify_normal(self, vs):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
-            self.unique_vals_status[i] = Status.TYPE
-            self.p_z[i, :] = [1.0, 0.0, 0.0]
-
-    def replace_missing(self, v):
-        for i, u in enumerate(self.unique_vals):
-            if self.unique_vals_status[i] == Status.MISSING:
-                self.series.replace(u, v, inplace=True)
-        self.cache_unique_vals()
 
 
 class Ptype:
@@ -138,7 +28,6 @@ class Ptype:
         self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
         self.data_frames = None
-        self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
         self.column2ARFF = Column2ARFF(model_folder)
@@ -181,10 +70,7 @@ class Ptype:
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
-            self.cols[col_name] = self.column(col_name)
-
-            # Store additional features for canonical type inference
-            self.store_features(col_name, counts)
+            self.cols[col_name] = self.column(col_name, counts)
 
         # Export column types, and missing data
         save = False
@@ -354,8 +240,7 @@ class Ptype:
 
         # predicts the corresponding ARFF types
         for col_name in self.cols:
-            features = self.features[col_name]
-            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(features)
+            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(self.cols[col_name].features)
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
@@ -454,73 +339,30 @@ class Ptype:
         else:
             return [[], [], []]
 
-    def column(self, col_name):
+    def column(self, col_name, counts):
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
-
-         :param col_name:
         """
-        col = Column(self.model.data[col_name])
-        col.p_t = self.model.p_t
-
         # In case of a posterior vector whose entries are equal
         if len(set(self.model.p_t)) == 1:
-            inferred_column_type = "all identical"
+            predicted_type = "all identical"
         else:
-            inferred_column_type = self.model.config.types_as_list[
-                np.argmax(self.model.p_t)
-            ]
-        col.predicted_type = inferred_column_type
-
-        # need to handle the uniform case
-        col.p_z = self.model.p_z[:, np.argmax(self.model.p_t), :]
+            predicted_type = self.model.config.types_as_list[np.argmax(self.model.p_t)]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(
-            inferred_column_type
+            predicted_type
         )
-        col.normal_values = normals
-        col.missing_values = missings
-        col.anomalous_values = anomalies
 
-        col.unique_vals_status = [None] * len(col.unique_vals)
-        for i in normals:
-            col.unique_vals_status[i] = Status.TYPE
-        for i in missings:
-            col.unique_vals_status[i] = Status.MISSING
-        for i in anomalies:
-            col.unique_vals_status[i] = Status.ANOMALOUS
-
-        return col
-
-    def store_features(self, col_name, counts):
-        posterior = self.cols[col_name].p_t
-
-        sorted_posterior = [
-            posterior[3],
-            posterior[4:].sum(),
-            posterior[2],
-            posterior[0],
-            posterior[1],
-        ]
-
-        entries = [
-            str(int_element) for int_element in self.model.data[col_name].tolist()
-        ]
-        U = len(np.unique(entries))
-        U_clean = len(self.cols[col_name].normal_values)
-
-        N = len(entries)
-        N_clean = sum([counts[index] for index in self.cols[col_name].normal_values])
-
-        u_ratio = U / N
-        if U_clean == 0 and N_clean == 0:
-            u_ratio_clean = 0.0
-        else:
-            u_ratio_clean = U_clean / N_clean
-
-        self.features[col_name] = np.array(
-            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
+        return Column(
+            series=self.model.data[col_name],
+            counts=counts,
+            p_t=self.model.p_t,
+            predicted_type=predicted_type,
+            p_z=self.model.p_z[:, np.argmax(self.model.p_t), :],  # need to handle the uniform case
+            normal_values=normals,
+            missing_values=missings,
+            anomalous_values=anomalies
         )
 
     def write_type_predictions_2_csv(self, column_type_predictions):
