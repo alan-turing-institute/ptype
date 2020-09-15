@@ -1,9 +1,8 @@
 import csv
-import joblib
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, Status, get_unique_vals
+from ptype.Column import Column, Column2ARFF,Status, get_unique_vals
 from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
@@ -475,21 +474,3 @@ class Ptype:
     #
     #     for i in [np.where(self.cols[col_name].unique_vals == v)[0][0] for v in vs]:
     #         self.cols[col_name].unique_vals_status[i] = Status.TYPE
-
-
-class Column2ARFF:
-    def __init__(self, model_folder="models"):
-        self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
-        self.clf = joblib.load(model_folder + "LR.sav")
-
-    def get_arff(self, features):
-        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
-        arff_type = self.clf.predict(features.reshape(1, -1))[0]
-
-        if arff_type == "categorical":
-            arff_type = "nominal"
-        # find normal values for categorical type
-
-        arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
-
-        return arff_type, arff_type_posterior

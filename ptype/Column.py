@@ -1,4 +1,5 @@
 from enum import Enum
+import joblib
 import numpy as np
 
 
@@ -150,3 +151,21 @@ class Column:
         return np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
+
+
+class Column2ARFF:
+    def __init__(self, model_folder="models"):
+        self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
+        self.clf = joblib.load(model_folder + "LR.sav")
+
+    def get_arff(self, features):
+        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+        arff_type = self.clf.predict(features.reshape(1, -1))[0]
+
+        if arff_type == "categorical":
+            arff_type = "nominal"
+        # find normal values for categorical type
+
+        arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
+
+        return arff_type, arff_type_posterior
