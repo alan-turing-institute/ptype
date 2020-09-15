@@ -64,7 +64,7 @@ class Ptype:
         # Generate binary mask matrix to check if a word is supported by a PFSM or not (this is just to optimize the implementation)
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
-        # Calculate probabilities for each column, run inference and store results
+        # Calculate probabilities for each column and run inference.
         for _, col_name in enumerate(list(self.model.config.column_names)):
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
@@ -483,15 +483,7 @@ class Column2ARFF:
         self.clf = joblib.load(model_folder + "LR.sav")
 
     def get_arff_type(self, features):
-        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
-        arff_type = self.clf.predict(features.reshape(1, -1))[0]
-
-        if arff_type == "categorical":
-            arff_type = "nominal"
-        # find normal values for categorical type
-
-        # arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
-        return arff_type
+        return self.get_arff(features)[0]
 
     def get_arff(self, features):
         features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
