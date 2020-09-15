@@ -343,7 +343,7 @@ class Ptype:
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
         """
-        col = Column(self.model.data[col_name])
+        col = Column(self.model.data[col_name], counts)
         col.p_t = self.model.p_t
 
         # In case of a posterior vector whose entries are equal

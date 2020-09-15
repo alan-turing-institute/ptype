@@ -15,8 +15,9 @@ class Status(Enum):
 
 
 class Column:
-    def __init__(self, series):
+    def __init__(self, series, counts):
         self.series = series
+        self.counts = counts
         self.p_t = {}
         self.p_t_canonical = {}
         self.p_z = {}
