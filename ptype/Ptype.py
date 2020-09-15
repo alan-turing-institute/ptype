@@ -119,6 +119,36 @@ class Column:
                 self.series.replace(u, v, inplace=True)
         self.cache_unique_vals()
 
+    def store_features(self, counts):
+        posterior = self.p_t
+
+        sorted_posterior = [
+            posterior[3],
+            posterior[4:].sum(),
+            posterior[2],
+            posterior[0],
+            posterior[1],
+        ]
+
+        entries = [
+            str(int_element) for int_element in self.series.tolist()
+        ]
+        U = len(np.unique(entries))
+        U_clean = len(self.normal_values)
+
+        N = len(entries)
+        N_clean = sum([counts[index] for index in self.normal_values])
+
+        u_ratio = U / N
+        if U_clean == 0 and N_clean == 0:
+            u_ratio_clean = 0.0
+        else:
+            u_ratio_clean = U_clean / N_clean
+
+        self.features = np.array(
+            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
+        )
+
 
 class Ptype:
     def __init__(self, _exp_num=0, _types=None, model_folder="models/"):
@@ -138,7 +168,6 @@ class Ptype:
         self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
         self.data_frames = None
-        self.features = {}
         self.verbose = False
         self.cols = {}  # column-indexed
         self.column2ARFF = Column2ARFF(model_folder)
@@ -354,8 +383,7 @@ class Ptype:
 
         # predicts the corresponding ARFF types
         for col_name in self.cols:
-            features = self.features[col_name]
-            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(features)
+            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(self.cols[col_name].features)
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
@@ -479,6 +507,7 @@ class Ptype:
         [normals, missings, anomalies] = self.detect_missing_anomalies(
             inferred_column_type
         )
+        # TODO: initialise these fields in Column
         col.normal_values = normals
         col.missing_values = missings
         col.anomalous_values = anomalies
@@ -494,34 +523,7 @@ class Ptype:
         return col
 
     def store_features(self, col_name, counts):
-        posterior = self.cols[col_name].p_t
-
-        sorted_posterior = [
-            posterior[3],
-            posterior[4:].sum(),
-            posterior[2],
-            posterior[0],
-            posterior[1],
-        ]
-
-        entries = [
-            str(int_element) for int_element in self.model.data[col_name].tolist()
-        ]
-        U = len(np.unique(entries))
-        U_clean = len(self.cols[col_name].normal_values)
-
-        N = len(entries)
-        N_clean = sum([counts[index] for index in self.cols[col_name].normal_values])
-
-        u_ratio = U / N
-        if U_clean == 0 and N_clean == 0:
-            u_ratio_clean = 0.0
-        else:
-            u_ratio_clean = U_clean / N_clean
-
-        self.features[col_name] = np.array(
-            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
-        )
+        return self.cols[col_name].store_features(counts)
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(

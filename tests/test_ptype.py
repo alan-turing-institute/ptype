@@ -59,7 +59,7 @@ def get_predictions(dataset_name):
     column2ARFF = Column2ARFF("models/")
     for col_name in ptype.cols:
         # normalize the features as done before, then reclassify the column
-        features = ptype.features[col_name]
+        features = ptype.cols[col_name].features
         ptype.cols[col_name].arff_type = column2ARFF.get_arff_type(features)
 
     df_missing = df.apply(as_missing(ptype), axis=0)
