@@ -353,11 +353,9 @@ class Ptype:
             series=self.model.data[col_name],
             counts=counts,
             p_t=self.model.p_t,
-            predicted_type=predicted_type
+            predicted_type=predicted_type,
+            p_z=self.model.p_z[:, np.argmax(self.model.p_t), :] # need to handle the uniform case
         )
-
-        # need to handle the uniform case
-        col.p_z = self.model.p_z[:, np.argmax(self.model.p_t), :]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(
