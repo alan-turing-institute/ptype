@@ -120,10 +120,6 @@ class PtypeModel:
 
         # Inference
         p_t = []  # p_t: posterior probability distribution of column types
-        p_z = np.zeros(
-            (I, K, 3)
-        )  # p_z: posterior probability distribution of row types
-
         counts_array = np.reshape(counts, newshape=(len(counts),))
 
         # Iterates for each possible column type

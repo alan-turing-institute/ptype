@@ -229,7 +229,6 @@ class Ptype:
         ----------
         df: Pandas dataframe object.
 
-
         Returns
         -------
         schema: Schema object.
@@ -240,26 +239,18 @@ class Ptype:
         schema = {}
         for col_name in df:
             col = self.cols[col_name]
-            t = col.predicted_type
-            arff_type = col.arff_type
-            normal_values = list(np.unique(col.get_normal_predictions()))
-            missing_values = list(np.unique(col.get_missing_data_predictions()))
-            anomalies = list(np.unique(col.get_anomaly_predictions()))
-            missingness_ratio = col.get_ratio(Status.MISSING)
-            anomalous_ratio = col.get_ratio(Status.ANOMALOUS)
-
             schema[col_name] = {
-                "type": t,
-                "dtype": ptype_pandas_mapping[t],
-                "arff_type": arff_type,
-                "normal_values": normal_values,
-                "missing_values": missing_values,
-                "missingness_ratio": missingness_ratio,
-                "anomalies": anomalies,
-                "anomalous_ratio": anomalous_ratio,
+                "type": col.predicted_type,
+                "dtype": ptype_pandas_mapping[col.predicted_type],
+                "arff_type": col.arff_type,
+                "normal_values": list(np.unique(col.get_normal_predictions())),
+                "missing_values": list(np.unique(col.get_missing_data_predictions())),
+                "missingness_ratio": col.get_ratio(Status.MISSING),
+                "anomalies": list(np.unique(col.get_anomaly_predictions())),
+                "anomalous_ratio": col.get_ratio(Status.ANOMALOUS),
             }
-            if arff_type == "nominal":
-                schema[col_name]["categorical_values"] = normal_values
+            if col.arff_type == "nominal":
+                schema[col_name]["categorical_values"] = schema[col_name]["normal_values"]
         return schema
 
     def transform_schema(self, df, schema):
