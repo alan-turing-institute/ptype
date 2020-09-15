@@ -354,7 +354,7 @@ class Ptype:
             predicted_type
         )
 
-        col = Column(
+        return Column(
             series=self.model.data[col_name],
             counts=counts,
             p_t=self.model.p_t,
@@ -364,17 +364,6 @@ class Ptype:
             missing_values=missings,
             anomalous_values=anomalies
         )
-
-        col.unique_vals_status = [
-            Status.TYPE if i in normals else
-            Status.MISSING if i in missings else
-            Status.ANOMALOUS if i in anomalies else
-            None  # only happens in the "all identical" case?
-            for i, _ in enumerate(col.unique_vals)
-        ]
-
-        col.store_features(counts)
-        return col
 
     def write_type_predictions_2_csv(self, column_type_predictions):
         with open(

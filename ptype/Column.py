@@ -17,7 +17,6 @@ class Status(Enum):
 class Column:
     def __init__(self, series, counts, p_t, predicted_type, p_z, normal_values, missing_values, anomalous_values):
         self.series = series
-        self.counts = counts
         self.p_t = p_t
         self.p_t_canonical = {}
         self.predicted_type = predicted_type
@@ -30,6 +29,15 @@ class Column:
         self.unique_vals_counts = []
         self.unique_vals_status = []
         self.cache_unique_vals()
+
+        self.unique_vals_status = [
+            Status.TYPE if i in self.normal_values else
+            Status.MISSING if i in self.missing_values else
+            Status.ANOMALOUS if i in self.anomalous_values else
+            None  # only happens in the "all identical" case?
+            for i, _ in enumerate(self.unique_vals)
+        ]
+        self.features = self.get_features(counts)
 
     def cache_unique_vals(self):
         """Call this to (re)initialise the cache of my unique values."""
@@ -115,7 +123,7 @@ class Column:
                 self.series.replace(u, v, inplace=True)
         self.cache_unique_vals()
 
-    def store_features(self, counts):
+    def get_features(self, counts):
         posterior = self.p_t
 
         sorted_posterior = [
@@ -141,6 +149,6 @@ class Column:
         else:
             u_ratio_clean = U_clean / N_clean
 
-        self.features = np.array(
+        return np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
