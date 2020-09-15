@@ -240,7 +240,7 @@ class Ptype:
 
         # predicts the corresponding ARFF types
         for col_name in self.cols:
-            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(self.cols[col_name].features)
+            self.cols[col_name].arff_type = self.column2ARFF.get_arff(self.cols[col_name].features)[0]
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
@@ -481,9 +481,6 @@ class Column2ARFF:
     def __init__(self, model_folder="models"):
         self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
         self.clf = joblib.load(model_folder + "LR.sav")
-
-    def get_arff_type(self, features):
-        return self.get_arff(features)[0]
 
     def get_arff(self, features):
         features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]

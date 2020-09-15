@@ -60,7 +60,7 @@ def get_predictions(dataset_name):
     for col_name in ptype.cols:
         # normalize the features as done before, then reclassify the column
         features = ptype.cols[col_name].features
-        ptype.cols[col_name].arff_type = column2ARFF.get_arff_type(features)
+        ptype.cols[col_name].arff_type = column2ARFF.get_arff(features)[0]
 
     df_missing = df.apply(as_missing(ptype), axis=0)
     df_anomaly = df.apply(as_anomaly(ptype), axis=0)
