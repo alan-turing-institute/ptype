@@ -27,9 +27,7 @@ class Column:
         self.arff_type = None
         self.unique_vals = []
         self.unique_vals_counts = []
-        self.unique_vals_status = []
         self.cache_unique_vals()
-
         self.unique_vals_status = [
             Status.TYPE if i in self.normal_values else
             Status.MISSING if i in self.missing_values else
