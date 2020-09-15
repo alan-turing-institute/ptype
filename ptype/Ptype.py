@@ -243,10 +243,10 @@ class Ptype:
                 "type": col.predicted_type,
                 "dtype": ptype_pandas_mapping[col.predicted_type],
                 "arff_type": col.arff_type,
-                "normal_values": list(np.unique(col.get_normal_predictions())),
-                "missing_values": list(np.unique(col.get_missing_data_predictions())),
+                "normal_values": col.get_normal_predictions(),
+                "missing_values": col.get_missing_data_predictions(),
                 "missingness_ratio": col.get_ratio(Status.MISSING),
-                "anomalies": list(np.unique(col.get_anomaly_predictions())),
+                "anomalies": col.get_anomaly_predictions(),
                 "anomalous_ratio": col.get_ratio(Status.ANOMALOUS),
             }
             if col.arff_type == "nominal":
@@ -314,12 +314,8 @@ class Ptype:
 
             return [
                 list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(
-                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
-                ),
-                list(
-                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
-                ),
+                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]),
             ]
         else:
             return [[], [], []]
