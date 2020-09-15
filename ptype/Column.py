@@ -15,13 +15,16 @@ class Status(Enum):
 
 
 class Column:
-    def __init__(self, series, counts, p_t, predicted_type, p_z):
+    def __init__(self, series, counts, p_t, predicted_type, p_z, normal_values, missing_values, anomalous_values):
         self.series = series
         self.counts = counts
         self.p_t = p_t
         self.p_t_canonical = {}
-        self.p_z = p_z
         self.predicted_type = predicted_type
+        self.p_z = p_z
+        self.normal_values = normal_values
+        self.missing_values = missing_values
+        self.anomalous_values = anomalous_values
         self.arff_type = None
         self.unique_vals = []
         self.unique_vals_counts = []

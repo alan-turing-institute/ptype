@@ -349,30 +349,29 @@ class Ptype:
         else:
             predicted_type = self.model.config.types_as_list[np.argmax(self.model.p_t)]
 
+        # Indices for the unique values
+        [normals, missings, anomalies] = self.detect_missing_anomalies(
+            predicted_type
+        )
+
         col = Column(
             series=self.model.data[col_name],
             counts=counts,
             p_t=self.model.p_t,
             predicted_type=predicted_type,
-            p_z=self.model.p_z[:, np.argmax(self.model.p_t), :] # need to handle the uniform case
+            p_z=self.model.p_z[:, np.argmax(self.model.p_t), :],  # need to handle the uniform case
+            normal_values=normals,
+            missing_values=missings,
+            anomalous_values=anomalies
         )
 
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            predicted_type
-        )
-        # TODO: initialise these fields in Column
-        col.normal_values = normals
-        col.missing_values = missings
-        col.anomalous_values = anomalies
-
-        col.unique_vals_status = [None] * len(col.unique_vals)
-        for i in normals:
-            col.unique_vals_status[i] = Status.TYPE
-        for i in missings:
-            col.unique_vals_status[i] = Status.MISSING
-        for i in anomalies:
-            col.unique_vals_status[i] = Status.ANOMALOUS
+        col.unique_vals_status = [
+            Status.TYPE if i in normals else
+            Status.MISSING if i in missings else
+            Status.ANOMALOUS if i in anomalies else
+            None  # only happens in the "all identical" case?
+            for i, _ in enumerate(col.unique_vals)
+        ]
 
         col.store_features(counts)
         return col
