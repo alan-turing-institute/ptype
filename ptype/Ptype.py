@@ -76,6 +76,10 @@ class Ptype:
             self.write_type_predictions_2_csv(
                 col.predicted_type for col in self.cols.values()
             )
+        # predicts the corresponding ARFF types
+        for col_name in self.cols:
+            self.cols[col_name].arff_type = column2ARFF.get_arff(self.cols[col_name].features)[0]
+
 
     def train_machines_multiple_dfs(
         self,
@@ -235,10 +239,6 @@ class Ptype:
         schema: Schema object.
         """
         self.run_inference(df)
-
-        # predicts the corresponding ARFF types
-        for col_name in self.cols:
-            self.cols[col_name].arff_type = column2ARFF.get_arff(self.cols[col_name].features)[0]
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
