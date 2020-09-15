@@ -38,6 +38,7 @@ class Column:
             for i, _ in enumerate(self.unique_vals)
         ]
         self.features = self.get_features(counts)
+        self.arff_type = column2ARFF.get_arff(self.features)[0]
 
     def cache_unique_vals(self):
         """Call this to (re)initialise the cache of my unique values."""

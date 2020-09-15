@@ -2,7 +2,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, Status, column2ARFF, get_unique_vals
+from ptype.Column import Column, Status, get_unique_vals
 from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
@@ -76,10 +76,6 @@ class Ptype:
             self.write_type_predictions_2_csv(
                 col.predicted_type for col in self.cols.values()
             )
-        # predicts the corresponding ARFF types
-        for col_name in self.cols:
-            self.cols[col_name].arff_type = column2ARFF.get_arff(self.cols[col_name].features)[0]
-
 
     def train_machines_multiple_dfs(
         self,
