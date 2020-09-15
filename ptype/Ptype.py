@@ -2,7 +2,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, Column2ARFF,Status, get_unique_vals
+from ptype.Column import Column, Status, column2ARFF, get_unique_vals
 from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
@@ -10,7 +10,7 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 
 class Ptype:
-    def __init__(self, _exp_num=0, _types=None, model_folder="models/"):
+    def __init__(self, _exp_num=0, _types=None):
         default_types = {
             1: "integer",
             2: "string",
@@ -28,8 +28,7 @@ class Ptype:
         self.model = None
         self.data_frames = None
         self.verbose = False
-        self.cols = {}  # column-indexed
-        self.column2ARFF = Column2ARFF(model_folder)
+        self.cols = {}
 
     ###################### MAIN METHODS #######################
     def run_inference(self, _data_frame):
@@ -239,7 +238,7 @@ class Ptype:
 
         # predicts the corresponding ARFF types
         for col_name in self.cols:
-            self.cols[col_name].arff_type = self.column2ARFF.get_arff(self.cols[col_name].features)[0]
+            self.cols[col_name].arff_type = column2ARFF.get_arff(self.cols[col_name].features)[0]
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}

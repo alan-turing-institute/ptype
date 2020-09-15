@@ -1,6 +1,7 @@
 from enum import Enum
 import joblib
 import numpy as np
+from ptype.utils import project_root
 
 
 def get_unique_vals(col, return_counts=False):
@@ -169,3 +170,6 @@ class Column2ARFF:
         arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
 
         return arff_type, arff_type_posterior
+
+
+column2ARFF = Column2ARFF(project_root() + "/../models/")

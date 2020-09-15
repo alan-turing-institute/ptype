@@ -3,7 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 
-from ptype.Ptype import Ptype, Column2ARFF
+from ptype.Column import Column2ARFF
+from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
 
