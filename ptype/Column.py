@@ -15,10 +15,10 @@ class Status(Enum):
 
 
 class Column:
-    def __init__(self, series, counts):
+    def __init__(self, series, counts, p_t):
         self.series = series
         self.counts = counts
-        self.p_t = {}
+        self.p_t = p_t
         self.p_t_canonical = {}
         self.p_z = {}
         self.predicted_type = None
