@@ -3,7 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 
-from ptype.Ptype import Ptype, Column2ARFF
+from ptype.Column import Column2ARFF
+from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
 
@@ -55,12 +56,6 @@ def get_predictions(dataset_name):
 
     ptype = Ptype(_types=types)
     ptype.run_inference(_data_frame=df)
-
-    column2ARFF = Column2ARFF("models/")
-    for col_name in ptype.cols:
-        # normalize the features as done before, then reclassify the column
-        features = ptype.cols[col_name].features
-        ptype.cols[col_name].arff_type = column2ARFF.get_arff_type(features)
 
     df_missing = df.apply(as_missing(ptype), axis=0)
     df_anomaly = df.apply(as_anomaly(ptype), axis=0)

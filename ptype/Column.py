@@ -1,5 +1,7 @@
 from enum import Enum
+import joblib
 import numpy as np
+from ptype.utils import project_root
 
 
 def get_unique_vals(col, return_counts=False):
@@ -36,6 +38,7 @@ class Column:
             for i, _ in enumerate(self.unique_vals)
         ]
         self.features = self.get_features(counts)
+        self.arff_type = column2ARFF.get_arff(self.features)[0]
 
     def cache_unique_vals(self):
         """Call this to (re)initialise the cache of my unique values."""
@@ -150,3 +153,24 @@ class Column:
         return np.array(
             sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
         )
+
+
+class Column2ARFF:
+    def __init__(self, model_folder="models"):
+        self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
+        self.clf = joblib.load(model_folder + "LR.sav")
+
+    def get_arff(self, features):
+        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+        arff_type = self.clf.predict(features.reshape(1, -1))[0]
+
+        if arff_type == "categorical":
+            arff_type = "nominal"
+        # find normal values for categorical type
+
+        arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
+
+        return arff_type, arff_type_posterior
+
+
+column2ARFF = Column2ARFF(project_root() + "/../models/")

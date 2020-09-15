@@ -5,6 +5,7 @@ import functools
 import numpy.ma as ma
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import pandas as pd
 import pathlib
 import jsonpickle
@@ -21,7 +22,13 @@ report_being_str2 = (
     "\\usepackage{color} \n \\usepackage{textcomp} \n \\theoremstyle{definition} \n \\newtheorem{definition}{Definition} \n \\sisetup{ \n table - align - uncertainty = true, \n separate - uncertainty = true, \n} \n \\renewrobustcmd{\\bfseries}{\\fontseries{b}\\selectfont} \n \\renewrobustcmd {\\boldmath}{} \n \\begin{document}"
 )
 
-###################### TEXT MANIPULATION METHODS #######################
+
+# https://stackoverflow.com/questions/25389095/python-get-path-of-root-project-structure
+def project_root():
+    return os.path.dirname(os.path.abspath(__file__))
+    return Path(__file__).parent.parent
+
+# TEXT MANIPULATION METHODS #######################
 def chop_microseconds(delta):
     return delta - timedelta(microseconds=delta.microseconds)
 

@@ -1,5 +1,4 @@
 import csv
-import joblib
 import numpy as np
 import pandas as pd
 
@@ -11,7 +10,7 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 
 class Ptype:
-    def __init__(self, _exp_num=0, _types=None, model_folder="models/"):
+    def __init__(self, _exp_num=0, _types=None):
         default_types = {
             1: "integer",
             2: "string",
@@ -29,8 +28,7 @@ class Ptype:
         self.model = None
         self.data_frames = None
         self.verbose = False
-        self.cols = {}  # column-indexed
-        self.column2ARFF = Column2ARFF(model_folder)
+        self.cols = {}
 
     ###################### MAIN METHODS #######################
     def run_inference(self, _data_frame):
@@ -64,7 +62,7 @@ class Ptype:
         # Generate binary mask matrix to check if a word is supported by a PFSM or not (this is just to optimize the implementation)
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
-        # Calculate probabilities for each column, run inference and store results
+        # Calculate probabilities for each column and run inference.
         for _, col_name in enumerate(list(self.model.config.column_names)):
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
@@ -237,10 +235,6 @@ class Ptype:
         schema: Schema object.
         """
         self.run_inference(df)
-
-        # predicts the corresponding ARFF types
-        for col_name in self.cols:
-            self.cols[col_name].arff_type = self.column2ARFF.get_arff_type(self.cols[col_name].features)
 
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
@@ -475,32 +469,3 @@ class Ptype:
     #
     #     for i in [np.where(self.cols[col_name].unique_vals == v)[0][0] for v in vs]:
     #         self.cols[col_name].unique_vals_status[i] = Status.TYPE
-
-
-class Column2ARFF:
-    def __init__(self, model_folder="models"):
-        self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
-        self.clf = joblib.load(model_folder + "LR.sav")
-
-    def get_arff_type(self, features):
-        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
-        arff_type = self.clf.predict(features.reshape(1, -1))[0]
-
-        if arff_type == "categorical":
-            arff_type = "nominal"
-        # find normal values for categorical type
-
-        # arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
-        return arff_type
-
-    def get_arff(self, features):
-        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
-        arff_type = self.clf.predict(features.reshape(1, -1))[0]
-
-        if arff_type == "categorical":
-            arff_type = "nominal"
-        # find normal values for categorical type
-
-        arff_type_posterior = self.clf.predict_proba(features.reshape(1, -1))[0]
-
-        return arff_type, arff_type_posterior
