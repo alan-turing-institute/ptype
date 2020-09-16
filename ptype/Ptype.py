@@ -31,10 +31,8 @@ class Ptype:
         self.cols = {}
 
     ###################### MAIN METHODS #######################
-    def run_inference(self, _data_frame):
-        """ Runs inference for each column in a dataframe.
-            The outputs are stored in dictionaries.
-            The column types are saved to a csv file.
+    def fit_schema(self, _data_frame):
+        """ Runs inference for each column in a dataframe, and returns a schema object.
 
         :param _data_frame:
         """
@@ -76,6 +74,8 @@ class Ptype:
             self.write_type_predictions_2_csv(
                 col.predicted_type for col in self.cols.values()
             )
+
+        return self.cols
 
     def train_machines_multiple_dfs(
         self,
@@ -219,27 +219,8 @@ class Ptype:
 
         return pd.Series(missing_values)
 
-    def fit_schema(self, df):
-        """Generates a schema for a given data frame.
-
-        This function calculates the ptype outputs for a data frame and
-        store them in a schema.
-
-        Parameters
-        ----------
-        df: Pandas dataframe object.
-
-        Returns
-        -------
-        schema: Schema object.
-        """
-        self.run_inference(df)
-        return self.cols
-
     def transform_schema(self, df, schema):
          """Transforms a data frame according to previously inferred schema.
-
-         This function modifies a data frame...
 
          Parameters
          ----------
@@ -247,20 +228,12 @@ class Ptype:
 
          Returns
          -------
-         df_new: Transformed Pandas dataframe object.
+         Transformed Pandas dataframe object.
          """
-         df_new = df.copy()
-
-         # encodes missing data
-         df_new = df_new.apply(self.as_normal(schema), axis=0)
-
-         # change dtypes
-         return self.update_dtypes(df_new, schema)
+         return self.update_dtypes(df.apply(self.as_normal(schema), axis=0), schema)
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
-
-        This function modifies a data frame...
 
         Parameters
         ----------
@@ -268,12 +241,9 @@ class Ptype:
 
         Returns
         -------
-        df_new: Transformed Pandas dataframe object.
+        Transformed Pandas dataframe object.
         """
-        df_new = df.copy()
-        schema = self.fit_schema(df_new)
-        df_new = df_new.apply(self.as_normal(schema), axis=0)
-        return self.update_dtypes(df_new, schema)
+        return self.transform_schema(df, self.fit_schema(df))
 
     def as_normal(self, schema):
         return lambda series: series.map(
@@ -407,7 +377,7 @@ class Ptype:
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
-        self.run_inference(_data_frame=self.model.data)
+        self.fit_schema(self.model.data)
 
     def reclassify_column(self, col_name, new_t):
         self.cols[col_name].predicted_type = new_t

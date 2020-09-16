@@ -55,7 +55,7 @@ def get_predictions(dataset_name):
     df = read_dataset(dataset_name)
 
     ptype = Ptype(_types=types)
-    ptype.run_inference(_data_frame=df)
+    ptype.fit_schema(df)
 
     df_missing = df.apply(as_missing(ptype), axis=0)
     df_anomaly = df.apply(as_anomaly(ptype), axis=0)
