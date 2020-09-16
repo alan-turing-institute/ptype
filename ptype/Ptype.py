@@ -32,7 +32,7 @@ class Ptype:
 
     ###################### MAIN METHODS #######################
     def fit_schema(self, _data_frame):
-        """ Runs inference for each column in a dataframe, and returns a schema object.
+        """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
 
         :param _data_frame:
         """
@@ -67,13 +67,6 @@ class Ptype:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
             self.cols[col_name] = self.column(col_name, counts)
-
-        # Export column types, and missing data
-        save = False
-        if save:
-            self.write_type_predictions_2_csv(
-                col.predicted_type for col in self.cols.values()
-            )
 
         return self.cols
 
@@ -203,12 +196,12 @@ class Ptype:
         return df_new
 
     def show_results_df(self):
-        df_output = self.model.data.copy()
-        df_output.columns = df_output.columns.map(
+        df = self.model.data.copy()
+        df.columns = df.columns.map(
             lambda col: str(col) + "(" + self.cols[col].predicted_type + ")"
         )
 
-        return df_output
+        return df
 
     def show_missing_values(self):
         missing_values = {}
