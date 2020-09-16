@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 
 from ptype.Column import Column, Status, get_unique_vals
-from ptype.Config import Config
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import create_folders, print_to_file, save_object
@@ -38,16 +37,11 @@ class Ptype:
         df = _data_frame.applymap(str)
         self.cols = {}
 
-        # Creates a configuration object for the experiments
-        config = Config(
-            {i + 1: v for i, v in enumerate(self.types)}, _dataset_name=_dataset_name, _column_names=df.columns
-        )
-
         # Ptype model for inference
         if self.model is None:
-            self.model = PtypeModel(config, df)
+            self.model = PtypeModel(self.types, df)
         else:
-            self.model.set_params(config, df)
+            self.model.set_params(self.types, df)
 
         # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
@@ -66,7 +60,7 @@ class Ptype:
         return self.cols
 
     def transform_schema(self, df, schema):
-         """Transforms a data frame according to previously inferred schema.
+        """Transforms a data frame according to previously inferred schema.
 
          Parameters
          ----------
@@ -76,7 +70,7 @@ class Ptype:
          -------
          Transformed Pandas dataframe object.
          """
-         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
+        return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -91,12 +85,11 @@ class Ptype:
         """
         return self.transform_schema(df, self.fit_schema(df))
 
-    def train_machines_multiple_dfs(
+    def train_model(
         self,
         data_frames,
         labels,
         _max_iter=20,
-        _print=False,
         _test_data=None,
         _test_labels=None,
         _uniformly=False,
@@ -105,69 +98,30 @@ class Ptype:
 
         :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
         :param _max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
-        :param _print:
         :param _test_data:
         :param _test_labels:
         :param _uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
         :return:
         """
-        self.print = _print
-
         if _uniformly:
             self.PFSMRunner.initialize_params_uniformly()
+            self.PFSMRunner.normalize_params()
 
+        # Ptype model for training
+        training_params = {
+            "current_runner": self.PFSMRunner,
+            "data_frames": data_frames,
+            "labels": labels,
+        }
         if self.model is None:
-            self.model = PtypeModel(config=None, data_frame=None)
-        self.model.labels = labels
-        self.model.types = {i + 1: v for i, v in enumerate(self.types)}
-
-        # Setup folders and probabilities for all columns
-        self.PFSMRunner.normalize_params()
-
-        self.model.data_frames = data_frames
-
-        # find the unique values in all of the columns once
-        for i, df in enumerate(self.model.data_frames):
-            if i == 0:
-                unique_vals = np.unique(df.values)
-            else:
-                unique_vals = np.concatenate((unique_vals, np.unique(df.values)))
-        self.model.unique_vals = unique_vals
-
-        self.PFSMRunner.set_unique_values(unique_vals)
-
-        # Finding unique values and their counts
-        self.model.dfs_unique_vals_counts = {}
-        for i, df in enumerate(data_frames):
-            df_unique_vals_counts = {}
-            for column_name in list(df.columns):
-                temp_x, counts = np.unique(
-                    [str(int_element) for int_element in df[column_name].tolist()],
-                    return_counts=True,
-                )
-                counts = {u_data: c for u_data, c in zip(temp_x, counts)}
-                temp_counts = list(counts.values())
-                counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
-                df_unique_vals_counts[column_name] = [temp_x, counts_array]
-            self.model.dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
-
-        # Setting
-        self.model.J = len(
-            self.PFSMRunner.machines
-        )  # J: num of data types including missing and anomaly.
-        self.model.K = (
-            self.model.J - 2
-        )  # K: num of possible column data types (excluding missing and anomaly)
-        self.model.pi = [
-            self.model.PI for j in range(self.model.K)
-        ]  # mixture weights of row types
-        self.model.current_runner = self.PFSMRunner
-
-        training_error = [self.calculate_error_df(data_frames, labels)]
+            self.model = PtypeModel(self.types, training_params=training_params)
+        else:
+            self.model.set_params(self.types, training_params=training_params)
 
         save_object(
             self.PFSMRunner, "models/training_runner_initial",
         )
+        training_error = [self.calculate_total_error(data_frames, labels)]
         print(training_error)
 
         # Iterates over whole data points
@@ -176,11 +130,10 @@ class Ptype:
                 print_to_file("iteration = " + str(it))
 
             # Trains machines using all of the training data frames
-            self.PFSMRunner = self.train_all_models_multiple_dfs(self.PFSMRunner)
-            self.model.current_runner = self.PFSMRunner
+            self.model.current_runner = self.update_PFSMs(self.PFSMRunner)
 
             # Calculate training and validation error at each iteration
-            training_error.append(self.calculate_error_df(data_frames, labels))
+            training_error.append(self.calculate_total_error(data_frames, labels))
             print(training_error)
 
             if it > 0:
@@ -188,17 +141,14 @@ class Ptype:
                     if self.verbose:
                         print_to_file("converged!")
                     save_object(
-                        self.PFSMRunner, "models/training_runner_final",
+                        self.model.current_runner, "models/training_runner_final",
                     )
-
                     break
 
         save_object(training_error, "models/training_error")
 
-    def train_all_models_multiple_dfs(self, runner):
-        if self.print:
-            print_to_file("\ttraining is running...")
-        return self.model.train_all_z_multiple_dfs_new(runner)
+    def update_PFSMs(self, runner):
+        return self.model.update_PFSMs(runner)
 
     # OUTPUT METHODS #########################
     def update_dtypes(self, df, schema):
@@ -206,7 +156,7 @@ class Ptype:
 
         ptype_pandas_mapping = {"integer": "Int64"}
 
-        for col_name in self.model.data:
+        for col_name in df:
             new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
             try:
                 df_new[col_name] = df[col_name].astype(new_dtype)
@@ -219,7 +169,7 @@ class Ptype:
     def show_schema(self):
         df = self.model.data.iloc[0:0, :].copy()
         df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
-        return df.rename(index={0: 'type'})
+        return df.rename(index={0: "type"})
 
     def show_missing_values(self):
         missing_values = {}
@@ -232,17 +182,23 @@ class Ptype:
 
     def as_normal(self):
         return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_normal_predictions() else pd.NA
+            lambda v: v
+            if v in self.cols[series.name].get_normal_predictions()
+            else pd.NA
         )
 
     def as_missing(self):
         return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_missing_data_predictions() else pd.NA
+            lambda v: v
+            if v in self.cols[series.name].get_missing_data_predictions()
+            else pd.NA
         )
 
     def as_anomaly(self):
         return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_anomaly_predictions() else pd.NA
+            lambda v: v
+            if v in self.cols[series.name].get_anomaly_predictions()
+            else pd.NA
         )
 
     def detect_missing_anomalies(self, inferred_column_type):
@@ -252,8 +208,12 @@ class Ptype:
 
             return [
                 list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]),
+                list(
+                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
+                ),
+                list(
+                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
+                ),
             ]
         else:
             return [[], [], []]
@@ -269,19 +229,19 @@ class Ptype:
             predicted_type = self.types[np.argmax(self.model.p_t)]
 
         # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            predicted_type
-        )
+        [normals, missings, anomalies] = self.detect_missing_anomalies(predicted_type)
 
         return Column(
             series=self.model.data[col_name],
             counts=counts,
             p_t=self.model.p_t,
             predicted_type=predicted_type,
-            p_z=self.model.p_z[:, np.argmax(self.model.p_t), :],  # need to handle the uniform case
+            p_z=self.model.p_z[
+                :, np.argmax(self.model.p_t), :
+            ],  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
-            anomalous_values=anomalies
+            anomalous_values=anomalies,
         )
 
     def generate_probs(self, column_name):
@@ -304,22 +264,15 @@ class Ptype:
 
         return probabilities, counts
 
-    def calculate_error_df(self, dfs, labelss):
-        # find the unique values in all of the columns once
-        for i, df in enumerate(dfs):
-            if i == 0:
-                unique_vals = np.unique(df.values)
-            else:
-                unique_vals = np.concatenate((unique_vals, np.unique(df.values)))
-        self.model.all_probs = self.PFSMRunner.generate_machine_probabilities(
-            unique_vals
+    def calculate_total_error(self, dfs, labels):
+        self.model.all_probs = self.model.current_runner.generate_machine_probabilities(
+            self.model.unique_vals
         )
 
         error = 0.0
-
-        for j, (df, labels) in enumerate(zip(dfs, labelss)):
+        for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
-                temp = self.model.f_col(str(j), column_name, labels[i] - 1)
+                temp = self.model.f_col(str(j), column_name, df_labels[i] - 1)
                 error += temp
 
         return error
@@ -330,9 +283,7 @@ class Ptype:
 
     def reclassify_column(self, col_name, new_t):
         self.cols[col_name].predicted_type = new_t
-        self.cols[col_name].p_t = [
-            1.0 if t == new_t else 0.0 for t in self.types
-        ]
+        self.cols[col_name].p_t = [1.0 if t == new_t else 0.0 for t in self.types]
         if new_t == "date":
             self.cols[col_name].p_t[5] = 1.0
         elif new_t not in self.types:
