@@ -749,7 +749,7 @@ class PtypeModel:
     ### GETTERS - SETTERS ###
     def set_params(self, types, data_frame, training_params=None):
         self.types = types
-        self.data_frames = data_frame
+        self.data = data_frame
         if training_params is not None:
             self.current_runner = copy(training_params["current_runner"])
             self.data_frames = training_params["data_frames"]
