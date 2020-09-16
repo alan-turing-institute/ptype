@@ -238,20 +238,7 @@ class Ptype:
         ptype_pandas_mapping = {"integer": "Int64"}
         schema = {}
         for col_name in df:
-            col = self.cols[col_name]
-            schema[col_name] = {
-                "type": col.predicted_type,
-                "dtype": ptype_pandas_mapping[col.predicted_type],
-                "arff_type": col.arff_type,
-                "normal_values": col.get_normal_predictions(),
-                "missing_values": col.get_missing_data_predictions(),
-                "missingness_ratio": col.get_ratio(Status.MISSING),
-                "anomalies": col.get_anomaly_predictions(),
-                "anomalous_ratio": col.get_ratio(Status.ANOMALOUS),
-            }
-            if col.arff_type == "nominal":
-                schema[col_name]["categorical_values"] = schema[col_name]["normal_values"]
-            schema[col_name] = col
+            schema[col_name] = self.cols[col_name]
         return schema
 
     def transform_schema(self, df, schema):
