@@ -154,7 +154,7 @@ def training_tests():
         df_trainings.append(df_training)
         y_trainings.append(y_training)
 
-    ptype = Ptype(_exp_num=0, _types=types)
+    ptype = Ptype(_types=types)
     ptype.train_machines_multiple_dfs(
         df_trainings, labels=y_trainings, _uniformly=False
     )
