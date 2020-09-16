@@ -40,6 +40,22 @@ class Column:
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
 
+    def __repr__(self):
+        ptype_pandas_mapping = {"integer": "Int64"}  # ouch
+        props = {
+            "type": self.predicted_type,
+            "dtype": ptype_pandas_mapping[self.predicted_type],
+            "arff_type": self.arff_type,
+            "normal_values": self.get_normal_predictions(),
+            "missing_values": self.get_missing_data_predictions(),
+            "missingness_ratio": self.get_ratio(Status.MISSING),
+            "anomalies": self.get_anomaly_predictions(),
+            "anomalous_ratio": self.get_ratio(Status.ANOMALOUS),
+        }
+        if self.arff_type == "nominal":
+            props["categorical_values"] = self.get_normal_predictions()
+        return repr(props)
+
     def cache_unique_vals(self):
         """Call this to (re)initialise the cache of my unique values."""
         self.unique_vals, self.unique_vals_counts = get_unique_vals(

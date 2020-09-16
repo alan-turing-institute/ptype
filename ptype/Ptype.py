@@ -193,7 +193,7 @@ class Ptype:
         ptype_pandas_mapping = {"integer": "Int64"}
 
         for col_name in self.model.data:
-            new_dtype = ptype_pandas_mapping[schema[col_name]["type"]]
+            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
             try:
                 df_new[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
@@ -229,38 +229,12 @@ class Ptype:
         ----------
         df: Pandas dataframe object.
 
-
         Returns
         -------
         schema: Schema object.
         """
         self.run_inference(df)
-
-        ptype_pandas_mapping = {"integer": "Int64"}
-        schema = {}
-        for col_name in df:
-            col = self.cols[col_name]
-            t = col.predicted_type
-            arff_type = col.arff_type
-            normal_values = list(np.unique(col.get_normal_predictions()))
-            missing_values = list(np.unique(col.get_missing_data_predictions()))
-            anomalies = list(np.unique(col.get_anomaly_predictions()))
-            missingness_ratio = col.get_ratio(Status.MISSING)
-            anomalous_ratio = col.get_ratio(Status.ANOMALOUS)
-
-            schema[col_name] = {
-                "type": t,
-                "dtype": ptype_pandas_mapping[t],
-                "arff_type": arff_type,
-                "normal_values": normal_values,
-                "missing_values": missing_values,
-                "missingness_ratio": missingness_ratio,
-                "anomalies": anomalies,
-                "anomalous_ratio": anomalous_ratio,
-            }
-            if arff_type == "nominal":
-                schema[col_name]["categorical_values"] = normal_values
-        return schema
+        return self.cols
 
     def transform_schema(self, df, schema):
          """Transforms a data frame according to previously inferred schema.
@@ -281,9 +255,7 @@ class Ptype:
          df_new = df_new.apply(self.as_normal(schema), axis=0)
 
          # change dtypes
-         df_new = self.update_dtypes(df_new, schema)
-
-         return df_new
+         return self.update_dtypes(df_new, schema)
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -299,21 +271,13 @@ class Ptype:
         df_new: Transformed Pandas dataframe object.
         """
         df_new = df.copy()
-
-        # infers a schema
         schema = self.fit_schema(df_new)
-
-        # encodes missing data
         df_new = df_new.apply(self.as_normal(schema), axis=0)
-
-        # change dtypes
-        df_new = self.update_dtypes(df_new, schema)
-
-        return df_new
+        return self.update_dtypes(df_new, schema)
 
     def as_normal(self, schema):
         return lambda series: series.map(
-            lambda v: v if v in schema[series.name]["normal_values"] else pd.NA
+            lambda v: v if v in schema[series.name].get_normal_predictions() else pd.NA
         )
 
     def detect_missing_anomalies(self, inferred_column_type):
@@ -323,12 +287,8 @@ class Ptype:
 
             return [
                 list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(
-                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
-                ),
-                list(
-                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
-                ),
+                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]),
             ]
         else:
             return [[], [], []]
