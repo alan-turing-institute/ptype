@@ -331,11 +331,11 @@ class Ptype:
     def reclassify_column(self, col_name, new_t):
         self.cols[col_name].predicted_type = new_t
         self.cols[col_name].p_t = [
-            1.0 if t == new_t else 0.0 for t in self.model.config.types_as_list
+            1.0 if t == new_t else 0.0 for t in self.types
         ]
         if new_t == "date":
             self.cols[col_name].p_t[5] = 1.0
-        elif new_t not in self.model.config.types_as_list:
+        elif new_t not in self.types:
             print("Given type is unknown!")
 
         # update the arff types?

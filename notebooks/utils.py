@@ -39,9 +39,9 @@ def plot_column_type_posterior(p_t, types):
 
         # sum the subtypes of dates
         if t_ in organized_p_t:
-            organized_p_t[t_] += p_t[i - 1]
+            organized_p_t[t_] += p_t[i]
         else:
-            organized_p_t[t_] = p_t[i - 1]
+            organized_p_t[t_] = p_t[i]
 
     if len(np.unique(p_t)) == 1:
         organized_p_t = {t: 1 / len(organized_p_t) for t in organized_p_t}

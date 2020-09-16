@@ -112,7 +112,7 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     # find the integer labels for the types
     y = []
     for label in labels:
-        temp = [key for (key, value) in types.items() if value == label]
+        temp = [key + 1 for key, value in enumerate(types) if value == label]
         if len(temp) != 0:
             y.append(temp[0])
         else:
