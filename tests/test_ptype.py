@@ -21,13 +21,13 @@ types = [
 
 # Associate each dataset with file prefix, encoding and header setting for Pandas read_csv.
 datasets = {
-    "accident2016":         ("utf-8", "infer"),
-    "auto":                 ("utf-8", None),
-    "data_gov_3397_1":      ("utf-8", "infer"),
-    "data_gov_10151_1":     ("utf-8", "infer"),
-    "inspection_outcomes":  ("utf-8", "infer"),
-    "mass_6":               ("ISO-8859-1", "infer"),
-    "survey":               ("utf-8", "infer"),
+    "accident2016": ("utf-8", "infer"),
+    "auto": ("utf-8", None),
+    "data_gov_3397_1": ("utf-8", "infer"),
+    "data_gov_10151_1": ("utf-8", "infer"),
+    "inspection_outcomes": ("utf-8", "infer"),
+    "mass_6": ("ISO-8859-1", "infer"),
+    "survey": ("utf-8", "infer"),
 }
 
 
@@ -155,9 +155,7 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-    ptype.train_machines_multiple_dfs(
-        df_trainings, labels=y_trainings, _uniformly=False
-    )
+    ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
 
 
 def main():
