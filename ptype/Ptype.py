@@ -234,12 +234,7 @@ class Ptype:
         schema: Schema object.
         """
         self.run_inference(df)
-
-        ptype_pandas_mapping = {"integer": "Int64"}
-        schema = {}
-        for col_name in df:
-            schema[col_name] = self.cols[col_name]
-        return schema
+        return self.cols
 
     def transform_schema(self, df, schema):
          """Transforms a data frame according to previously inferred schema.

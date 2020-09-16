@@ -181,9 +181,9 @@ def training_tests():
 
 
 def main():
-#    core_tests()
+    core_tests()
     notebook_tests()
-#    training_tests()
+    training_tests()
 
 
 if __name__ == "__main__":
