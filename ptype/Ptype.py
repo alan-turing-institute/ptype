@@ -51,9 +51,6 @@ class Ptype:
         else:
             self.model.set_params(config, df)
 
-        if self.verbose:
-            print_to_file("processing " + self.model.config.dataset_name)
-
         # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
 
@@ -69,6 +66,32 @@ class Ptype:
             self.cols[col_name] = self.column(col_name, counts)
 
         return self.cols
+
+    def transform_schema(self, df, schema):
+         """Transforms a data frame according to previously inferred schema.
+
+         Parameters
+         ----------
+         df: Pandas dataframe object.
+
+         Returns
+         -------
+         Transformed Pandas dataframe object.
+         """
+         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
+
+    def fit_transform_schema(self, df):
+        """Infers a schema and transforms a data frame accordingly.
+
+        Parameters
+        ----------
+        df: Pandas dataframe object.
+
+        Returns
+        -------
+        Transformed Pandas dataframe object.
+        """
+        return self.transform_schema(df, self.fit_schema(df))
 
     def train_machines_multiple_dfs(
         self,
@@ -195,13 +218,10 @@ class Ptype:
                 )
         return df_new
 
-    def show_results_df(self):
-        df = self.model.data.copy()
-        df.columns = df.columns.map(
-            lambda col: str(col) + "(" + self.cols[col].predicted_type + ")"
-        )
-
-        return df
+    def show_schema(self):
+        df = self.model.data.iloc[0:0, :].copy()
+        df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
+        return df.rename(index={0: 'type'})
 
     def show_missing_values(self):
         missing_values = {}
@@ -211,32 +231,6 @@ class Ptype:
             )
 
         return pd.Series(missing_values)
-
-    def transform_schema(self, df, schema):
-         """Transforms a data frame according to previously inferred schema.
-
-         Parameters
-         ----------
-         df: Pandas dataframe object.
-
-         Returns
-         -------
-         Transformed Pandas dataframe object.
-         """
-         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
-
-    def fit_transform_schema(self, df):
-        """Infers a schema and transforms a data frame accordingly.
-
-        Parameters
-        ----------
-        df: Pandas dataframe object.
-
-        Returns
-        -------
-        Transformed Pandas dataframe object.
-        """
-        return self.transform_schema(df, self.fit_schema(df))
 
     def as_normal(self):
         return lambda series: series.map(
@@ -291,33 +285,6 @@ class Ptype:
             missing_values=missings,
             anomalous_values=anomalies
         )
-
-    def write_type_predictions_2_csv(self, column_type_predictions):
-        with open(
-            self.model.config.main_experiments_folder
-            + "/type_predictions/"
-            + self.model.config.dataset_name
-            + "/type_predictions.csv",
-            "w",
-        ) as f:
-            writer = csv.writer(f)
-            writer.writerow(
-                [
-                    "Column",
-                    "F#",
-                    "messytables",
-                    "ptype",
-                    "readr",
-                    "Trifacta",
-                    "hypoparsr",
-                ]
-            )
-            for column_name, column_type_prediction in zip(
-                self.model.config.column_names, column_type_predictions
-            ):
-                writer.writerow(
-                    [column_name, "", "", column_type_prediction, "", "", ""]
-                )
 
     # HELPERS #########################
     def setup_a_column(self, i, column_name):
