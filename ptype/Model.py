@@ -299,8 +299,7 @@ class PtypeModel:
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
-        for t in list(self.config.types.keys()):
-            t -= 1
+        for t, _ in enumerate(self.config.types_as_list):
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
             possible_states = [
                 state
