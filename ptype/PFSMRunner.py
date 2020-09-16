@@ -38,6 +38,7 @@ MACHINES = {
 class PFSMRunner:
     def __init__(self, types):
         self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
+        self.normalize_params()
 
     def generate_machine_probabilities(self, data):
         """ generates automata probabilities for a given column of data

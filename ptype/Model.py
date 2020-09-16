@@ -5,7 +5,7 @@ from ptype.utils import (
     print_to_file,
     log_weighted_sum_normalize_probs,
 )
-from ptype.Config import Config
+from copy import copy
 from scipy import optimize
 import numpy as np
 import time
@@ -33,15 +33,48 @@ class PtypeModel:
     ANOMALIES_INDEX = 2
     LLHOOD_TYPE_START_INDEX = 2
 
-    def __init__(self, config, data_frame=None, PI=[0.98, 0.01, 0.01]):
-        self.config = config
+    def __init__(
+        self, types, data_frame=None, training_params=None, PI=[0.98, 0.01, 0.01],
+    ):
+        self.types = types
         self.data = data_frame
         self.PI = PI  # weight of pi variable
-        self.F_training = []
-        self.F_validation = []
-        self.data_frames = None
-        self.labels = None
-        self.types = None
+        if training_params is not None:
+            self.current_runner = copy(training_params["current_runner"])
+            self.data_frames = training_params["data_frames"]
+            self.labels = training_params["labels"]
+            self.unique_vals = self.get_unique_vals(self.data_frames)
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
+            self.current_runner.set_unique_values(self.unique_vals)
+            self.J = len(self.current_runner.machines)
+            self.K = self.J - 2
+            self.pi = [self.PI for j in range(self.K)]
+
+    def get_unique_vals(self, data_frames):
+        # find the unique values in all of the columns once
+        for i, df in enumerate(data_frames):
+            if i == 0:
+                unique_vals = np.unique(df.values)
+            else:
+                unique_vals = np.concatenate((unique_vals, np.unique(df.values)))
+        return unique_vals
+
+    def get_unique_vals_counts(self, data_frames):
+        # Finding unique values and their counts
+        dfs_unique_vals_counts = {}
+        for i, df in enumerate(data_frames):
+            df_unique_vals_counts = {}
+            for column_name in list(df.columns):
+                temp_x, counts = np.unique(
+                    [str(int_element) for int_element in df[column_name].tolist()],
+                    return_counts=True,
+                )
+                counts = {u_data: c for u_data, c in zip(temp_x, counts)}
+                temp_counts = list(counts.values())
+                counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
+                df_unique_vals_counts[column_name] = [temp_x, counts_array]
+            dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
+        return dfs_unique_vals_counts
 
     ###################### MAIN METHODS #######################
     def run_inference(self, logP, counts):
@@ -168,28 +201,18 @@ class PtypeModel:
 
         return runner
 
-    def train_all_z_multiple_dfs_new(self, runner):
+    def update_PFSMs(self, runner):
         sys.stdout.flush()
-
-        # Initializations
-        self.J = len(
-            runner.machines
-        )  # J: num of data types including missing and anomaly.
-        self.K = (
-            self.J - 2
-        )  # K: num of possible column data types (excluding missing and anomaly)
-        self.pi = [self.PI for j in range(self.K)]  # mixture weights of row types
-
-        self.current_runner = runner
 
         w_j_z = self.get_all_parameters_z(runner)
 
         # Find new values using Conjugate Gradient method
         w_j_z, j = self.conjugate_gradient(w_j_z)
 
-        runner, temp = self.set_all_probabilities_z(runner, w_j_z, normalize=True)
+        new_runner = copy(runner)
+        new_runner, _ = self.set_all_probabilities_z(new_runner, w_j_z, normalize=True)
 
-        return runner
+        return new_runner
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
@@ -299,7 +322,7 @@ class PtypeModel:
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
-        for t, _ in enumerate(self.config.types_as_list):
+        for t, _ in enumerate(self.types):
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
             possible_states = [
                 state
@@ -407,8 +430,7 @@ class PtypeModel:
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
-        for t in list(self.types.keys()):
-            t -= 1
+        for t in range(len(self.types)):
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
             # print('g_col_marginals', t, len(x_i_indices))
 
@@ -725,36 +747,31 @@ class PtypeModel:
         return np.array(grad_approx)
 
     ### GETTERS - SETTERS ###
-    def set_params(self, config, _data_frame):
-        self.config = config
-        self.data = _data_frame
+    def set_params(self, types, data_frame, training_params=None):
+        self.types = types
+        self.data_frames = data_frame
+        if training_params is not None:
+            self.current_runner = copy(training_params["current_runner"])
+            self.data_frames = training_params["data_frames"]
+            self.labels = training_params["labels"]
+            self.unique_vals = self.get_unique_vals(self.data_frames)
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
+            self.current_runner.set_unique_values(self.unique_vals)
+            self.J = len(self.current_runner.machines)
+            self.K = self.J - 2
+            self.pi = [self.PI for j in range(self.K)]
 
     def set_likelihoods(self, likelihoods):
         self.likelihoods = likelihoods
 
     def get_all_parameters_z(self, runner):
         w_j = []
-        for t in list(self.types.keys()):
-            t -= 1
-
-            # normalize just to make sure it is normalized
-            runner.machines[2 + t].I_z = PtypeModel.normalize_initial_z(
-                runner.machines[2 + t].I_z
-            )
-
+        for t in range(len(self.types)):
             for state in runner.machines[2 + t].I:
                 if runner.machines[2 + t].I[state] != LOG_EPS:
                     w_j.append(runner.machines[2 + t].I_z[state])
 
             for a in runner.machines[2 + t].T_z:
-                # normalize just to make sure it is normalized
-                (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                ) = PtypeModel.normalize_a_state_new(
-                    runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, a
-                )
-
                 for b in runner.machines[2 + t].T[a]:
                     for c in runner.machines[2 + t].T[a][b]:
                         w_j.append(runner.machines[2 + t].T_z[a][b][c])
@@ -768,8 +785,7 @@ class PtypeModel:
     def set_all_probabilities_z(self, runner, w_j_z, normalize=False):
         counter = 0
         temp = []
-        for t in list(self.types.keys()):
-            t -= 1
+        for t in range(len(self.types)):
             for state in runner.machines[2 + t].I:
                 if runner.machines[2 + t].I[state] != LOG_EPS:
                     temp.append(runner.machines[2 + t].I_z[state])
