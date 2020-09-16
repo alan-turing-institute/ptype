@@ -31,10 +31,8 @@ class Ptype:
         self.cols = {}
 
     ###################### MAIN METHODS #######################
-    def run_inference(self, _data_frame):
-        """ Runs inference for each column in a dataframe.
-            The outputs are stored in dictionaries.
-            The column types are saved to a csv file.
+    def fit_schema(self, _data_frame):
+        """ Runs inference for each column in a dataframe, and returns a schema object.
 
         :param _data_frame:
         """
@@ -76,6 +74,8 @@ class Ptype:
             self.write_type_predictions_2_csv(
                 col.predicted_type for col in self.cols.values()
             )
+
+        return self.cols
 
     def train_machines_multiple_dfs(
         self,
@@ -218,20 +218,6 @@ class Ptype:
             )
 
         return pd.Series(missing_values)
-
-    def fit_schema(self, df):
-        """Generates a ptype schema for a given data frame.
-
-        Parameters
-        ----------
-        df: Pandas dataframe object.
-
-        Returns
-        -------
-        schema: Schema object.
-        """
-        self.run_inference(df)
-        return self.cols
 
     def transform_schema(self, df, schema):
          """Transforms a data frame according to previously inferred schema.
@@ -391,7 +377,7 @@ class Ptype:
 
     def replace_missing(self, col, v):
         self.cols[col].replace_missing(v)
-        self.run_inference(_data_frame=self.model.data)
+        self.fit_schema(self.model.data)
 
     def reclassify_column(self, col_name, new_t):
         self.cols[col_name].predicted_type = new_t
