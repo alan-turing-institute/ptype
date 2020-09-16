@@ -56,7 +56,7 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
         # Calculate probabilities for each column and run inference.
-        for _, col_name in enumerate(list(self.model.config.column_names)):
+        for _, col_name in enumerate(list(df.columns)):
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
                 print_to_file("\tinference is running...")
@@ -266,7 +266,7 @@ class Ptype:
         if len(set(self.model.p_t)) == 1:
             predicted_type = "all identical"
         else:
-            predicted_type = self.model.config.types_as_list[np.argmax(self.model.p_t)]
+            predicted_type = self.types[np.argmax(self.model.p_t)]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(
