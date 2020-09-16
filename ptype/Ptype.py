@@ -10,7 +10,7 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 
 class Ptype:
-    def __init__(self, _exp_num=0, _types=None):
+    def __init__(self, _types=None):
         default_types = {
             1: "integer",
             2: "string",
@@ -22,11 +22,9 @@ class Ptype:
             8: "date-non-std-subtype",
             9: "date-non-std",
         }
-        self.exp_num = _exp_num
         self.types = default_types if _types is None else _types
         self.PFSMRunner = PFSMRunner(list(self.types.values()))
         self.model = None
-        self.data_frames = None
         self.verbose = False
         self.cols = {}
 
