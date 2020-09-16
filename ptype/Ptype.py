@@ -286,25 +286,6 @@ class Ptype:
             anomalous_values=anomalies
         )
 
-    # HELPERS #########################
-    def setup_a_column(self, i, column_name):
-        if self.verbose:
-            print_to_file("column # " + str(i) + " " + column_name)
-
-        # Sets parameters for folders of each column
-        self.model.config.current_column = i
-        self.model.config.current_column_name = column_name.replace(" ", "")
-        self.model.config.current_experiment_folder = (
-            self.model.config.main_experiments_folder
-            + "/"
-            + self.model.config.dataset_name
-            + "/"
-            + self.model.config.current_column_name
-        )
-
-        # Removes existing folders accordingly
-        create_folders(self.model, i == 0)
-
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
