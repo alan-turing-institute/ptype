@@ -8,16 +8,16 @@ from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
 
-types = {
-    1: "integer",
-    2: "string",
-    3: "float",
-    4: "boolean",
-    5: "date-iso-8601",
-    6: "date-eu",
-    7: "date-non-std-subtype",
-    8: "date-non-std",
-}
+types = [
+    "integer",
+    "string",
+    "float",
+    "boolean",
+    "date-iso-8601",
+    "date-eu",
+    "date-non-std-subtype",
+    "date-non-std",
+]
 
 # Associate each dataset with file prefix, encoding and header setting for Pandas read_csv.
 datasets = {

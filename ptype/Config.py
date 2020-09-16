@@ -6,7 +6,6 @@ class Config:
 
         self.dataset_name = _dataset_name
         self.column_names = _column_names
-        self.types = _types
         self.types_as_list = list(_types.values())
 
         columns = [

@@ -11,19 +11,19 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 class Ptype:
     def __init__(self, _types=None):
-        default_types = {
-            1: "integer",
-            2: "string",
-            3: "float",
-            4: "boolean",
-            5: "gender",
-            6: "date-iso-8601",
-            7: "date-eu",
-            8: "date-non-std-subtype",
-            9: "date-non-std",
-        }
+        default_types = [
+            "integer",
+            "string",
+            "float",
+            "boolean",
+            "gender",
+            "date-iso-8601",
+            "date-eu",
+            "date-non-std-subtype",
+            "date-non-std",
+        ]
         self.types = default_types if _types is None else _types
-        self.PFSMRunner = PFSMRunner(list(self.types.values()))
+        self.PFSMRunner = PFSMRunner(self.types)
         self.model = None
         self.verbose = False
         self.cols = {}
@@ -40,7 +40,7 @@ class Ptype:
 
         # Creates a configuration object for the experiments
         config = Config(
-            self.types, _dataset_name=_dataset_name, _column_names=df.columns
+            {i + 1: v for i, v in enumerate(self.types)}, _dataset_name=_dataset_name, _column_names=df.columns
         )
 
         # Ptype model for inference
@@ -119,7 +119,7 @@ class Ptype:
         if self.model is None:
             self.model = PtypeModel(config=None, data_frame=None)
         self.model.labels = labels
-        self.model.types = self.types
+        self.model.types = {i + 1: v for i, v in enumerate(self.types)}
 
         # Setup folders and probabilities for all columns
         self.PFSMRunner.normalize_params()

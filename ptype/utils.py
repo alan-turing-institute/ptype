@@ -664,7 +664,7 @@ def evaluate_types(
                 "\tposterior probs: ",
                 _ptype.p_t_columns[list(_ptype.p_t_columns.keys())[i]],
             )
-            print("\ttypes: ", list(_ptype.types.values()), "\n")
+            print("\ttypes: ", _ptype.types, "\n")
 
     print(
         "correct/total = ",
