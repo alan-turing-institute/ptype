@@ -31,35 +31,15 @@ datasets = {
 }
 
 
-def as_normal(ptype):
-    return lambda series: series.map(
-        lambda v: v if v in ptype.cols[series.name].get_normal_predictions() else pd.NA
-    )
-
-
-def as_missing(ptype):
-    return lambda series: series.map(
-        lambda v: v
-        if v in ptype.cols[series.name].get_missing_data_predictions()
-        else pd.NA
-    )
-
-
-def as_anomaly(ptype):
-    return lambda series: series.map(
-        lambda v: v if v in ptype.cols[series.name].get_anomaly_predictions() else pd.NA
-    )
-
-
 def get_predictions(dataset_name):
     df = read_dataset(dataset_name)
 
     ptype = Ptype(_types=types)
     ptype.fit_schema(df)
 
-    df_missing = df.apply(as_missing(ptype), axis=0)
-    df_anomaly = df.apply(as_anomaly(ptype), axis=0)
-    df_normal = df.apply(as_normal(ptype), axis=0)
+    df_missing = df.apply(ptype.as_missing(), axis=0)
+    df_anomaly = df.apply(ptype.as_anomaly(), axis=0)
+    df_normal = df.apply(ptype.as_normal(), axis=0)
     print(dataset_name)
     print("Original data:\n", df)
     print("Missing data:\n", df_missing)

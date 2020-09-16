@@ -230,7 +230,7 @@ class Ptype:
          -------
          Transformed Pandas dataframe object.
          """
-         return self.update_dtypes(df.apply(self.as_normal(schema), axis=0), schema)
+         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -245,9 +245,19 @@ class Ptype:
         """
         return self.transform_schema(df, self.fit_schema(df))
 
-    def as_normal(self, schema):
+    def as_normal(self):
         return lambda series: series.map(
-            lambda v: v if v in schema[series.name].get_normal_predictions() else pd.NA
+            lambda v: v if v in self.cols[series.name].get_normal_predictions() else pd.NA
+        )
+
+    def as_missing(self):
+        return lambda series: series.map(
+            lambda v: v if v in self.cols[series.name].get_missing_data_predictions() else pd.NA
+        )
+
+    def as_anomaly(self):
+        return lambda series: series.map(
+            lambda v: v if v in self.cols[series.name].get_anomaly_predictions() else pd.NA
         )
 
     def detect_missing_anomalies(self, inferred_column_type):
