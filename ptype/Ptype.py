@@ -10,29 +10,27 @@ from ptype.utils import create_folders, print_to_file, save_object
 
 
 class Ptype:
-    def __init__(self, _exp_num=0, _types=None):
-        default_types = {
-            1: "integer",
-            2: "string",
-            3: "float",
-            4: "boolean",
-            5: "gender",
-            6: "date-iso-8601",
-            7: "date-eu",
-            8: "date-non-std-subtype",
-            9: "date-non-std",
-        }
-        self.exp_num = _exp_num
+    def __init__(self, _types=None):
+        default_types = [
+            "integer",
+            "string",
+            "float",
+            "boolean",
+            "gender",
+            "date-iso-8601",
+            "date-eu",
+            "date-non-std-subtype",
+            "date-non-std",
+        ]
         self.types = default_types if _types is None else _types
-        self.PFSMRunner = PFSMRunner(list(self.types.values()))
+        self.PFSMRunner = PFSMRunner(self.types)
         self.model = None
-        self.data_frames = None
         self.verbose = False
         self.cols = {}
 
     ###################### MAIN METHODS #######################
     def fit_schema(self, _data_frame):
-        """ Runs inference for each column in a dataframe, and returns a schema object.
+        """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
 
         :param _data_frame:
         """
@@ -42,7 +40,7 @@ class Ptype:
 
         # Creates a configuration object for the experiments
         config = Config(
-            self.types, _dataset_name=_dataset_name, _column_names=df.columns
+            {i + 1: v for i, v in enumerate(self.types)}, _dataset_name=_dataset_name, _column_names=df.columns
         )
 
         # Ptype model for inference
@@ -51,9 +49,6 @@ class Ptype:
         else:
             self.model.set_params(config, df)
 
-        if self.verbose:
-            print_to_file("processing " + self.model.config.dataset_name)
-
         # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
 
@@ -61,21 +56,40 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.data.values))
 
         # Calculate probabilities for each column and run inference.
-        for _, col_name in enumerate(list(self.model.config.column_names)):
+        for _, col_name in enumerate(list(df.columns)):
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
                 print_to_file("\tinference is running...")
             self.model.run_inference(probabilities, counts)
             self.cols[col_name] = self.column(col_name, counts)
 
-        # Export column types, and missing data
-        save = False
-        if save:
-            self.write_type_predictions_2_csv(
-                col.predicted_type for col in self.cols.values()
-            )
-
         return self.cols
+
+    def transform_schema(self, df, schema):
+         """Transforms a data frame according to previously inferred schema.
+
+         Parameters
+         ----------
+         df: Pandas dataframe object.
+
+         Returns
+         -------
+         Transformed Pandas dataframe object.
+         """
+         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
+
+    def fit_transform_schema(self, df):
+        """Infers a schema and transforms a data frame accordingly.
+
+        Parameters
+        ----------
+        df: Pandas dataframe object.
+
+        Returns
+        -------
+        Transformed Pandas dataframe object.
+        """
+        return self.transform_schema(df, self.fit_schema(df))
 
     def train_machines_multiple_dfs(
         self,
@@ -105,7 +119,7 @@ class Ptype:
         if self.model is None:
             self.model = PtypeModel(config=None, data_frame=None)
         self.model.labels = labels
-        self.model.types = self.types
+        self.model.types = {i + 1: v for i, v in enumerate(self.types)}
 
         # Setup folders and probabilities for all columns
         self.PFSMRunner.normalize_params()
@@ -202,13 +216,10 @@ class Ptype:
                 )
         return df_new
 
-    def show_results_df(self):
-        df_output = self.model.data.copy()
-        df_output.columns = df_output.columns.map(
-            lambda col: str(col) + "(" + self.cols[col].predicted_type + ")"
-        )
-
-        return df_output
+    def show_schema(self):
+        df = self.model.data.iloc[0:0, :].copy()
+        df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
+        return df.rename(index={0: 'type'})
 
     def show_missing_values(self):
         missing_values = {}
@@ -218,32 +229,6 @@ class Ptype:
             )
 
         return pd.Series(missing_values)
-
-    def transform_schema(self, df, schema):
-         """Transforms a data frame according to previously inferred schema.
-
-         Parameters
-         ----------
-         df: Pandas dataframe object.
-
-         Returns
-         -------
-         Transformed Pandas dataframe object.
-         """
-         return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
-
-    def fit_transform_schema(self, df):
-        """Infers a schema and transforms a data frame accordingly.
-
-        Parameters
-        ----------
-        df: Pandas dataframe object.
-
-        Returns
-        -------
-        Transformed Pandas dataframe object.
-        """
-        return self.transform_schema(df, self.fit_schema(df))
 
     def as_normal(self):
         return lambda series: series.map(
@@ -281,7 +266,7 @@ class Ptype:
         if len(set(self.model.p_t)) == 1:
             predicted_type = "all identical"
         else:
-            predicted_type = self.model.config.types_as_list[np.argmax(self.model.p_t)]
+            predicted_type = self.types[np.argmax(self.model.p_t)]
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(
@@ -298,52 +283,6 @@ class Ptype:
             missing_values=missings,
             anomalous_values=anomalies
         )
-
-    def write_type_predictions_2_csv(self, column_type_predictions):
-        with open(
-            self.model.config.main_experiments_folder
-            + "/type_predictions/"
-            + self.model.config.dataset_name
-            + "/type_predictions.csv",
-            "w",
-        ) as f:
-            writer = csv.writer(f)
-            writer.writerow(
-                [
-                    "Column",
-                    "F#",
-                    "messytables",
-                    "ptype",
-                    "readr",
-                    "Trifacta",
-                    "hypoparsr",
-                ]
-            )
-            for column_name, column_type_prediction in zip(
-                self.model.config.column_names, column_type_predictions
-            ):
-                writer.writerow(
-                    [column_name, "", "", column_type_prediction, "", "", ""]
-                )
-
-    # HELPERS #########################
-    def setup_a_column(self, i, column_name):
-        if self.verbose:
-            print_to_file("column # " + str(i) + " " + column_name)
-
-        # Sets parameters for folders of each column
-        self.model.config.current_column = i
-        self.model.config.current_column_name = column_name.replace(" ", "")
-        self.model.config.current_experiment_folder = (
-            self.model.config.main_experiments_folder
-            + "/"
-            + self.model.config.dataset_name
-            + "/"
-            + self.model.config.current_column_name
-        )
-
-        # Removes existing folders accordingly
-        create_folders(self.model, i == 0)
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
@@ -392,11 +331,11 @@ class Ptype:
     def reclassify_column(self, col_name, new_t):
         self.cols[col_name].predicted_type = new_t
         self.cols[col_name].p_t = [
-            1.0 if t == new_t else 0.0 for t in self.model.config.types_as_list
+            1.0 if t == new_t else 0.0 for t in self.types
         ]
         if new_t == "date":
             self.cols[col_name].p_t[5] = 1.0
-        elif new_t not in self.model.config.types_as_list:
+        elif new_t not in self.types:
             print("Given type is unknown!")
 
         # update the arff types?

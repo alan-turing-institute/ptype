@@ -8,16 +8,16 @@ from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
 
-types = {
-    1: "integer",
-    2: "string",
-    3: "float",
-    4: "boolean",
-    5: "date-iso-8601",
-    6: "date-eu",
-    7: "date-non-std-subtype",
-    8: "date-non-std",
-}
+types = [
+    "integer",
+    "string",
+    "float",
+    "boolean",
+    "date-iso-8601",
+    "date-eu",
+    "date-non-std-subtype",
+    "date-non-std",
+]
 
 # Associate each dataset with file prefix, encoding and header setting for Pandas read_csv.
 datasets = {
@@ -112,7 +112,7 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     # find the integer labels for the types
     y = []
     for label in labels:
-        temp = [key for (key, value) in types.items() if value == label]
+        temp = [key + 1 for key, value in enumerate(types) if value == label]
         if len(temp) != 0:
             y.append(temp[0])
         else:
@@ -154,7 +154,7 @@ def training_tests():
         df_trainings.append(df_training)
         y_trainings.append(y_training)
 
-    ptype = Ptype(_exp_num=0, _types=types)
+    ptype = Ptype(_types=types)
     ptype.train_machines_multiple_dfs(
         df_trainings, labels=y_trainings, _uniformly=False
     )
