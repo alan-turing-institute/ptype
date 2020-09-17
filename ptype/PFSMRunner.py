@@ -17,7 +17,7 @@ from ptype.Machine import (
     EmailAddress,
 )
 from ptype.utils import contains_all
-from ptype.Model import PtypeModel
+from ptype.Model import Model
 
 sys.path.insert(0, "src/")
 MACHINES = {
@@ -79,8 +79,8 @@ class PFSMRunner:
     def normalize_params(self):
         for i, machine in enumerate(self.machines):
             if i not in [0, 1]:
-                self.machines[i].I = PtypeModel.normalize_initial(machine.I_z)
-                self.machines[i].F, self.machines[i].T = PtypeModel.normalize_final(
+                self.machines[i].I = Model.normalize_initial(machine.I_z)
+                self.machines[i].F, self.machines[i].T = Model.normalize_final(
                     machine.F_z, machine.T_z
                 )
 
