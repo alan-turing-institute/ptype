@@ -27,7 +27,7 @@ def vecnorm(x, ord=2):
 LOG_EPS = -1e150
 
 
-class PtypeModel:
+class Model:
     TYPE_INDEX = 0
     MISSING_INDEX = 1
     ANOMALIES_INDEX = 2
@@ -809,7 +809,7 @@ class PtypeModel:
                 (
                     runner.machines[2 + t].F_z,
                     runner.machines[2 + t].T_z,
-                ) = PtypeModel.normalize_a_state_new(
+                ) = Model.normalize_a_state_new(
                     runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
                 )
                 runner.machines[2 + t].F, runner.machines[2 + t].T = (
@@ -817,7 +817,7 @@ class PtypeModel:
                     runner.machines[2 + t].T_z,
                 )
 
-                runner.machines[2 + t].I_z = PtypeModel.normalize_initial(
+                runner.machines[2 + t].I_z = Model.normalize_initial(
                     runner.machines[2 + t].I_z
                 )
                 runner.machines[2 + t].I = runner.machines[2 + t].I_z
@@ -927,6 +927,6 @@ class PtypeModel:
     @staticmethod
     def normalize_final(F, T):
         for state in F:
-            F, T = PtypeModel.normalize_a_state_new(F, T, state)
+            F, T = Model.normalize_a_state_new(F, T, state)
 
         return F, T

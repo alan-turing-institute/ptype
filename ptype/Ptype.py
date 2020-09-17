@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from ptype.Column import Column, get_unique_vals
-from ptype.Model import PtypeModel
+from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import print_to_file, save_object
 
@@ -38,7 +38,7 @@ class Ptype:
 
         # Ptype model for inference
         if self.model is None:
-            self.model = PtypeModel(self.types, df)
+            self.model = Model(self.types, df)
         else:
             self.model.set_params(self.types, df)
 
@@ -123,7 +123,7 @@ class Ptype:
             "labels": labels,
         }
         if self.model is None:
-            self.model = PtypeModel(self.types, training_params=training_params)
+            self.model = Model(self.types, training_params=training_params)
         else:
             self.model.set_params(self.types, training_params=training_params)
 
