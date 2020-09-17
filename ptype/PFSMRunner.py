@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-from ptype.PFSM_DiscriminativeLearning import (
+from ptype.Machine import (
     IntegersNewAuto,
     StringsNewAuto,
     AnomalyNew,
