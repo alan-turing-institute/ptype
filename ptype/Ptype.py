@@ -1,11 +1,10 @@
-import csv
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, Status, get_unique_vals
+from ptype.Column import Column, get_unique_vals
 from ptype.Model import PtypeModel
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import create_folders, print_to_file, save_object
+from ptype.utils import print_to_file, save_object
 
 
 class Ptype:
@@ -70,7 +69,17 @@ class Ptype:
          -------
          Transformed Pandas dataframe object.
          """
-        return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
+        df = df.apply(self.as_normal(), axis=0)
+        ptype_pandas_mapping = {"integer": "Int64"}
+
+        for col_name in df:
+            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
+            try:
+                df[col_name] = df[col_name].astype(new_dtype)
+            except TypeError:
+                # TODO: explain why this case needed
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(new_dtype)
+        return df
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -151,21 +160,6 @@ class Ptype:
         return self.model.update_PFSMs(runner)
 
     # OUTPUT METHODS #########################
-    def update_dtypes(self, df, schema):
-        df_new = df.copy()
-
-        ptype_pandas_mapping = {"integer": "Int64"}
-
-        for col_name in df:
-            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
-            try:
-                df_new[col_name] = df[col_name].astype(new_dtype)
-            except TypeError:
-                df_new[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
-                    new_dtype
-                )
-        return df_new
-
     def show_schema(self):
         df = self.model.data.iloc[0:0, :].copy()
         df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
