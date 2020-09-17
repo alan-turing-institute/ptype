@@ -276,20 +276,8 @@ class Ptype:
         self.fit_schema(self.model.data)
 
     def reclassify_column(self, col_name, new_t):
+        if new_t not in self.types:
+            print("Given type is unknown!")
         self.cols[col_name].predicted_type = new_t
         self.cols[col_name].p_t = [1.0 if t == new_t else 0.0 for t in self.types]
-        if new_t == "date":
-            self.cols[col_name].p_t[5] = 1.0
-        elif new_t not in self.types:
-            print("Given type is unknown!")
-
         # update the arff types?
-        # what if given type is not recognized
-
-    # def reclassify_normal(self, col_name, vs):
-    #     self.cols[col_name].reclassify_normal(vs)
-    #     t_index = np.argmax(self.cols[col_name].p_t)
-    #     t_index = [i if t==for i, t in enumerate(self.model.config.types_as_list)]
-    #
-    #     for i in [np.where(self.cols[col_name].unique_vals == v)[0][0] for v in vs]:
-    #         self.cols[col_name].unique_vals_status[i] = Status.TYPE
