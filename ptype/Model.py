@@ -27,7 +27,7 @@ def vecnorm(x, ord=2):
 LOG_EPS = -1e150
 
 
-class PtypeModel:
+class Model:
     TYPE_INDEX = 0
     MISSING_INDEX = 1
     ANOMALIES_INDEX = 2
@@ -71,7 +71,7 @@ class PtypeModel:
                 )
                 counts = {u_data: c for u_data, c in zip(temp_x, counts)}
                 temp_counts = list(counts.values())
-                counts_array = np.reshape(temp_counts, newshape=(len(temp_counts),))
+                counts_array = np.array(temp_counts)
                 df_unique_vals_counts[column_name] = [temp_x, counts_array]
             dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
         return dfs_unique_vals_counts
@@ -95,7 +95,7 @@ class PtypeModel:
             (I, K, 3)
         )  # p_z: posterior probability distribution of row types
 
-        counts_array = np.reshape(counts, newshape=(len(counts),))
+        counts_array = np.array(counts)
 
         # Iterates for each possible column type
         for j in range(K):
@@ -136,7 +136,7 @@ class PtypeModel:
             p_z[:, j, 2] = np.exp(x3 - log_mx - np.log(sm))
             p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
 
-        self.p_t = normalize_log_probs(np.reshape(p_t, newshape=(len(p_t),)))
+        self.p_t = normalize_log_probs(np.array(p_t))
         self.p_z = p_z
 
     def calculate_likelihoods(self, logP, counts):
@@ -153,7 +153,7 @@ class PtypeModel:
 
         # Inference
         p_t = []  # p_t: posterior probability distribution of column types
-        counts_array = np.reshape(counts, newshape=(len(counts),))
+        counts_array = np.array(counts)
 
         # Iterates for each possible column type
         for j in range(K):
@@ -378,11 +378,6 @@ class PtypeModel:
                                     counts_array[x_i_indices],
                                 )
                             )
-                        # cs_temp = [runner.machines[2 + t].calculate_gradient_abc_new_optimized(str(x_i), b) for x_i in temp_x]
-                        # cs_temp = np.reshape(cs_temp, newshape=(len(cs_temp),))
-                        # temp_mult = (temp_gra * cs_temp * counts_array).sum()
-                        # for c in runner.machines[2 + t].T[a][b]:
-                        #     temp_g_j.append(self.gradient_transition_optimized_new(runner, a, b, c, t, q, temp_mult, y_i))
                 g_j = g_j + temp_g_j
 
             for state in runner.machines[2 + t].F:
@@ -401,9 +396,7 @@ class PtypeModel:
                         )
                     )
 
-        # result_dict[process_id] = -np.reshape(g_j, newshape=(len(g_j),))
-        # print('g', -np.reshape(g_j, newshape=(len(g_j),))/counts_array.sum())
-        return -np.reshape(g_j, newshape=(len(g_j),)) / counts_array.sum()
+        return -np.array(g_j) / counts_array.sum()
 
     def g_col_marginals(self, runner, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
@@ -602,8 +595,7 @@ class PtypeModel:
                     )
             # print('final done')
 
-        # print('g', -np.reshape(g_j, newshape=(len(g_j),))/counts_array.sum())
-        return -np.reshape(g_j, newshape=(len(g_j),)) / counts_array.sum()
+        return -np.array(g_j) / counts_array.sum()
 
     def g_cols(self, w_j_z):
         # print_to_file("g_cols is called")
@@ -667,7 +659,7 @@ class PtypeModel:
             )
             for x_i in x
         ]
-        cs = np.reshape(cs_temp, newshape=(len(cs_temp),))
+        cs = np.array(cs_temp)
 
         gradient = (temp * counter * cs * exp_param).sum()
         return self.scale_wrt_type(gradient, q, t, y_i)
@@ -682,7 +674,7 @@ class PtypeModel:
             )
             for x_i in x
         ]
-        cs_temp = np.reshape(cs_temp, newshape=(len(cs_temp),))
+        cs_temp = np.array(cs_temp)
         temp_mult = (temp_gra * cs_temp * counts_array).sum()
 
         exp_param = 1 - np.exp(runner.machines[2 + t].T[a][b][c])
@@ -717,7 +709,7 @@ class PtypeModel:
             )
             for x_i in x
         ]
-        cs = np.reshape(cs_temp, newshape=(len(cs_temp),))
+        cs = np.array(cs_temp)
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
@@ -809,7 +801,7 @@ class PtypeModel:
                 (
                     runner.machines[2 + t].F_z,
                     runner.machines[2 + t].T_z,
-                ) = PtypeModel.normalize_a_state_new(
+                ) = Model.normalize_a_state_new(
                     runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
                 )
                 runner.machines[2 + t].F, runner.machines[2 + t].T = (
@@ -817,7 +809,7 @@ class PtypeModel:
                     runner.machines[2 + t].T_z,
                 )
 
-                runner.machines[2 + t].I_z = PtypeModel.normalize_initial(
+                runner.machines[2 + t].I_z = Model.normalize_initial(
                     runner.machines[2 + t].I_z
                 )
                 runner.machines[2 + t].I = runner.machines[2 + t].I_z
@@ -927,6 +919,6 @@ class PtypeModel:
     @staticmethod
     def normalize_final(F, T):
         for state in F:
-            F, T = PtypeModel.normalize_a_state_new(F, T, state)
+            F, T = Model.normalize_a_state_new(F, T, state)
 
         return F, T

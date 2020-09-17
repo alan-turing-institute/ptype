@@ -1,11 +1,10 @@
-import csv
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, Status, get_unique_vals
-from ptype.Model import PtypeModel
+from ptype.Column import Column, get_unique_vals
+from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import create_folders, print_to_file, save_object
+from ptype.utils import print_to_file, save_object
 
 
 class Ptype:
@@ -39,7 +38,7 @@ class Ptype:
 
         # Ptype model for inference
         if self.model is None:
-            self.model = PtypeModel(self.types, df)
+            self.model = Model(self.types, df)
         else:
             self.model.set_params(self.types, df)
 
@@ -70,7 +69,17 @@ class Ptype:
          -------
          Transformed Pandas dataframe object.
          """
-        return self.update_dtypes(df.apply(self.as_normal(), axis=0), schema)
+        df = df.apply(self.as_normal(), axis=0)
+        ptype_pandas_mapping = {"integer": "Int64"}
+
+        for col_name in df:
+            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
+            try:
+                df[col_name] = df[col_name].astype(new_dtype)
+            except TypeError:
+                # TODO: explain why this case needed
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(new_dtype)
+        return df
 
     def fit_transform_schema(self, df):
         """Infers a schema and transforms a data frame accordingly.
@@ -114,7 +123,7 @@ class Ptype:
             "labels": labels,
         }
         if self.model is None:
-            self.model = PtypeModel(self.types, training_params=training_params)
+            self.model = Model(self.types, training_params=training_params)
         else:
             self.model.set_params(self.types, training_params=training_params)
 
@@ -151,21 +160,6 @@ class Ptype:
         return self.model.update_PFSMs(runner)
 
     # OUTPUT METHODS #########################
-    def update_dtypes(self, df, schema):
-        df_new = df.copy()
-
-        ptype_pandas_mapping = {"integer": "Int64"}
-
-        for col_name in df:
-            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
-            try:
-                df_new[col_name] = df[col_name].astype(new_dtype)
-            except TypeError:
-                df_new[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
-                    new_dtype
-                )
-        return df_new
-
     def show_schema(self):
         df = self.model.data.iloc[0:0, :].copy()
         df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
@@ -282,20 +276,8 @@ class Ptype:
         self.fit_schema(self.model.data)
 
     def reclassify_column(self, col_name, new_t):
+        if new_t not in self.types:
+            print("Given type is unknown!")
         self.cols[col_name].predicted_type = new_t
         self.cols[col_name].p_t = [1.0 if t == new_t else 0.0 for t in self.types]
-        if new_t == "date":
-            self.cols[col_name].p_t[5] = 1.0
-        elif new_t not in self.types:
-            print("Given type is unknown!")
-
         # update the arff types?
-        # what if given type is not recognized
-
-    # def reclassify_normal(self, col_name, vs):
-    #     self.cols[col_name].reclassify_normal(vs)
-    #     t_index = np.argmax(self.cols[col_name].p_t)
-    #     t_index = [i if t==for i, t in enumerate(self.model.config.types_as_list)]
-    #
-    #     for i in [np.where(self.cols[col_name].unique_vals == v)[0][0] for v in vs]:
-    #         self.cols[col_name].unique_vals_status[i] = Status.TYPE
