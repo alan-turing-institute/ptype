@@ -270,10 +270,6 @@ class Ptype:
 
         return error
 
-    def replace_missing(self, col, v):
-        self.cols[col].replace_missing(v)
-        self.fit_schema(self.model.data)
-
     def reclassify_column(self, col_name, new_t):
         if new_t not in self.types:
             print("Given type is unknown!")
