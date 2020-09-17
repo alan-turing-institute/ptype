@@ -46,14 +46,14 @@ class Column:
             "type": self.predicted_type,
             "dtype": ptype_pandas_mapping[self.predicted_type],
             "arff_type": self.arff_type,
-            "normal_values": self.get_normal_predictions(),
-            "missing_values": self.get_missing_data_predictions(),
+            "normal_values": self.get_normal_values(),
+            "missing_values": self.get_missing_values(),
             "missingness_ratio": self.get_ratio(Status.MISSING),
-            "anomalies": self.get_anomaly_predictions(),
+            "anomalies": self.get_anomalous_values(),
             "anomalous_ratio": self.get_ratio(Status.ANOMALOUS),
         }
         if self.arff_type == "nominal":
-            props["categorical_values"] = self.get_normal_predictions()
+            props["categorical_values"] = self.get_normal_values()
         return repr(props)
 
     def cache_unique_vals(self):
@@ -63,10 +63,10 @@ class Column:
         )
 
     def has_missing(self):
-        return self.get_missing_data_predictions() != []
+        return self.get_missing_values() != []
 
     def has_anomalous(self):
-        return self.get_anomaly_predictions() != []
+        return self.get_anomalous_values() != []
 
     def show_results_for(self, status, desc):
         indices = [
@@ -107,7 +107,7 @@ class Column:
         total = sum(self.unique_vals_counts)
         return round(sum(self.unique_vals_counts[indices]) / total, 2)
 
-    def get_normal_predictions(self):
+    def get_normal_values(self):
         """Values identified as 'normal'."""
         return [
             v
@@ -115,14 +115,14 @@ class Column:
             if self.unique_vals_status[i] == Status.TYPE
         ]
 
-    def get_missing_data_predictions(self):
+    def get_missing_values(self):
         return [
             v
             for i, v in enumerate(self.unique_vals)
             if self.unique_vals_status[i] == Status.MISSING
         ]
 
-    def get_anomaly_predictions(self):
+    def get_anomalous_values(self):
         return [
             v
             for i, v in enumerate(self.unique_vals)
@@ -135,9 +135,8 @@ class Column:
             self.p_z[i, :] = [1.0, 0.0, 0.0]
 
     def replace_missing(self, v):
-        for i, u in enumerate(self.unique_vals):
-            if self.unique_vals_status[i] == Status.MISSING:
-                self.series.replace(u, v, inplace=True)
+        for u in self.get_missing_values():
+            self.series.replace(u, v, inplace=True)
         self.cache_unique_vals()
 
     def get_features(self, counts):

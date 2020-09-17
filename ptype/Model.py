@@ -78,7 +78,6 @@ class Model:
 
     ###################### MAIN METHODS #######################
     def run_inference(self, logP, counts):
-        sys.stdout.flush()
         # Constants
         I, J = logP.shape  # I: num of rows in a data column.
         # J: num of data types including missing and catch-all
@@ -798,15 +797,12 @@ class Model:
                     counter += 1
 
             if normalize:
-                (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                ) = Model.normalize_a_state_new(
+                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = Model.normalize_a_state_new(
                     runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
                 )
                 runner.machines[2 + t].F, runner.machines[2 + t].T = (
                     runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
+                    runner.machines[2 + t].T_z
                 )
 
                 runner.machines[2 + t].I_z = Model.normalize_initial(

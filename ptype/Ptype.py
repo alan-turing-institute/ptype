@@ -27,13 +27,12 @@ class Ptype:
         self.cols = {}
 
     ###################### MAIN METHODS #######################
-    def fit_schema(self, _data_frame):
+    def fit_schema(self, df):
         """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
 
-        :param _data_frame:
+        :param df:
         """
-        _dataset_name = "demo"
-        df = _data_frame.applymap(str)
+        df = df.applymap(str)
         self.cols = {}
 
         # Ptype model for inference
@@ -169,7 +168,7 @@ class Ptype:
         missing_values = {}
         for col_name in self.model.data:
             missing_values[col_name] = np.unique(
-                self.cols[col_name].get_missing_data_predictions()
+                self.cols[col_name].get_missing_values()
             )
 
         return pd.Series(missing_values)
@@ -177,21 +176,21 @@ class Ptype:
     def as_normal(self):
         return lambda series: series.map(
             lambda v: v
-            if v in self.cols[series.name].get_normal_predictions()
+            if v in self.cols[series.name].get_normal_values()
             else pd.NA
         )
 
     def as_missing(self):
         return lambda series: series.map(
             lambda v: v
-            if v in self.cols[series.name].get_missing_data_predictions()
+            if v in self.cols[series.name].get_missing_values()
             else pd.NA
         )
 
     def as_anomaly(self):
         return lambda series: series.map(
             lambda v: v
-            if v in self.cols[series.name].get_anomaly_predictions()
+            if v in self.cols[series.name].get_anomalous_values()
             else pd.NA
         )
 
