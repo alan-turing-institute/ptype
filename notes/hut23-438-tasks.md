@@ -1,6 +1,6 @@
 # [AIDA: Software package for ptype](https://github.com/alan-turing-institute/Hut23/issues/438)
 
-Three FTE-month project to take ptype and make a more robust software package.
+Three FTE-month project to take ptype and make a more robust software package. See [project Kanban board](https://github.com/alan-turing-institute/ptype-dmkd/projects/1) for status of all GitHub issues.
 
 ## Summary of tasks
 
