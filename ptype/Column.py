@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from enum import Enum
 import joblib
 import numpy as np
@@ -16,8 +17,25 @@ class Status(Enum):
     ANOMALOUS = 3
 
 
+class Feature(Enum):
+    U_RATIO = 5
+    U_RATIO_CLEAN = 6
+    U = 7
+    U_CLEAN = 8
+
+
 class Column:
-    def __init__(self, series, counts, p_t, predicted_type, p_z, normal_values, missing_values, anomalous_values):
+    def __init__(
+        self,
+        series,
+        counts,
+        p_t,
+        predicted_type,
+        p_z,
+        normal_values,
+        missing_values,
+        anomalous_values,
+    ):
         self.series = series
         self.p_t = p_t
         self.p_t_canonical = {}
@@ -31,17 +49,23 @@ class Column:
         self.unique_vals_counts = []
         self.cache_unique_vals()
         self.unique_vals_status = [
-            Status.TYPE if i in self.normal_values else
-            Status.MISSING if i in self.missing_values else
-            Status.ANOMALOUS if i in self.anomalous_values else
-            None  # only happens in the "all identical" case?
+            Status.TYPE
+            if i in self.normal_values
+            else Status.MISSING
+            if i in self.missing_values
+            else Status.ANOMALOUS
+            if i in self.anomalous_values
+            else None  # only happens in the "all identical" case?
             for i, _ in enumerate(self.unique_vals)
         ]
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
 
     def __repr__(self):
-        ptype_pandas_mapping = {"integer": "Int64"}  # ouch
+        ptype_pandas_mapping = {
+            "integer": "Int64",
+            "date-iso-8601": "datetime64",
+        }  # ouch
         props = {
             "type": self.predicted_type,
             "dtype": ptype_pandas_mapping[self.predicted_type],
@@ -140,19 +164,17 @@ class Column:
         self.cache_unique_vals()
 
     def get_features(self, counts):
-        posterior = self.p_t
+        posterior = OrderedDict()
+        for t, p in sorted(self.p_t.items()):
+            # aggregate date subtypes
+            t_0 = t.split("-")[0]
+            if t_0 in posterior.keys():
+                posterior[t_0] += p
+            else:
+                posterior[t_0] = p
+        posterior = posterior.values()
 
-        sorted_posterior = [
-            posterior[3],
-            posterior[4:].sum(),
-            posterior[2],
-            posterior[0],
-            posterior[1],
-        ]
-
-        entries = [
-            str(int_element) for int_element in self.series.tolist()
-        ]
+        entries = [str(int_element) for int_element in self.series.tolist()]
         U = len(np.unique(entries))
         U_clean = len(self.normal_values)
 
@@ -165,9 +187,7 @@ class Column:
         else:
             u_ratio_clean = U_clean / N_clean
 
-        return np.array(
-            sorted_posterior + [u_ratio, u_ratio_clean, U, U_clean]
-        )
+        return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
 
 class Column2ARFF:
@@ -176,7 +196,9 @@ class Column2ARFF:
         self.clf = joblib.load(model_folder + "LR.sav")
 
     def get_arff(self, features):
-        features[[7, 8]] = self.normalizer.transform(features[[7, 8]].reshape(1, -1))[0]
+        features[[Feature.U.value, Feature.U_CLEAN.value]] = self.normalizer.transform(
+            features[[Feature.U.value, Feature.U_CLEAN.value]].reshape(1, -1)
+        )[0]
         arff_type = self.clf.predict(features.reshape(1, -1))[0]
 
         if arff_type == "categorical":
