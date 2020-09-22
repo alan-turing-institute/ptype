@@ -6,4 +6,4 @@ This is a 3 FTE-month project to take ptype and make a more robust software pack
 
 | Task | Est. % complete | GitHub Issue(s) |
 | --- | --- | --- |
-| Create Python package, CI/CD setup | 100% | alan-turing-institute/ptype-dmkd#2 |
+| Create Python package, CI/CD setup | 100% | #2 |
