@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
@@ -14,7 +15,6 @@ class Ptype:
             "string",
             "float",
             "boolean",
-            "gender",
             "date-iso-8601",
             "date-eu",
             "date-non-std-subtype",
@@ -77,7 +77,9 @@ class Ptype:
                 df[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
                 # TODO: explain why this case needed
-                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(new_dtype)
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
+                    new_dtype
+                )
         return df
 
     def fit_transform_schema(self, df):
@@ -175,28 +177,24 @@ class Ptype:
 
     def as_normal(self):
         return lambda series: series.map(
-            lambda v: v
-            if v in self.cols[series.name].get_normal_values()
-            else pd.NA
+            lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
         )
 
     def as_missing(self):
         return lambda series: series.map(
-            lambda v: v
-            if v in self.cols[series.name].get_missing_values()
-            else pd.NA
+            lambda v: v if v in self.cols[series.name].get_missing_values() else pd.NA
         )
 
     def as_anomaly(self):
         return lambda series: series.map(
-            lambda v: v
-            if v in self.cols[series.name].get_anomalous_values()
-            else pd.NA
+            lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
 
     def detect_missing_anomalies(self, inferred_column_type):
         if inferred_column_type != "all identical":
-            row_posteriors = self.model.p_z[:, np.argmax(self.model.p_t), :]
+            row_posteriors = self.model.p_z[
+                :, self.types.index(max(self.model.p_t, key=self.model.p_t.get)), :
+            ]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
             return [
@@ -216,10 +214,10 @@ class Ptype:
             Secondly, it stores the indices of the rows categorized according to the row types.
         """
         # In case of a posterior vector whose entries are equal
-        if len(set(self.model.p_t)) == 1:
+        if len(set(self.model.p_t.values())) == 1:
             predicted_type = "all identical"
         else:
-            predicted_type = self.types[np.argmax(self.model.p_t)]
+            predicted_type = max(self.model.p_t, key=self.model.p_t.get)
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(predicted_type)
@@ -230,7 +228,7 @@ class Ptype:
             p_t=self.model.p_t,
             predicted_type=predicted_type,
             p_z=self.model.p_z[
-                :, np.argmax(self.model.p_t), :
+                :, self.types.index(max(self.model.p_t, key=self.model.p_t.get)), :
             ],  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
@@ -274,5 +272,7 @@ class Ptype:
         if new_t not in self.types:
             print("Given type is unknown!")
         self.cols[col_name].predicted_type = new_t
-        self.cols[col_name].p_t = [1.0 if t == new_t else 0.0 for t in self.types]
+        self.cols[col_name].p_t = OrderedDict(
+            [(t, 1.0) if t == new_t else (t, 0.0) for t in self.types]
+        )
         # update the arff types?

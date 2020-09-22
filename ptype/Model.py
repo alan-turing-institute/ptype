@@ -5,6 +5,7 @@ from ptype.utils import (
     print_to_file,
     log_weighted_sum_normalize_probs,
 )
+from collections import OrderedDict
 from copy import copy
 from scipy import optimize
 import numpy as np
@@ -135,7 +136,8 @@ class Model:
             p_z[:, j, 2] = np.exp(x3 - log_mx - np.log(sm))
             p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
 
-        self.p_t = normalize_log_probs(np.array(p_t))
+        p_t = normalize_log_probs(np.array(p_t))
+        self.p_t = OrderedDict([(t, p) for t, p in zip(self.types, p_t)])
         self.p_z = p_z
 
     def calculate_likelihoods(self, logP, counts):
@@ -797,12 +799,15 @@ class Model:
                     counter += 1
 
             if normalize:
-                runner.machines[2 + t].F_z, runner.machines[2 + t].T_z = Model.normalize_a_state_new(
+                (
+                    runner.machines[2 + t].F_z,
+                    runner.machines[2 + t].T_z,
+                ) = Model.normalize_a_state_new(
                     runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
                 )
                 runner.machines[2 + t].F, runner.machines[2 + t].T = (
                     runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z
+                    runner.machines[2 + t].T_z,
                 )
 
                 runner.machines[2 + t].I_z = Model.normalize_initial(
