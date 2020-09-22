@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -30,29 +31,25 @@ def plot_bar(classes, values, title, xlabel=None, ylabel=None, y_lim_max=1.0):
     plt.show()
 
 
-def plot_column_type_posterior(p_t, types):
+def plot_column_type_posterior(p_t):
     # p_t has subtypes of date separately and is not ordered alphabetically
-    organized_p_t = {}
-    for i, t in enumerate(types):
+    posterior = OrderedDict()
+    for t, p in sorted(p_t.items()):
         # maps subtypes to types (date-iso-8601 to date)
-        t_ = t.split("-")[0]
+        t_0 = t.split("-")[0]
 
         # sum the subtypes of dates
-        if t_ in organized_p_t:
-            organized_p_t[t_] += p_t[i]
+        if t_0 in posterior.keys():
+            posterior[t_0] += p
         else:
-            organized_p_t[t_] = p_t[i]
+            posterior[t_0] = p
 
-    if len(np.unique(p_t)) == 1:
-        organized_p_t = {t: 1 / len(organized_p_t) for t in organized_p_t}
-
-    # sort the posteriors
-    sorted_types = sorted(organized_p_t.keys(), key=lambda x: x.lower())
-    sorted_posteriors = [organized_p_t[t] for t in sorted_types]
+    if len(np.unique(list(posterior.values()))) == 1:
+        posterior = OrderedDict([(t, 1 / len(posterior)) for t in posterior])
 
     plot_bar(
-        sorted_types,
-        sorted_posteriors,
+        posterior.keys(),
+        posterior.values(),
         title="p(t|x): posterior dist. of column type",
         xlabel="type",
         ylabel="posterior probability",
