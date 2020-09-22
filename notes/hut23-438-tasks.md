@@ -19,3 +19,4 @@ Three FTE-month project to take ptype and make a more robust software package. S
 - Provide analysis results as structured metadata
 - Allow for easy end-user scripting (avoid black box functionality)
 - API driven by identified use cases
+- Refactor/redesign mainly to support easy implementation of other features
