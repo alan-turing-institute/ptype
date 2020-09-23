@@ -31,6 +31,19 @@ def plot_bar(classes, values, title, xlabel=None, ylabel=None, y_lim_max=1.0):
     plt.show()
 
 
+def scatter_plot(y, y_hat):
+    plt.figure(figsize=(12, 4))
+
+    sorted_indices = sorted(range(len(y)),key=y.__getitem__)
+    plt.scatter(range(len(y)), y[sorted_indices], label='Actual Price', s=10)
+    plt.scatter(range(len(y)), y_hat[sorted_indices], label='Predicted Price', s=10)
+
+    plt.title('Actual vs Fitted Values for Price')
+    plt.xlabel('Item (sorted wrt actual price)')
+    plt.ylabel('Price (in dollars)')
+    plt.legend()
+    plt.show()
+
 def plot_column_type_posterior(p_t):
     # p_t has subtypes of date separately and is not ordered alphabetically
     posterior = OrderedDict()
