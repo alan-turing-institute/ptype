@@ -17,6 +17,6 @@ Three FTE-month project to take ptype and make a more robust software package. S
 
 - Pandas dataframe as data format
 - Provide analysis results as structured (meta)data
-- Allow for easy end-user scripting (avoid black box functionality)
+- Scriptable, decompositional (avoid monolithic functionality)
 - API driven by identified use cases
 - Refactor/redesign as required to support easy implementation of other features
