@@ -11,12 +11,12 @@ Three FTE-month project to take ptype and make a more robust software package. S
 | [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:core-api)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:core-api) | Expose analysis as structured (meta)data | 50% | [62](https://github.com/alan-turing-institute/ptype-dmkd/issues/62) | [11](https://github.com/alan-turing-institute/ptype-dmkd/issues/11), [37](https://github.com/alan-turing-institute/ptype-dmkd/issues/37) |
 | [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:categorical-data)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:categorical-data) | Extend with categorical data type inference | 75% | [44](https://github.com/alan-turing-institute/ptype-dmkd/issues/44)
 | [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:internal-design)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:internal-design) | Apply engineering best practices | 50% | | [68](https://github.com/alan-turing-institute/ptype-dmkd/issues/68) |
-| [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:use-cases)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:use-cases) | Document API through example notebooks | 25% | [34](https://github.com/alan-turing-institute/ptype-dmkd/issues/34) | [78](https://github.com/alan-turing-institute/ptype-dmkd/issues/78), [79](https://github.com/alan-turing-institute/ptype-dmkd/issues/79), [82](https://github.com/alan-turing-institute/ptype-dmkd/issues/82), [83](https://github.com/alan-turing-institute/ptype-dmkd/issues/83) |
+| [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:use-cases)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:use-cases) | Document API through example notebooks | 25% | [34](https://github.com/alan-turing-institute/ptype-dmkd/issues/34) | [78](https://github.com/alan-turing-institute/ptype-dmkd/issues/78), [79](https://github.com/alan-turing-institute/ptype-dmkd/issues/79), [82](https://github.com/alan-turing-institute/ptype-dmkd/issues/82), [83](https://github.com/alan-turing-institute/ptype-dmkd/issues/83), [86](https://github.com/alan-turing-institute/ptype-dmkd/issues/86) |
 
 ## Guiding principles
 
 - Pandas dataframe as data format
 - Provide analysis results as structured (meta)data
-- Scriptable, decompositional (avoid monolithic functionality)
+- Scriptable interface (avoid monolithic functionality)
 - API driven by identified use cases
 - Refactor/redesign as required to support easy implementation of other features
