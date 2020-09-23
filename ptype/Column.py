@@ -164,11 +164,6 @@ class Column:
             self.unique_vals_status[i] = Status.TYPE
             self.p_z[i, :] = [1.0, 0.0, 0.0]
 
-    def replace_missing(self, v):
-        for u in self.get_missing_values():
-            self.series.replace(u, v, inplace=True)
-        self.cache_unique_vals()
-
     def get_features(self, counts):
         posterior = OrderedDict()
         for t, p in sorted(self.p_t.items()):
