@@ -1,5 +1,3 @@
-# Storing notebooks in Git
+# Notebook testing
 
-To avoid spurious diffs and unwanted builds, `.git/config` defines a filter called `strip-notebook-output` which runs `nbconvert` to strip the output embedded in any `.ipynb` files prior to commands like git `diff` and `git commit`. 
-
-`jupyter` needs to be on the path. If the `nbconvert` step fails for this or any other reason, the file will be staged with the output included. See https://stackoverflow.com/questions/28908319.
+We use `nbval` to test that notebook cell output remains unchanged. If you change the contents of a cell and intend the cell output to change, you will usually need to reexecute the cell before committing, so that notebook contains the updated output. 
