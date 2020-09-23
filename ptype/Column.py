@@ -44,7 +44,6 @@ class Column:
         self.normal_values = normal_values
         self.missing_values = missing_values
         self.anomalous_values = anomalous_values
-        self.arff_type = None
         self.unique_vals = []
         self.unique_vals_counts = []
         self.cache_unique_vals()
@@ -60,11 +59,19 @@ class Column:
         ]
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
+        self.categorical_values = (
+            self.get_normal_values() if self.arff_type == "nominal" else None
+        )
 
     def __repr__(self):
         ptype_pandas_mapping = {
             "integer": "Int64",
             "date-iso-8601": "datetime64",
+            "date-eu": "datetime64",
+            "date-non-std": "datetime64",
+            "string": "string",
+            "boolean": "bool",  # will remove boolean later
+            "float": "float64",
         }  # ouch
         props = {
             "type": self.predicted_type,
@@ -75,9 +82,8 @@ class Column:
             "missingness_ratio": self.get_ratio(Status.MISSING),
             "anomalies": self.get_anomalous_values(),
             "anomalous_ratio": self.get_ratio(Status.ANOMALOUS),
+            "categorical_values": self.categorical_values,
         }
-        if self.arff_type == "nominal":
-            props["categorical_values"] = self.get_normal_values()
         return repr(props)
 
     def cache_unique_vals(self):
