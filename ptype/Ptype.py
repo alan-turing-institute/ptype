@@ -52,6 +52,9 @@ class Ptype:
             probabilities, counts = self.generate_probs(col_name)
             if self.verbose:
                 print_to_file("\tinference is running...")
+
+            # apply user feedback for missing data and anomalies
+            # temporarily overwrite the proabilities for a given value and a column?
             self.model.run_inference(probabilities, counts)
             self.cols[col_name] = self.column(col_name, counts)
 
@@ -69,8 +72,15 @@ class Ptype:
          Transformed Pandas dataframe object.
          """
         df = df.apply(self.as_normal(), axis=0)
-        ptype_pandas_mapping = {"integer": "Int64"}
-
+        ptype_pandas_mapping = {
+            "integer": "Int64",
+            "date-iso-8601": "datetime64",
+            "date-eu": "datetime64",
+            "date-non-std": "datetime64",
+            "string": "string",
+            "boolean": "bool",  # will remove boolean later
+            "float": "float64",
+        }
         for col_name in df:
             new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
             try:
