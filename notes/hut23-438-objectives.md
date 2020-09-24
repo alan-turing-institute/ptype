@@ -2,9 +2,9 @@
 
 Three FTE-month project to take ptype and make a more robust software package. See [project Kanban board](https://github.com/alan-turing-institute/ptype-dmkd/projects/1) for a more detailed view.
 
-## Summary of tasks
+## Summary of high-level objectives
 
-| Task | Description | Est. % | Completed | In progress/to do |
+| Objective | Description | Est. % | Completed | In progress/to do |
 | --- | --- | --- | --- | --- |
 | [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:python-package)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:python-package) | <s>Python package with automated build & deployment</s> | 100% | [1](https://github.com/alan-turing-institute/ptype-dmkd/issues/1), [2](https://github.com/alan-turing-institute/ptype-dmkd/issues/2), [9](https://github.com/alan-turing-institute/ptype-dmkd/issues/9), [14](https://github.com/alan-turing-institute/ptype-dmkd/issues/14) | [10](https://github.com/alan-turing-institute/ptype-dmkd/issues/10), [31](https://github.com/alan-turing-institute/ptype-dmkd/issues/31) |
 | [![](https://img.shields.io/github/labels/alan-turing-institute/ptype-dmkd/task:test-coverage)](https://github.com/alan-turing-institute/ptype-dmkd/labels/task:test-coverage) | <s>Initial test coverage</s> | 100% | [3](https://github.com/alan-turing-institute/ptype-dmkd/issues/3), [4](https://github.com/alan-turing-institute/ptype-dmkd/issues/4), [6](https://github.com/alan-turing-institute/ptype-dmkd/issues/6), [7](https://github.com/alan-turing-institute/ptype-dmkd/issues/7), [38](https://github.com/alan-turing-institute/ptype-dmkd/issues/38), [54](https://github.com/alan-turing-institute/ptype-dmkd/issues/54), [60](https://github.com/alan-turing-institute/ptype-dmkd/issues/60) |
