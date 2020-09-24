@@ -234,7 +234,7 @@ class Ptype:
             p_t=self.model.p_t,
             predicted_type=predicted_type,
             p_z=self.model.p_z[
-                :, self.types.index(max(self.model.p_t, key=self.model.p_t.get)), :
+                :, self.types.index(predicted_type), :
             ],  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
