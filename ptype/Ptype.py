@@ -219,11 +219,12 @@ class Ptype:
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
         """
-        # In case of a posterior vector whose entries are equal
+        predicted_type_ = max(self.model.p_t, key=self.model.p_t.get)
+        # Unpleasant special case when posterior vector has entries which are equal
         if len(set(self.model.p_t.values())) == 1:
             predicted_type = "all identical"
         else:
-            predicted_type = max(self.model.p_t, key=self.model.p_t.get)
+            predicted_type = predicted_type_
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(predicted_type)
@@ -233,9 +234,7 @@ class Ptype:
             counts=counts,
             p_t=self.model.p_t,
             predicted_type=predicted_type,
-            p_z=self.model.p_z[
-                :, self.types.index(predicted_type), :
-            ],  # need to handle the uniform case
+            p_z=self.model.p_z[:, self.types.index(predicted_type_), :],  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
             anomalous_values=anomalies,
