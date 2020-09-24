@@ -209,12 +209,8 @@ class Ptype:
 
             return [
                 list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(
-                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
-                ),
-                list(
-                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
-                ),
+                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]),
             ]
         else:
             return [[], [], []]
