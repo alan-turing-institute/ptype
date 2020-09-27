@@ -713,6 +713,24 @@ class Model:
     def set_likelihoods(self, likelihoods):
         self.likelihoods = likelihoods
 
+    def get_all_parameters_z(self, runner):
+        w_j = []
+        for t in range(len(self.types)):
+            for state in runner.machines[2 + t].I:
+                if runner.machines[2 + t].I[state] != LOG_EPS:
+                    w_j.append(runner.machines[2 + t].I_z[state])
+
+            for a in runner.machines[2 + t].T_z:
+                for b in runner.machines[2 + t].T[a]:
+                    for c in runner.machines[2 + t].T[a][b]:
+                        w_j.append(runner.machines[2 + t].T_z[a][b][c])
+
+            for state in runner.machines[2 + t].F:
+                if runner.machines[2 + t].F[state] != LOG_EPS:
+                    w_j.append(runner.machines[2 + t].F_z[state])
+
+        return w_j
+
     def set_all_probabilities_z(self, runner, w_j_z, normalize=False):
         counter = 0
         temp = []
