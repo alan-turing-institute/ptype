@@ -1,8 +1,6 @@
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
-    log_weighted_sum_probs_check,
-    print_to_file,
     log_weighted_sum_normalize_probs,
 )
 from collections import OrderedDict
@@ -11,7 +9,6 @@ from scipy import optimize
 import numpy as np
 import time
 import sys
-from scipy.stats import norm
 
 Inf = np.Inf
 
@@ -116,10 +113,6 @@ class Model:
 
             # Calculates posterior cell probabilities
 
-            # p_z[:, j, self.TYPE_INDEX] = np.log() +
-            # p_z[:, j, self.MISSING_INDEX] = np.log(pi[j][1]) + logP[:,self.MISSING_INDEX-1]
-            # p_z[:, j, self.ANOMALIES_INDEX] = np.log(pi[j][2]) + logP[:, self.ANOMALIES_INDEX - 1]
-
             # Normalizes
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
                 pi[j][0],
@@ -130,23 +123,20 @@ class Model:
                 logP[:, self.ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, j, 0] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, j, 1] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, j, 2] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[:, j, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z[:, j, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z[:, j, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
             p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
-        self.p_t = OrderedDict([(t, p) for t, p in zip(self.types, p_t)])
+        self.p_t = {t: p for t, p in zip(self.types, p_t)}
         self.p_z = p_z
 
     def calculate_likelihoods(self, logP, counts):
-        sys.stdout.flush()
         # Constants
         I, J = logP.shape  # I: num of rows in a data column.
         # J: num of data types including missing and catch-all
-        K = (
-            J - 2
-        )  # K: num of possible column data types (excluding missing and catch-all)
+        K = J - 2  # K: num of possible column data types (excluding missing and catch-all)
 
         # Initializations
         pi = [self.PI for j in range(K)]  # mixture weights of row types
@@ -242,14 +232,10 @@ class Model:
         else:
             error = -np.log(temp) / len(counts_array)
 
-        # result_dict[process_id] = error
         return error
 
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
-        # print_to_file('f_cols is called')
-        time_init = time.time()
-
         # Set params: init-transition-final
         runner, temp_w_j_z = self.set_all_probabilities_z(self.current_runner, w_j_z)
 
@@ -260,8 +246,6 @@ class Model:
         for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
-        # print_to_file(str(time.time() - time_init))
-        # print(error)
         return error
 
     def dp_dz(self, zs):
@@ -466,12 +450,6 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        # for a in runner.machines[2 + t].T:
-                        #     temp_g_j = []
-                        #     for b in runner.machines[2 + t].T[a]:
-                        #         if str(b) in set_chars:
-                        #             for c in runner.machines[2 + t].T[a][b]:
-                        #                 temp_g_j[state_indices[a + '*' + b + '*' + c]] += self.gradient_transition_optimized_new_marginals(runner, marginals, a, b, c, t, r, str(x_i), y_i, temp_gra_i, counts_array_i)
                         common_chars = list(
                             set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
                         )
@@ -601,16 +579,6 @@ class Model:
                     q_total += self.g_col_marginals(
                         runner, str(i), column_name, labels[j] - 1
                     )
-
-        # print_to_file(str(time.time() - time_init))
-        # print_to_file('grad chek is called.')
-        # q_approx = self.grad_chek(w_j_z)
-        # print(q_total)
-        # print_to_file(q_approx)
-        # print(q_total-q_approx)
-        # print_to_file('gradient norm ' + str(vecnorm(q_total, ord=np.Inf)))
-        # print_to_file('gradient approx norm' + str(vecnorm(q_approx, ord=np.Inf)))
-        # print_to_file('gradients diff norm' + str(vecnorm(q_total - q_approx)))
 
         return q_total
 
