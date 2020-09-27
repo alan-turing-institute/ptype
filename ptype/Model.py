@@ -246,10 +246,6 @@ class Model:
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
 
-    def dp_dz(self, zs):
-        temp = np.exp(zs)
-        return (temp * sum(temp) - temp * temp) / (sum(temp) ** 2)
-
     def g_col(self, runner, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
@@ -550,10 +546,9 @@ class Model:
 
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
-        runner = self.current_runner
 
         # updates the parameters
-        runner, temp_w_j_z = runner.set_all_probabilities_z(w_j_z)
+        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
         # time_init2 = time.time()

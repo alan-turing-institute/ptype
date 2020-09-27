@@ -117,7 +117,7 @@ class PFSMRunner:
                     for a in machine.F
                 }
 
-    def set_all_probabilities_z(self, w_j_z: object, normalize: object = False) -> object:
+    def set_all_probabilities_z(self, w_j_z, normalize = False) -> object:
         counter = 0
         temp = []
         for t in range(len(self.types)):
