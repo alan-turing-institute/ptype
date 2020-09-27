@@ -165,15 +165,13 @@ class Model:
         self.p_t = np.array(p_t)
 
     def update_PFSMs(self, runner):
-        sys.stdout.flush()
-
         w_j_z = self.get_all_parameters_z(runner)
 
         # Find new values using Conjugate Gradient method
         w_j_z, j = self.conjugate_gradient(w_j_z)
 
         new_runner = copy(runner)
-        new_runner, _ = self.set_all_probabilities_z(new_runner, w_j_z, normalize=True)
+        new_runner, _ = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
 
         return new_runner
 
@@ -182,7 +180,7 @@ class Model:
 
         gnorm = gtol + 1
         j = 0
-        while (gnorm > gtol) and (j < J):
+        while gnorm > gtol and j < J:
             if j == 0:
                 g.append(self.g_cols(w))
                 d.append(-g[j])
@@ -237,7 +235,7 @@ class Model:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        runner, temp_w_j_z = self.set_all_probabilities_z(self.current_runner, w_j_z)
+        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
@@ -555,7 +553,7 @@ class Model:
         runner = self.current_runner
 
         # updates the parameters
-        runner, temp_w_j_z = self.set_all_probabilities_z(runner, w_j_z)
+        runner, temp_w_j_z = runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
         # time_init2 = time.time()
@@ -653,30 +651,6 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    ###################### HELPERS #######################
-    def grad_chek(self, w_j_z):
-        EPS = 1e-8
-
-        runner = self.current_runner
-        grad_approx = []
-
-        for k in range(len(w_j_z)):
-            # updates the parameters
-            w_j_z[k] = w_j_z[k] + EPS
-            runner, temp_w_j_z = self.set_all_probabilities_z(runner, w_j_z)
-            f_fwd = self.f_cols(w_j_z)
-
-            # updates the parameters
-            w_j_z[k] = w_j_z[k] - 2 * EPS
-            runner, temp_w_j_z_ignored = self.set_all_probabilities_z(runner, w_j_z)
-            f_bwd = self.f_cols(w_j_z)
-
-            grad_approx.append((f_fwd - f_bwd) / (2 * EPS))
-
-            w_j_z = temp_w_j_z
-
-        return np.array(grad_approx)
-
     ### GETTERS - SETTERS ###
     def set_likelihoods(self, likelihoods):
         self.likelihoods = likelihoods
@@ -699,49 +673,6 @@ class Model:
 
         return w_j
 
-    def set_all_probabilities_z(self, runner, w_j_z, normalize=False):
-        counter = 0
-        temp = []
-        for t in range(len(self.types)):
-            for state in runner.machines[2 + t].I:
-                if runner.machines[2 + t].I[state] != LOG_EPS:
-                    temp.append(runner.machines[2 + t].I_z[state])
-                    runner.machines[2 + t].I_z[state] = w_j_z[counter]
-                    counter += 1
-
-            for a in runner.machines[2 + t].T:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
-                        temp.append(runner.machines[2 + t].T_z[a][b][c])
-                        runner.machines[2 + t].T_z[a][b][c] = w_j_z[counter]
-                        counter += 1
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-                    temp.append(runner.machines[2 + t].F_z[state])
-                    runner.machines[2 + t].F_z[state] = w_j_z[counter]
-                    counter += 1
-
-            if normalize:
-                (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                ) = Model.normalize_a_state_new(
-                    runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
-                )
-                runner.machines[2 + t].F, runner.machines[2 + t].T = (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                )
-
-                runner.machines[2 + t].I_z = Model.normalize_initial(
-                    runner.machines[2 + t].I_z
-                )
-                runner.machines[2 + t].I = runner.machines[2 + t].I_z
-
-        return runner, temp
-
-    ### NORMALIZATION METHODS ###
     @staticmethod
     def normalize_a_state(self, F, T, a):
         # find maximum log probability
