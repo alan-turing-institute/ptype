@@ -351,8 +351,6 @@ class Model:
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
 
-        # set_chars = np.unique(sum([list(str(x_i)) for x_i in temp_x], []))
-
         # calculates posterior values of types
         r = []
         for k in range(self.K):
@@ -374,7 +372,6 @@ class Model:
         g_j = []
         for t in range(len(self.types)):
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
-            # print('g_col_marginals', t, len(x_i_indices))
 
             possible_states = [
                 state
@@ -409,7 +406,6 @@ class Model:
             g_j = g_j + temp_g_j
 
             # gradient for transition parameters
-            # print('generating marginals')
             if t == 1:
                 marginals = {
                     str(x_i): np.ones((len(x_i), 1, 1))
@@ -424,7 +420,6 @@ class Model:
                     else np.zeros((len(x_i), len(x_i)))
                     for x_i, p_x_i in zip(temp_x, logP)
                 }
-            # print('generated marginals')
             state_indices = {}
             counter = 0
             temp_g_j = []
@@ -434,7 +429,7 @@ class Model:
                         state_indices[str(a) + "*" + str(b) + "*" + str(c)] = counter
                         temp_g_j.append(0)
                         counter += 1
-            # print('first done')
+
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
                 zip(
                     temp_x[x_i_indices],
