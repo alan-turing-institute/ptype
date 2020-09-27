@@ -87,9 +87,7 @@ class Ptype:
                 df[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
                 # TODO: explain why this case needed
-                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
-                    new_dtype
-                )
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(new_dtype)
         return df
 
     def fit_transform_schema(self, df):
