@@ -41,11 +41,10 @@ class Model:
         self.data = data_frame
         self.PI = PI  # weight of pi variable
         if training_params is not None:
-            self.current_runner = copy(training_params["current_runner"])
-            self.data_frames = training_params["data_frames"]
-            self.labels = training_params["labels"]
-            self.unique_vals = self.get_unique_vals(self.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
+            self.training_params = training_params
+            self.current_runner = copy(training_params.current_runner)
+            self.unique_vals = self.get_unique_vals(self.training_params.data_frames)
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.training_params.data_frames)
             self.current_runner.set_unique_values(self.unique_vals)
             self.J = len(self.current_runner.machines)
             self.K = self.J - 2
@@ -175,33 +174,6 @@ class Model:
             )
         self.p_t = np.array(p_t)
 
-    def train_all_z_multiple_dfs(self, runner):
-        sys.stdout.flush()
-
-        # Initializations
-        self.J = len(
-            runner.machines
-        )  # J: num of data types including missing and anomaly.
-        self.K = (
-            self.J - 2
-        )  # K: num of possible column data types (excluding missing and anomaly)
-        self.pi = [self.PI for j in range(self.K)]  # mixture weights of row types
-
-        self.current_runner = runner
-
-        w_j_z = self.get_all_parameters_z(runner)
-
-        # Find new values using Conjugate Gradient method
-        res = optimize.minimize(
-            self.f_cols, w_j_z, jac=self.g_cols, method="CG", options={"disp": True,}
-        )
-        if res.success:
-            runner, temp = self.set_all_probabilities_z(runner, res.x, normalize=True)
-        else:
-            runner, temp = self.set_all_probabilities_z(runner, res.x, normalize=True)
-
-        return runner
-
     def update_PFSMs(self, runner):
         sys.stdout.flush()
 
@@ -246,9 +218,7 @@ class Model:
 
         return w, j
 
-    def f_col(
-        self, i_, column_name, y_i,
-    ):
+    def f_col(self, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
         q = []
@@ -287,7 +257,7 @@ class Model:
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(zip(self.data_frames, self.labels)):
+        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         # print_to_file(str(time.time() - time_init))
@@ -617,7 +587,7 @@ class Model:
         q_total = None
         counter_ = 0
 
-        for i, (data_frame, labels) in enumerate(zip(self.data_frames, self.labels)):
+        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
             # print(i)
             for j, column_name in enumerate(list(data_frame.columns)):
                 time_temp1 = time.time()
@@ -740,40 +710,8 @@ class Model:
         return np.array(grad_approx)
 
     ### GETTERS - SETTERS ###
-    def set_params(self, types, data_frame, training_params=None):
-        self.types = types
-        self.data = data_frame
-        if training_params is not None:
-            self.current_runner = copy(training_params["current_runner"])
-            self.data_frames = training_params["data_frames"]
-            self.labels = training_params["labels"]
-            self.unique_vals = self.get_unique_vals(self.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
-            self.current_runner.set_unique_values(self.unique_vals)
-            self.J = len(self.current_runner.machines)
-            self.K = self.J - 2
-            self.pi = [self.PI for j in range(self.K)]
-
     def set_likelihoods(self, likelihoods):
         self.likelihoods = likelihoods
-
-    def get_all_parameters_z(self, runner):
-        w_j = []
-        for t in range(len(self.types)):
-            for state in runner.machines[2 + t].I:
-                if runner.machines[2 + t].I[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].I_z[state])
-
-            for a in runner.machines[2 + t].T_z:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
-                        w_j.append(runner.machines[2 + t].T_z[a][b][c])
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].F_z[state])
-
-        return w_j
 
     def set_all_probabilities_z(self, runner, w_j_z, normalize=False):
         counter = 0
