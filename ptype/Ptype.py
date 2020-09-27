@@ -241,15 +241,11 @@ class Ptype:
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_values_in_a_column, counts = get_unique_vals(
+        unique_vs, counts = get_unique_vals(
             self.model.data[column_name], return_counts=True
         )
-        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
-            unique_values_in_a_column
-        )
-        probabilities = np.array(
-            [probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column]
-        )
+        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
+        probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
 
         return probabilities, counts
 
