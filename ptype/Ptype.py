@@ -135,7 +135,6 @@ class Ptype:
         self.model = Model(self.types, training_params=training_params)
 
         save_object(self.PFSMRunner, "models/training_runner_initial")
-        raise Exception("STOP")
         training_error = [self.calculate_total_error(data_frames, labels)]
         print(training_error)
 
