@@ -671,8 +671,6 @@ class AnomalyNew(Machine):
             ]
         )
         self.F_backup = self.F.copy()
-        # self.add_transitions('q_unknown', 'q_unknown_3', self.alphabet, [1. / len(self.alphabet) for i in range(len(self.alphabet))])
-        # self.add_transitions('q_unknown_3', 'q_unknown_3', self.alphabet, [1.-self.STOP_P/len(self.alphabet) for i in range(len(self.alphabet))])
 
     def calculate_probability(self, word):
         self.ignore = False
