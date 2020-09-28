@@ -33,7 +33,7 @@ class Machine(object):
 #            set([str(i) for i in list(fsm_obj.alphabet)]) - set(["anything_else",])
 #        )
 
-        self.alphabet = [str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"]
+        self.alphabet = sorted(str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else")
 
         states = list(fsm_obj.states)
         self.add_states(states)
