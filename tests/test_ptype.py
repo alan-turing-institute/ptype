@@ -153,7 +153,7 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-    np.random.seed(0)
+#    np.random.seed(0)
     ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
 
 
