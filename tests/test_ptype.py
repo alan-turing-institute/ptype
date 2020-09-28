@@ -146,8 +146,6 @@ def notebook_tests():
 
 
 def training_tests():
-    # print_to_file("number of datasets used = " + str(len(dataset_names)))
-
     df_trainings, y_trainings = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
         df_training, y_training = get_inputs(dataset_name)
