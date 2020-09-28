@@ -439,9 +439,10 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        common_chars = list(
-                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
-                        )
+#                        common_chars = list(
+#                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
+#                        )
+                        common_chars = [x for x in runner.machines[t + 2].alphabet if x in list(str(x_i))]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
                             for l in common_char_ls:
