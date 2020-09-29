@@ -16,7 +16,6 @@ def ma_multidot(arrays):
 
 
 LOG_EPS = -1e150
-LOG_EPS = -1e150
 PRINT = False
 
 
