@@ -146,8 +146,6 @@ def notebook_tests():
 
 
 def training_tests():
-    # print_to_file("number of datasets used = " + str(len(dataset_names)))
-
     df_trainings, y_trainings = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
         df_training, y_training = get_inputs(dataset_name)
@@ -155,12 +153,13 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
+#    np.random.seed(0)
     ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
 
 
 def main():
-    core_tests()
-    notebook_tests()
+#    core_tests()
+#    notebook_tests()
     training_tests()
 
 

@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from copy import copy
 import numpy as np
 import pandas as pd
 
@@ -7,6 +8,12 @@ from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import print_to_file, save_object
 
+
+class TrainingParams:
+    def __init__(self, current_runner, dfs, labels):
+        self.current_runner = current_runner
+        self.data_frames = dfs
+        self.labels = labels
 
 class Ptype:
     def __init__(self, _types=None):
@@ -36,10 +43,7 @@ class Ptype:
         self.cols = {}
 
         # Ptype model for inference
-        if self.model is None:
-            self.model = Model(self.types, df)
-        else:
-            self.model.set_params(self.types, df)
+        self.model = Model(self.types, df)
 
         # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
@@ -126,19 +130,11 @@ class Ptype:
             self.PFSMRunner.normalize_params()
 
         # Ptype model for training
-        training_params = {
-            "current_runner": self.PFSMRunner,
-            "data_frames": data_frames,
-            "labels": labels,
-        }
-        if self.model is None:
-            self.model = Model(self.types, training_params=training_params)
-        else:
-            self.model.set_params(self.types, training_params=training_params)
+        training_params = TrainingParams(self.PFSMRunner, data_frames, labels)
+        assert self.model is None
+        self.model = Model(self.types, training_params=training_params)
 
-        save_object(
-            self.PFSMRunner, "models/training_runner_initial",
-        )
+        save_object(self.PFSMRunner, "models/training_runner_initial")
         training_error = [self.calculate_total_error(data_frames, labels)]
         print(training_error)
 
@@ -148,7 +144,7 @@ class Ptype:
                 print_to_file("iteration = " + str(it))
 
             # Trains machines using all of the training data frames
-            self.model.current_runner = self.update_PFSMs(self.PFSMRunner)
+            self.model.current_runner = self.model.update_PFSMs(self.PFSMRunner)
 
             # Calculate training and validation error at each iteration
             training_error.append(self.calculate_total_error(data_frames, labels))
@@ -164,9 +160,6 @@ class Ptype:
                     break
 
         save_object(training_error, "models/training_error")
-
-    def update_PFSMs(self, runner):
-        return self.model.update_PFSMs(runner)
 
     # OUTPUT METHODS #########################
     def show_schema(self):
@@ -246,15 +239,11 @@ class Ptype:
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_values_in_a_column, counts = get_unique_vals(
+        unique_vs, counts = get_unique_vals(
             self.model.data[column_name], return_counts=True
         )
-        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
-            unique_values_in_a_column
-        )
-        probabilities = np.array(
-            [probabilities_dict[str(x_i)] for x_i in unique_values_in_a_column]
-        )
+        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
+        probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
 
         return probabilities, counts
 

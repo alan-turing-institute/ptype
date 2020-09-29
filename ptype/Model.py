@@ -1,8 +1,6 @@
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
-    log_weighted_sum_probs_check,
-    print_to_file,
     log_weighted_sum_normalize_probs,
 )
 from collections import OrderedDict
@@ -11,7 +9,6 @@ from scipy import optimize
 import numpy as np
 import time
 import sys
-from scipy.stats import norm
 
 Inf = np.Inf
 
@@ -41,11 +38,10 @@ class Model:
         self.data = data_frame
         self.PI = PI  # weight of pi variable
         if training_params is not None:
-            self.current_runner = copy(training_params["current_runner"])
-            self.data_frames = training_params["data_frames"]
-            self.labels = training_params["labels"]
-            self.unique_vals = self.get_unique_vals(self.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
+            self.training_params = training_params
+            self.current_runner = copy(training_params.current_runner)
+            self.unique_vals = self.get_unique_vals(self.training_params.data_frames)
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.training_params.data_frames)
             self.current_runner.set_unique_values(self.unique_vals)
             self.J = len(self.current_runner.machines)
             self.K = self.J - 2
@@ -117,10 +113,6 @@ class Model:
 
             # Calculates posterior cell probabilities
 
-            # p_z[:, j, self.TYPE_INDEX] = np.log() +
-            # p_z[:, j, self.MISSING_INDEX] = np.log(pi[j][1]) + logP[:,self.MISSING_INDEX-1]
-            # p_z[:, j, self.ANOMALIES_INDEX] = np.log(pi[j][2]) + logP[:, self.ANOMALIES_INDEX - 1]
-
             # Normalizes
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
                 pi[j][0],
@@ -131,23 +123,20 @@ class Model:
                 logP[:, self.ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, j, 0] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, j, 1] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, j, 2] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[:, j, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z[:, j, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z[:, j, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
             p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
-        self.p_t = OrderedDict([(t, p) for t, p in zip(self.types, p_t)])
+        self.p_t = {t: p for t, p in zip(self.types, p_t)}
         self.p_z = p_z
 
     def calculate_likelihoods(self, logP, counts):
-        sys.stdout.flush()
         # Constants
         I, J = logP.shape  # I: num of rows in a data column.
         # J: num of data types including missing and catch-all
-        K = (
-            J - 2
-        )  # K: num of possible column data types (excluding missing and catch-all)
+        K = J - 2  # K: num of possible column data types (excluding missing and catch-all)
 
         # Initializations
         pi = [self.PI for j in range(K)]  # mixture weights of row types
@@ -175,43 +164,14 @@ class Model:
             )
         self.p_t = np.array(p_t)
 
-    def train_all_z_multiple_dfs(self, runner):
-        sys.stdout.flush()
-
-        # Initializations
-        self.J = len(
-            runner.machines
-        )  # J: num of data types including missing and anomaly.
-        self.K = (
-            self.J - 2
-        )  # K: num of possible column data types (excluding missing and anomaly)
-        self.pi = [self.PI for j in range(self.K)]  # mixture weights of row types
-
-        self.current_runner = runner
-
-        w_j_z = self.get_all_parameters_z(runner)
-
-        # Find new values using Conjugate Gradient method
-        res = optimize.minimize(
-            self.f_cols, w_j_z, jac=self.g_cols, method="CG", options={"disp": True,}
-        )
-        if res.success:
-            runner, temp = self.set_all_probabilities_z(runner, res.x, normalize=True)
-        else:
-            runner, temp = self.set_all_probabilities_z(runner, res.x, normalize=True)
-
-        return runner
-
     def update_PFSMs(self, runner):
-        sys.stdout.flush()
-
         w_j_z = self.get_all_parameters_z(runner)
 
         # Find new values using Conjugate Gradient method
         w_j_z, j = self.conjugate_gradient(w_j_z)
 
         new_runner = copy(runner)
-        new_runner, _ = self.set_all_probabilities_z(new_runner, w_j_z, normalize=True)
+        new_runner, _ = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
 
         return new_runner
 
@@ -220,7 +180,7 @@ class Model:
 
         gnorm = gtol + 1
         j = 0
-        while (gnorm > gtol) and (j < J):
+        while gnorm > gtol and j < J:
             if j == 0:
                 g.append(self.g_cols(w))
                 d.append(-g[j])
@@ -246,9 +206,7 @@ class Model:
 
         return w, j
 
-    def f_col(
-        self, i_, column_name, y_i,
-    ):
+    def f_col(self, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
         q = []
@@ -272,31 +230,21 @@ class Model:
         else:
             error = -np.log(temp) / len(counts_array)
 
-        # result_dict[process_id] = error
         return error
 
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
-        # print_to_file('f_cols is called')
-        time_init = time.time()
-
         # Set params: init-transition-final
-        runner, temp_w_j_z = self.set_all_probabilities_z(self.current_runner, w_j_z)
+        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(zip(self.data_frames, self.labels)):
+        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
-        # print_to_file(str(time.time() - time_init))
-        # print(error)
         return error
-
-    def dp_dz(self, zs):
-        temp = np.exp(zs)
-        return (temp * sum(temp) - temp * temp) / (sum(temp) ** 2)
 
     def g_col(self, runner, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
@@ -403,8 +351,6 @@ class Model:
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
 
-        # set_chars = np.unique(sum([list(str(x_i)) for x_i in temp_x], []))
-
         # calculates posterior values of types
         r = []
         for k in range(self.K):
@@ -426,7 +372,6 @@ class Model:
         g_j = []
         for t in range(len(self.types)):
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
-            # print('g_col_marginals', t, len(x_i_indices))
 
             possible_states = [
                 state
@@ -461,7 +406,6 @@ class Model:
             g_j = g_j + temp_g_j
 
             # gradient for transition parameters
-            # print('generating marginals')
             if t == 1:
                 marginals = {
                     str(x_i): np.ones((len(x_i), 1, 1))
@@ -476,7 +420,6 @@ class Model:
                     else np.zeros((len(x_i), len(x_i)))
                     for x_i, p_x_i in zip(temp_x, logP)
                 }
-            # print('generated marginals')
             state_indices = {}
             counter = 0
             temp_g_j = []
@@ -486,7 +429,7 @@ class Model:
                         state_indices[str(a) + "*" + str(b) + "*" + str(c)] = counter
                         temp_g_j.append(0)
                         counter += 1
-            # print('first done')
+
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
                 zip(
                     temp_x[x_i_indices],
@@ -496,15 +439,10 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        # for a in runner.machines[2 + t].T:
-                        #     temp_g_j = []
-                        #     for b in runner.machines[2 + t].T[a]:
-                        #         if str(b) in set_chars:
-                        #             for c in runner.machines[2 + t].T[a][b]:
-                        #                 temp_g_j[state_indices[a + '*' + b + '*' + c]] += self.gradient_transition_optimized_new_marginals(runner, marginals, a, b, c, t, r, str(x_i), y_i, temp_gra_i, counts_array_i)
-                        common_chars = list(
-                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
-                        )
+#                        common_chars = list(
+#                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
+#                        )
+                        common_chars = [x for x in runner.machines[t + 2].alphabet if x in list(str(x_i))]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
                             for l in common_char_ls:
@@ -604,10 +542,9 @@ class Model:
 
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
-        runner = self.current_runner
 
         # updates the parameters
-        runner, temp_w_j_z = self.set_all_probabilities_z(runner, w_j_z)
+        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
         # time_init2 = time.time()
@@ -617,7 +554,7 @@ class Model:
         q_total = None
         counter_ = 0
 
-        for i, (data_frame, labels) in enumerate(zip(self.data_frames, self.labels)):
+        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
             # print(i)
             for j, column_name in enumerate(list(data_frame.columns)):
                 time_temp1 = time.time()
@@ -631,16 +568,6 @@ class Model:
                     q_total += self.g_col_marginals(
                         runner, str(i), column_name, labels[j] - 1
                     )
-
-        # print_to_file(str(time.time() - time_init))
-        # print_to_file('grad chek is called.')
-        # q_approx = self.grad_chek(w_j_z)
-        # print(q_total)
-        # print_to_file(q_approx)
-        # print(q_total-q_approx)
-        # print_to_file('gradient norm ' + str(vecnorm(q_total, ord=np.Inf)))
-        # print_to_file('gradient approx norm' + str(vecnorm(q_approx, ord=np.Inf)))
-        # print_to_file('gradients diff norm' + str(vecnorm(q_total - q_approx)))
 
         return q_total
 
@@ -715,45 +642,7 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    ###################### HELPERS #######################
-    def grad_chek(self, w_j_z):
-        EPS = 1e-8
-
-        runner = self.current_runner
-        grad_approx = []
-
-        for k in range(len(w_j_z)):
-            # updates the parameters
-            w_j_z[k] = w_j_z[k] + EPS
-            runner, temp_w_j_z = self.set_all_probabilities_z(runner, w_j_z)
-            f_fwd = self.f_cols(w_j_z)
-
-            # updates the parameters
-            w_j_z[k] = w_j_z[k] - 2 * EPS
-            runner, temp_w_j_z_ignored = self.set_all_probabilities_z(runner, w_j_z)
-            f_bwd = self.f_cols(w_j_z)
-
-            grad_approx.append((f_fwd - f_bwd) / (2 * EPS))
-
-            w_j_z = temp_w_j_z
-
-        return np.array(grad_approx)
-
     ### GETTERS - SETTERS ###
-    def set_params(self, types, data_frame, training_params=None):
-        self.types = types
-        self.data = data_frame
-        if training_params is not None:
-            self.current_runner = copy(training_params["current_runner"])
-            self.data_frames = training_params["data_frames"]
-            self.labels = training_params["labels"]
-            self.unique_vals = self.get_unique_vals(self.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.data_frames)
-            self.current_runner.set_unique_values(self.unique_vals)
-            self.J = len(self.current_runner.machines)
-            self.K = self.J - 2
-            self.pi = [self.PI for j in range(self.K)]
-
     def set_likelihoods(self, likelihoods):
         self.likelihoods = likelihoods
 
@@ -775,49 +664,6 @@ class Model:
 
         return w_j
 
-    def set_all_probabilities_z(self, runner, w_j_z, normalize=False):
-        counter = 0
-        temp = []
-        for t in range(len(self.types)):
-            for state in runner.machines[2 + t].I:
-                if runner.machines[2 + t].I[state] != LOG_EPS:
-                    temp.append(runner.machines[2 + t].I_z[state])
-                    runner.machines[2 + t].I_z[state] = w_j_z[counter]
-                    counter += 1
-
-            for a in runner.machines[2 + t].T:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
-                        temp.append(runner.machines[2 + t].T_z[a][b][c])
-                        runner.machines[2 + t].T_z[a][b][c] = w_j_z[counter]
-                        counter += 1
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-                    temp.append(runner.machines[2 + t].F_z[state])
-                    runner.machines[2 + t].F_z[state] = w_j_z[counter]
-                    counter += 1
-
-            if normalize:
-                (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                ) = Model.normalize_a_state_new(
-                    runner.machines[2 + t].F_z, runner.machines[2 + t].T_z, state
-                )
-                runner.machines[2 + t].F, runner.machines[2 + t].T = (
-                    runner.machines[2 + t].F_z,
-                    runner.machines[2 + t].T_z,
-                )
-
-                runner.machines[2 + t].I_z = Model.normalize_initial(
-                    runner.machines[2 + t].I_z
-                )
-                runner.machines[2 + t].I = runner.machines[2 + t].I_z
-
-        return runner, temp
-
-    ### NORMALIZATION METHODS ###
     @staticmethod
     def normalize_a_state(self, F, T, a):
         # find maximum log probability
