@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 from ptype.Column import Column2ARFF
-from ptype.utils import save_object
+from ptype.utils import load_object, save_object
 from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
@@ -146,6 +146,12 @@ def notebook_tests():
         raise Exception("Notebook test(s) failed.")
 
 
+def blah(actual, file):
+    expected = load_object(file)
+    if expected != actual:
+        save_object(actual, file)
+
+
 def training_tests():
     df_trainings, y_trainings = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
@@ -155,7 +161,8 @@ def training_tests():
 
     ptype = Ptype(_types=types)
     initial, final, training_error = ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
-    save_object(initial, "models/training_runner_initial")
+
+    blah(initial, "models/training_runner_initial")
     save_object(final, "models/training_runner_final")
     save_object(training_error, "models/training_error")
 

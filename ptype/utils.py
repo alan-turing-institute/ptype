@@ -192,6 +192,11 @@ def save_object(obj, filename):
         file.write(jsonpickle.encode(obj,indent=2))
 
 
+def load_object(filename):
+    with open(filename + ".json", "r") as file:
+        return jsonpickle.decode(file.read())
+
+
 def print_to_file(txt, filename="output.txt"):
     with open(filename, "a+") as f:
         f.write(txt + "\n")
