@@ -6,7 +6,7 @@ import pandas as pd
 from ptype.Column import Column, get_unique_vals
 from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import print_to_file, save_object
+from ptype.utils import print_to_file
 
 
 class TrainingParams:

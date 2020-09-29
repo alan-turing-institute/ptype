@@ -1,10 +1,9 @@
 import json
+import jsonpickle
 import numpy as np
 import os
 import pandas as pd
 
-from ptype.Column import Column2ARFF
-from ptype.utils import load_object, save_object
 from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
@@ -64,7 +63,7 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
 
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
-    if not (type_predictions == expected):
+    if not (type_predictions == expected): # dictionary comparison
         for k in type_predictions:
             if type_predictions[k] != expected[k]:
                 print(f"Differs on {k} ({type_predictions[k]} != {expected[k]})")
@@ -146,11 +145,14 @@ def notebook_tests():
         raise Exception("Notebook test(s) failed.")
 
 
-def check_expected(actual, file):
-    expected = load_object(file)
-    if expected != actual:
-        save_object(actual, file)
-        raise Exception(f"{file + '.json'} comparison failed.")
+def check_expected(actual, filename):
+    with open(filename + ".json", "r") as file:
+        expected_str = file.read()
+    actual_str = jsonpickle.encode(actual, indent=2)
+    if expected_str != actual_str:  # deep comparison
+        with open(filename + ".json", "w") as file:
+            file.write(actual_str)
+        raise Exception(f"{filename + '.json'} comparison failed.")
 
 
 def training_tests():
