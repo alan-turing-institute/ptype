@@ -4,6 +4,7 @@ import os
 import pandas as pd
 
 from ptype.Column import Column2ARFF
+from ptype.utils import save_object
 from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
@@ -153,8 +154,10 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-#    np.random.seed(0)
-    ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
+    initial, final, training_error = ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
+    save_object(initial, "models/training_runner_initial")
+    save_object(final, "models/training_runner_final")
+    save_object(training_error, "models/training_error")
 
 
 def main():

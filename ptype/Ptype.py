@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from copy import copy
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 
@@ -135,6 +135,7 @@ class Ptype:
         self.model = Model(self.types, training_params=training_params)
 
         save_object(self.PFSMRunner, "models/training_runner_initial")
+        initial = deepcopy(self.PFSMRunner) # shouldn't need this, but too much mutation...
         training_error = [self.calculate_total_error(data_frames, labels)]
         print(training_error)
 
@@ -160,6 +161,7 @@ class Ptype:
                     break
 
         save_object(training_error, "models/training_error")
+        return initial, self.model.current_runner, training_error
 
     # OUTPUT METHODS #########################
     def show_schema(self):
