@@ -134,10 +134,8 @@ class Ptype:
         assert self.model is None
         self.model = Model(self.types, training_params=training_params)
 
-        save_object(self.PFSMRunner, "models/training_runner_initial")
-        initial = deepcopy(self.PFSMRunner) # shouldn't need this, but too much mutation...
+        initial = deepcopy(self.PFSMRunner) # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(data_frames, labels)]
-        print(training_error)
 
         # Iterates over whole data points
         for it in range(_max_iter):
@@ -155,12 +153,8 @@ class Ptype:
                 if training_error[-2] - training_error[-1] < 1e-4:
                     if self.verbose:
                         print_to_file("converged!")
-                    save_object(
-                        self.model.current_runner, "models/training_runner_final",
-                    )
                     break
 
-        save_object(training_error, "models/training_error")
         return initial, self.model.current_runner, training_error
 
     # OUTPUT METHODS #########################
