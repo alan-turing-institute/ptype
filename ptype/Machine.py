@@ -301,7 +301,7 @@ class Machine(object):
             return LOG_EPS
         else:
             # reset probability to 0
-            self.word_prob = LOG_EPS
+            word_prob = LOG_EPS
 
             # Find initial states with non-zero probabilities
             possible_init_states = []
@@ -332,14 +332,14 @@ class Machine(object):
 
                 # add probability of each successful path that leads to the given word
                 if self.candidate_path_prob != 0:
-                    if self.word_prob == LOG_EPS:
-                        self.word_prob = self.candidate_path_prob
+                    if word_prob == LOG_EPS:
+                        word_prob = self.candidate_path_prob
                     else:
-                        self.word_prob = log_sum_probs(
-                            self.word_prob, self.candidate_path_prob
+                        word_prob = log_sum_probs(
+                            word_prob, self.candidate_path_prob
                         )
 
-            return self.word_prob
+            return word_prob
 
     def forward_recursion(self, x):
         """
@@ -818,7 +818,7 @@ class StringsNewAuto(Machine):
                 return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word)
             else:
                 # reset probability to 0
-                self.word_prob = LOG_EPS
+                word_prob = LOG_EPS
 
                 # Find initial states with non-zero probabilities
                 possible_init_states = []
@@ -849,14 +849,14 @@ class StringsNewAuto(Machine):
 
                     # add probability of each successful path that leads to the given word
                     if self.candidate_path_prob != 0:
-                        if self.word_prob == LOG_EPS:
-                            self.word_prob = self.candidate_path_prob
+                        if word_prob == LOG_EPS:
+                            word_prob = self.candidate_path_prob
                         else:
-                            self.word_prob = log_sum_probs(
-                                self.word_prob, self.candidate_path_prob
+                            word_prob = log_sum_probs(
+                                word_prob, self.candidate_path_prob
                             )
 
-                return self.word_prob
+                return word_prob
 
 
 class FloatsNewAuto(Machine):
@@ -880,7 +880,7 @@ class FloatsNewAuto(Machine):
         else:
 
             # reset probability to 0
-            self.word_prob = LOG_EPS
+            word_prob = LOG_EPS
 
             # Find initial states with non-zero probabilities
             possible_init_states = []
@@ -913,14 +913,14 @@ class FloatsNewAuto(Machine):
 
                 # add probability of each successful path that leads to the given word
                 if self.candidate_path_prob != 0:
-                    if self.word_prob == LOG_EPS:
-                        self.word_prob = self.candidate_path_prob
+                    if word_prob == LOG_EPS:
+                        word_prob = self.candidate_path_prob
                     else:
-                        self.word_prob = log_sum_probs(
-                            self.word_prob, self.candidate_path_prob
+                        word_prob = log_sum_probs(
+                            word_prob, self.candidate_path_prob
                         )
 
-            return self.word_prob
+            return word_prob
 
 
 ############# boolean #################
@@ -1237,7 +1237,7 @@ class ISO_8601NewAuto(Machine):
             return LOG_EPS
         else:
             # reset probability to 0
-            self.word_prob = LOG_EPS
+            word_prob = LOG_EPS
 
             # Find initial states with non-zero probabilities
             possible_init_states = []
@@ -1268,14 +1268,14 @@ class ISO_8601NewAuto(Machine):
 
                 # add probability of each successful path that leads to the given word
                 if self.candidate_path_prob != 0:
-                    if self.word_prob == LOG_EPS:
-                        self.word_prob = self.candidate_path_prob
+                    if word_prob == LOG_EPS:
+                        word_prob = self.candidate_path_prob
                     else:
-                        self.word_prob = log_sum_probs(
-                            self.word_prob, self.candidate_path_prob
+                        word_prob = log_sum_probs(
+                            word_prob, self.candidate_path_prob
                         )
 
-            return self.word_prob
+            return word_prob
 
 
 class Date_EUNewAuto(Machine):

@@ -171,8 +171,8 @@ def training_tests():
 
 
 def main():
-    core_tests()
-    notebook_tests()
+#    core_tests()
+#    notebook_tests()
     training_tests()
 
 
