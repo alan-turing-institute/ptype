@@ -146,10 +146,11 @@ def notebook_tests():
         raise Exception("Notebook test(s) failed.")
 
 
-def blah(actual, file):
+def check_expected(actual, file):
     expected = load_object(file)
     if expected != actual:
         save_object(actual, file)
+        raise Exception(f"{file + '.json'} comparison failed.")
 
 
 def training_tests():
@@ -162,9 +163,9 @@ def training_tests():
     ptype = Ptype(_types=types)
     initial, final, training_error = ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
 
-    blah(initial, "models/training_runner_initial")
-    save_object(final, "models/training_runner_final")
-    save_object(training_error, "models/training_error")
+    check_expected(initial, "models/training_runner_initial")
+    check_expected(final, "models/training_runner_final")
+    check_expected(training_error, "models/training_error")
 
 
 def main():
