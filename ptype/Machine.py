@@ -582,7 +582,7 @@ class Machine(object):
 ############# MISSINGS #################
 class MissingsNew(Machine):
     def __init__(self):
-#        super().__init__()
+        super().__init__()
         self.alphabet = [
             "NULL",
             "null",
