@@ -115,20 +115,6 @@ class Machine(object):
 
         self.T_new = T_new
 
-    def count_number_params(self):
-        num_params = 0
-        for a in self.T:
-            if self.I[a] != LOG_EPS or self.F[a] != LOG_EPS:
-                num_params += 1
-
-            for b in self.T[a]:
-                for c in self.T[a][b]:
-                    num_params += 1
-        return num_params
-
-    def num_states(self):
-        return len(self.states)
-
     def find_possible_targets(self, current_state, word, current_index, p):
         # repeat at a given state
         repeat_p = 0
