@@ -436,36 +436,6 @@ class Machine(object):
                         log_sm + self.T[current_state][x_i_n][target_state_name],
                     )
 
-    def calculate_gradient_abc_new_optimized(self, word, q, alpha, q_prime):
-        # Find initial states with non-zero probabilities
-        if len(word) == 0:
-            return 0
-        else:
-            possible_init_states = []
-            for state in self.states:
-                if self.I[state] != LOG_EPS:
-                    possible_init_states.append(state)
-
-            # Traverse each initial state which might lead to the given word
-            for init_state in possible_init_states:
-                self.ignore = False
-
-                # reset path probability to 0
-                self.candidate_path_prob = 0
-                self.candidate_path_parameter_count = 0
-
-                if self.repeat_state is not None:
-                    self.repeat_count = 4
-                self.find_possible_targets_counts(
-                    init_state, word, 0, self.I[init_state], q, alpha, q_prime
-                )
-
-                # break when a successful path is found, assuming there'll only be one successful path. check if that's the case.
-                if self.candidate_path_parameter_count != 0:
-                    break
-
-            return self.candidate_path_parameter_count
-
     def calculate_gradient_abc_new_optimized_marginals(
         self, marginals, word, q, alpha, q_prime
     ):
