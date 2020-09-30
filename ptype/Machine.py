@@ -1071,53 +1071,6 @@ class ISO_8601NewAuto(Machine):
         self.create_T_new()
         self.copy_to_z()
 
-    def find_possible_targets(self, current_state, word, current_index, p):
-        # repeat at a given state
-        repeat_p = 0
-
-        while current_state == self.repeat_state and self.repeat_count != 0:
-            alpha = word[current_index]
-            if alpha in self.T[current_state]:
-                if current_state in self.T[current_state][alpha]:
-                    # print('alpha =', alpha)
-                    # print('current_state =', current_state)
-                    # print('self.T[current_state][alpha] =', self.T[current_state][alpha])
-                    repeat_p += self.T[current_state][alpha][current_state]
-                    current_index += 1
-                    self.repeat_count -= 1
-                else:
-                    self.candidate_path_prob = 0
-                    self.ignore = True
-                    break
-            else:
-                self.candidate_path_prob = 0
-                self.ignore = True
-                break
-
-        if current_index == len(word):
-            if self.F[current_state] != LOG_EPS:
-                if self.candidate_path_prob == 0:
-                    self.candidate_path_prob = p + self.F[current_state]
-                else:
-                    self.candidate_path_prob = log_sum_probs(
-                        self.candidate_path_prob, p + self.F[current_state]
-                    )
-        else:
-            if not self.ignore:
-                alpha = word[current_index]
-                if PRINT:
-                    print("\tcurrent_state", current_state)
-                    print("\tchar =", alpha)
-                if alpha in self.T[current_state]:
-                    for target_state_name in self.T[current_state][alpha]:
-                        tran_p = self.T[current_state][alpha][target_state_name]
-                        self.find_possible_targets(
-                            target_state_name,
-                            word,
-                            current_index + 1,
-                            p + tran_p + repeat_p,
-                        )
-
     def find_possible_targets_counts(
         self, current_state, word, current_index, p, q, _alpha, q_prime
     ):
