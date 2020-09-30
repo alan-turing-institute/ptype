@@ -151,12 +151,12 @@ def check_expected(actual, filename):
         expected_str = file.read()
     actual_str = jsonpickle.encode(actual, indent=2)
     if expected_str != actual_str:  # deep comparison
+        with open(filename_, "w") as file:
+            file.write(actual_str)
         print("Result of 'git diff':")
         stream = os.popen(f"git diff {filename_}")
         output = stream.read()
         print(output)
-        with open(filename_, "w") as file:
-            file.write(actual_str)
         raise Exception(f"{filename_} comparison failed.")
 
 
