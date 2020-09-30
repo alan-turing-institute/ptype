@@ -38,14 +38,12 @@ class Machine(object):
             for state in self.states
         ]
         self.set_I(I)
-        self.I_backup = self.I.copy()
 
         finals = list(fsm_obj.finals)
         F = [
             np.log(self.STOP_P) if state in finals else LOG_EPS for state in self.states
         ]
         self.set_F(F)
-        self.F_backup = self.F.copy()
 
         transitions = fsm_obj.map
         for state_i in transitions:
@@ -504,14 +502,12 @@ class AnomalyNew(Machine):
         self.set_I(
             [np.log(1.0) if state == "q_unknown" else LOG_EPS for state in self.states]
         )
-        self.I_backup = self.I.copy()
         self.set_F(
             [
                 np.log(self.STOP_P) if state == "q_unknown_3" else LOG_EPS
                 for state in self.states
             ]
         )
-        self.F_backup = self.F.copy()
 
     def calculate_probability(self, word):
         self.ignore = False
@@ -666,7 +662,6 @@ class BooleansNew(Machine):
             else:
                 Is.append(LOG_EPS)
         self.set_I(Is)
-        self.I_backup = self.I.copy()
         self.set_F(
             [
                 np.log(self.STOP_P)
@@ -676,7 +671,6 @@ class BooleansNew(Machine):
                 for state in self.states
             ]
         )
-        self.F_backup = self.F.copy()
         self.add_transitions("q_0", "q_1", ["Y", "y"], [0.25, 0.25])
         self.add_transitions(
             "q_1", "q_2", ["E", "e"], [(1 - self.STOP_P) / 2.0, (1 - self.STOP_P) / 2.0]
@@ -735,7 +729,6 @@ class Genders(Machine):
                 for state in self.states
             ]
         )
-        self.I_backup = self.I.copy()
         self.set_F(
             [
                 np.log(self.STOP_P)
@@ -744,7 +737,6 @@ class Genders(Machine):
                 for state in self.states
             ]
         )
-        self.F_backup = self.F.copy()
         self.add_transitions("q_0", "q_1", ["F", "f"], [0.5, 0.5])
         self.add_transitions("q_1", "q_2", ["E", "e"], [0.5, 0.5])
         self.add_transitions("q_2", "q_3", ["M", "m"], [0.5, 0.5])
