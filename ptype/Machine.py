@@ -518,29 +518,6 @@ class Machine(object):
         else:
             return int(x_i[0] in self.T[initial_state])
 
-    def calculate_gradient_final_state(self, x_i, initial_state, final_state):
-        TRAIN_PRINT = False
-        # reset gradient to 0
-        gradient = 0.0
-
-        # Traverse each initial state which might lead to the given word with the given final state
-        self.candidate_path_C = 0.0
-        log_mx = self.I[initial_state]
-        # if self.F[final_state] != LOG_EPS:
-        #     log_mx += self.F[final_state]
-        self.count_c_final(initial_state, final_state, x_i, 0, 0, log_mx)
-
-        if self.candidate_path_C != 0:
-            if TRAIN_PRINT:
-                print("self.candidate_path_C =", self.candidate_path_C)
-            gradient += np.exp(self.candidate_path_C)
-
-        # Multiply with other terms
-        if TRAIN_PRINT:
-            print("self.candidate_path_C, gradient =", self.candidate_path_C, gradient)
-
-        return gradient
-
     def calculate_gradient_final_state_optimized(self, x_i, final_state):
         # Find initial states with non-zero probabilities
         if len(x_i) == 0:
