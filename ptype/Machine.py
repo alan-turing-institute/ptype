@@ -809,54 +809,10 @@ class StringsNewAuto(Machine):
             return 0
 
     def calculate_probability(self, word):
-        if not self.supported_words[word]:
-            return LOG_EPS
-        # elif word == '':
-        #     return np.log(self.EMPTY_WEIGHT)
+        if self.supported_words[word] and len(word) > 15:
+            return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word)
         else:
-            if len(word) > 15:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word)
-            else:
-                # reset probability to 0
-                word_prob = LOG_EPS
-
-                # Find initial states with non-zero probabilities
-                possible_init_states = []
-                for state in self.states:
-                    if self.I[state] != LOG_EPS:
-                        if len(word) > 0:
-                            if word[0] in self.T[state]:
-                                possible_init_states.append(state)
-                        else:
-                            possible_init_states.append(state)
-                if PRINT:
-                    print("possible_init_states_names", possible_init_states)
-
-                # Traverse each initial state which might lead to the given word
-                for init_state in possible_init_states:
-                    self.ignore = False
-
-                    # reset path probability to 0
-                    self.candidate_path_prob = 0
-
-                    current_state = init_state
-                    if PRINT:
-                        print("\tcurrent_state_name", current_state)
-
-                    self.find_possible_targets(
-                        current_state, word, 0, self.I[current_state]
-                    )
-
-                    # add probability of each successful path that leads to the given word
-                    if self.candidate_path_prob != 0:
-                        if word_prob == LOG_EPS:
-                            word_prob = self.candidate_path_prob
-                        else:
-                            word_prob = log_sum_probs(
-                                word_prob, self.candidate_path_prob
-                            )
-
-                return word_prob
+            return super().calculate_probability(word)
 
 
 class FloatsNewAuto(Machine):
@@ -874,53 +830,10 @@ class FloatsNewAuto(Machine):
         self.copy_to_z()
 
     def calculate_probability(self, word):
-
-        if (not self.supported_words[word]) or word == ".":
+        if word == ".":
             return LOG_EPS
         else:
-
-            # reset probability to 0
-            word_prob = LOG_EPS
-
-            # Find initial states with non-zero probabilities
-            possible_init_states = []
-            for state in self.states:
-                if self.I[state] != LOG_EPS:
-                    if len(word) > 0:
-                        if word[0] in self.T[state]:
-                            possible_init_states.append(state)
-                    else:
-                        possible_init_states.append(state)
-            if PRINT:
-                print(
-                    "possible_init_states_names",
-                    [temp.name for temp in possible_init_states],
-                )
-
-            # Traverse each initial state which might lead to the given word
-            for init_state in possible_init_states:
-                self.ignore = False
-                # reset path probability to 0
-                self.candidate_path_prob = 0
-
-                current_state = init_state
-                if PRINT:
-                    print("\tcurrent_state_name", current_state.name)
-
-                self.find_possible_targets(
-                    current_state, word, 0, self.I[current_state]
-                )
-
-                # add probability of each successful path that leads to the given word
-                if self.candidate_path_prob != 0:
-                    if word_prob == LOG_EPS:
-                        word_prob = self.candidate_path_prob
-                    else:
-                        word_prob = log_sum_probs(
-                            word_prob, self.candidate_path_prob
-                        )
-
-            return word_prob
+            return super().calculate_probability(word)
 
 
 ############# boolean #################
@@ -1185,50 +1098,10 @@ class ISO_8601NewAuto(Machine):
     def calculate_probability(self, word):
         self.repeat_count = 4
 
-        # print(self.I, self.F, self.T)
-        if (not self.supported_words[word]) or (len(word) < 4):
+        if len(word) < 4:
             return LOG_EPS
         else:
-            # reset probability to 0
-            word_prob = LOG_EPS
-
-            # Find initial states with non-zero probabilities
-            possible_init_states = []
-            for state in self.states:
-                if self.I[state] != LOG_EPS:
-                    if len(word) > 0:
-                        if word[0] in self.T[state]:
-                            possible_init_states.append(state)
-                    else:
-                        possible_init_states.append(state)
-            if PRINT:
-                print("possible_init_states_names", possible_init_states)
-
-            # Traverse each initial state which might lead to the given word
-            for init_state in possible_init_states:
-                self.ignore = False
-
-                # reset path probability to 0
-                self.candidate_path_prob = 0
-
-                current_state = init_state
-                if PRINT:
-                    print("\tcurrent_state_name", current_state)
-
-                self.find_possible_targets(
-                    current_state, word, 0, self.I[current_state]
-                )
-
-                # add probability of each successful path that leads to the given word
-                if self.candidate_path_prob != 0:
-                    if word_prob == LOG_EPS:
-                        word_prob = self.candidate_path_prob
-                    else:
-                        word_prob = log_sum_probs(
-                            word_prob, self.candidate_path_prob
-                        )
-
-            return word_prob
+            return super().calculate_probability(word)
 
 
 class Date_EUNewAuto(Machine):
