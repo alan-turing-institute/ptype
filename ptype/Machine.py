@@ -258,8 +258,6 @@ class Machine(object):
                             word_prob, self.candidate_path_prob
                         )
 
-                self.candidate_path_prob = 0
-
             return word_prob
 
     def forward_recursion(self, x):
