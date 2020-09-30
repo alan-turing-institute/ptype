@@ -407,37 +407,6 @@ class Machine(object):
 
         return smoothing_probs
 
-    def calculate_probability_new(self, word):
-
-        if not self.supported_words[word]:
-            return LOG_EPS
-        else:
-            temp = np.array(list(self.I.values()))
-            temp2 = np.array(list(self.F.values()))
-
-            temp_T = []
-            for w in word:
-                if w in self.T_new:
-                    temp_T = temp_T + [
-                        ma.masked_where(self.T_new[w] == LOG_EPS, self.T_new[w])
-                    ]
-                else:
-                    return LOG_EPS
-
-            Xs = (
-                [ma.masked_where(temp == LOG_EPS, temp)]
-                + temp_T
-                + [ma.masked_where(temp2 == LOG_EPS, temp2)]
-            )
-            max_Xs = [np.max(X) for X in Xs]
-            exp_Xs = [np.exp(X - max_X) for X, max_X in zip(Xs, max_Xs)]
-            res = ma_multidot(exp_Xs)
-            res_prob = np.ma.getdata(res)
-            if res_prob == 0 or res.mask:
-                return LOG_EPS
-            else:
-                return np.log(res_prob) + sum(max_Xs)
-
     def count_c_final(
         self, current_state, final_state, word, current_index, count, log_sm
     ):
@@ -618,13 +587,6 @@ class MissingsNew(Machine):
         else:
             return LOG_EPS
 
-    def calculate_probability_new(self, word):
-        self.ignore = False
-        if word in self.alphabet:
-            return self.probs[word]
-        else:
-            return LOG_EPS
-
 
 class AnomalyNew(Machine):
     def __init__(self):
@@ -645,20 +607,6 @@ class AnomalyNew(Machine):
         self.F_backup = self.F.copy()
 
     def calculate_probability(self, word):
-        self.ignore = False
-        if self.supported_words[word] and len(word) != 0:
-            if len(word) > 100:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
-                    self.STOP_P
-                )
-            else:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(
-                    word
-                ) + np.log(self.STOP_P)
-        else:
-            return LOG_EPS
-
-    def calculate_probability_new(self, word):
         self.ignore = False
         if self.supported_words[word] and len(word) != 0:
             if len(word) > 100:
