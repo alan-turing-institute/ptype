@@ -582,6 +582,7 @@ class Machine(object):
 ############# MISSINGS #################
 class MissingsNew(Machine):
     def __init__(self):
+#        super().__init__()
         self.alphabet = [
             "NULL",
             "null",
@@ -650,11 +651,9 @@ class MissingsNew(Machine):
 
 class AnomalyNew(Machine):
     def __init__(self):
-        self.states = []
+        super().__init__()
         self.alphabet = [chr(i) for i in range(1114112)]
         self.STOP_P = 1e-14
-        self.T = {}
-        self.T_backup = {}
         self.add_states(["q_unknown", "q_unknown_3"])
         self.set_I(
             [np.log(1.0) if state == "q_unknown" else LOG_EPS for state in self.states]
@@ -700,11 +699,8 @@ class AnomalyNew(Machine):
 ############# INTEGERS #################
 class IntegersNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[\-+]?[0-9]+"
@@ -715,11 +711,8 @@ class IntegersNewAuto(Machine):
 
 class EmailAddress(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?"
@@ -730,11 +723,8 @@ class EmailAddress(Machine):
 
 class IPAddress(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
@@ -745,11 +735,8 @@ class IPAddress(Machine):
 
 class UKPostcodeAddress(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})"
@@ -760,11 +747,8 @@ class UKPostcodeAddress(Machine):
 
 class UKPhoneNumbers(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}"
@@ -776,13 +760,10 @@ class UKPhoneNumbers(Machine):
 ############# STRINGS #################
 class StringsNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-15
         self.DIGIT_WEIGHT = 0.001
         self.EMPTY_WEIGHT = 1e-11
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[a-zA-Z0-9 .,\-_%:;]+"
@@ -817,11 +798,8 @@ class StringsNewAuto(Machine):
 
 class FloatsNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)"
@@ -839,10 +817,8 @@ class FloatsNewAuto(Machine):
 ############# boolean #################
 class BooleansNew(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
         self.alphabet = (
             list("YESyes")
             + list("NOno")
@@ -916,10 +892,8 @@ class BooleansNew(Machine):
 ############# GENDERS #################
 class Genders(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
         self.alphabet = (
             list("FEMALEfemale")
             + list("Othersothers")
@@ -972,11 +946,8 @@ class Genders(Machine):
 ############# DATE ISO-8601 #################
 class ISO_8601NewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-2
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?"
@@ -1106,11 +1077,8 @@ class ISO_8601NewAuto(Machine):
 
 class Date_EUNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))"
@@ -1121,11 +1089,8 @@ class Date_EUNewAuto(Machine):
 
 class Nonstd_DateNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)"
@@ -1136,11 +1101,8 @@ class Nonstd_DateNewAuto(Machine):
 
 class SubTypeNonstdDateNewAuto(Machine):
     def __init__(self):
+        super().__init__()
         self.STOP_P = 1e-4
-        self.states = []
-        self.T = {}
-        self.T_backup = {}
-        self.alphabet = []
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)"
