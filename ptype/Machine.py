@@ -319,35 +319,6 @@ class Machine(object):
 
         return smoothing_probs
 
-    def count_c_final(
-        self, current_state, final_state, word, current_index, count, log_sm
-    ):
-        TRAIN_PRINT = False
-        if current_index == len(word):
-            if self.F[current_state] != LOG_EPS:
-                if current_state == final_state:
-                    self.candidate_path_C = log_sm
-                if TRAIN_PRINT:
-                    print("count =", count)
-                    print("log_sm =,", log_sm)
-                    print("final candidate_path_C = ", self.candidate_path_C)
-                    print(
-                        "self.T[self.a][self.b][self.c]) = ",
-                        self.T[self.a][self.b][self.c],
-                    )
-        else:
-            x_i_n = word[current_index]
-            if x_i_n in self.T[current_state]:
-                for target_state_name in self.T[current_state][x_i_n]:
-                    self.count_c_final(
-                        target_state_name,
-                        final_state,
-                        word,
-                        current_index + 1,
-                        count,
-                        log_sm + self.T[current_state][x_i_n][target_state_name],
-                    )
-
     def calculate_gradient_abc_new_optimized_marginals(
         self, marginals, word, q, alpha, q_prime
     ):
