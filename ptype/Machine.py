@@ -11,10 +11,6 @@ def log_sum_probs(log_p1, log_p2):
     return log_mx + np.log(np.exp(log_p1 - log_mx) + np.exp(log_p2 - log_mx))
 
 
-def ma_multidot(arrays):
-    return functools.reduce(ma.dot, arrays)
-
-
 LOG_EPS = -1e150
 PRINT = False
 
@@ -26,8 +22,8 @@ class Machine(object):
         self.T_backup = {}
         self.alphabet = []
 
-    def create_pfsm_from_fsm(self,):
-        fsm_obj = parse(self.reg_exp).to_fsm()
+    def create_pfsm_from_fsm(self, reg_exp):
+        fsm_obj = parse(reg_exp).to_fsm()
 
         self.alphabet = sorted([str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"])
 
@@ -540,7 +536,7 @@ class IntegersNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[\-+]?[0-9]+"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("[\-+]?[0-9]+")
         self.create_T_new()
         self.copy_to_z()
 
@@ -552,7 +548,7 @@ class EmailAddress(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?")
         self.create_T_new()
         self.copy_to_z()
 
@@ -564,7 +560,7 @@ class IPAddress(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])")
         self.create_T_new()
         self.copy_to_z()
 
@@ -576,7 +572,7 @@ class UKPostcodeAddress(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})")
         self.create_T_new()
         self.copy_to_z()
 
@@ -588,7 +584,7 @@ class UKPhoneNumbers(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}")
         self.create_T_new()
         self.copy_to_z()
 
@@ -603,7 +599,7 @@ class StringsNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[a-zA-Z0-9 .,\-_%:;]+"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
         self.create_T_new()
         self.copy_to_z()
 
@@ -639,7 +635,7 @@ class FloatsNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)")
         self.create_T_new()
         self.copy_to_z()
 
@@ -787,7 +783,7 @@ class ISO_8601NewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?")
         self.create_T_new()
         self.copy_to_z()
 
@@ -816,7 +812,7 @@ class Date_EUNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))")
         self.create_T_new()
         self.copy_to_z()
 
@@ -828,7 +824,7 @@ class Nonstd_DateNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)")
         self.create_T_new()
         self.copy_to_z()
 
@@ -840,6 +836,6 @@ class SubTypeNonstdDateNewAuto(Machine):
         self.repeat_count = 0
         self.repeat_state = None
         self.reg_exp = "(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)"
-        self.create_pfsm_from_fsm()
+        self.create_pfsm_from_fsm("(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)")
         self.create_T_new()
         self.copy_to_z()
