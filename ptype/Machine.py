@@ -188,65 +188,6 @@ class Machine(object):
                             p + tran_p + repeat_p,
                         )
 
-    def find_possible_targets_counts(
-        self, current_state, word, current_index, p, q, _alpha, q_prime
-    ):
-        # repeat at a given state
-        repeat_p = 0
-
-        while current_state == self.repeat_state and self.repeat_count != 0:
-            alpha = word[current_index]
-            if alpha in self.T[current_state]:
-                if current_state in self.T[current_state][alpha]:
-                    repeat_p += self.T[current_state][alpha][current_state]
-                    if (
-                        current_state == q
-                        and alpha == _alpha
-                        and current_state == q_prime
-                    ):
-                        self.candidate_path_parameter_count += 1
-                    current_index += 1
-                    self.repeat_count -= 1
-                else:
-                    self.candidate_path_prob = 0
-                    self.candidate_path_parameter_count = 0
-                    self.ignore = True
-                    break
-            else:
-                self.candidate_path_prob = 0
-                self.ignore = True
-                break
-
-        if current_index == len(word):
-            if self.F[current_state] != LOG_EPS:
-                if self.candidate_path_prob == 0:
-                    self.candidate_path_prob = p + self.F[current_state]
-                else:
-                    self.candidate_path_prob = log_sum_probs(
-                        self.candidate_path_prob, p + self.F[current_state]
-                    )
-        else:
-            if not self.ignore:
-                alpha = word[current_index]
-                if alpha in self.T[current_state]:
-                    for target_state_name in self.T[current_state][alpha]:
-                        tran_p = self.T[current_state][alpha][target_state_name]
-                        if (
-                            current_state == q
-                            and alpha == _alpha
-                            and target_state_name == q_prime
-                        ):
-                            self.candidate_path_parameter_count += 1
-                        self.find_possible_targets_counts(
-                            target_state_name,
-                            word,
-                            current_index + 1,
-                            p + tran_p + repeat_p,
-                            q,
-                            _alpha,
-                            q_prime,
-                        )
-
     def find_possible_targets_counts_final(
         self, current_state, word, current_index, p, final_state
     ):
@@ -849,15 +790,6 @@ class ISO_8601NewAuto(Machine):
         self.create_pfsm_from_fsm()
         self.create_T_new()
         self.copy_to_z()
-
-    def find_possible_targets_counts(
-        self, current_state, word, current_index, p, q, _alpha, q_prime
-    ):
-        # repeat at a given state
-        if (not self.supported_words[word]) or (len(word) < 4):
-            return 0
-        else:
-            super().find_possible_targets_counts(current_state, word, current_index, p, q, _alpha, q_prime)
 
     def find_possible_targets_counts_final(
         self, current_state, word, current_index, p, final_state
