@@ -146,13 +146,15 @@ def notebook_tests():
 
 
 def check_expected(actual, filename):
-    with open(filename + ".json", "r") as file:
+    filename_ = filename + ".json"
+    with open(filename_, "r") as file:
         expected_str = file.read()
     actual_str = jsonpickle.encode(actual, indent=2)
+    os.system(f"git diff {filename_}")
     if expected_str != actual_str:  # deep comparison
-        with open(filename + ".json", "w") as file:
+        with open(filename_, "w") as file:
             file.write(actual_str)
-        raise Exception(f"{filename + '.json'} comparison failed.")
+        raise Exception(f"{filename_} comparison failed.")
 
 
 def training_tests():
