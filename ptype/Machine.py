@@ -1,7 +1,5 @@
 from copy import deepcopy
 import numpy as np
-import numpy.ma as ma
-import functools
 from greenery.lego import parse
 
 
@@ -78,19 +76,12 @@ class Machine(object):
                     symbols = list(symbols_js[idx])
                     self.add_transitions(state_i, state_j, symbols, list(probs[idx]))
 
-    def add_state(self, state_name):
-        if state_name not in self.states:
-            self.states.append(state_name)
-
     def add_states(self, state_names):
         for state_name in state_names:
             if state_name not in self.states:
                 self.states.append(state_name)
                 self.T[state_name] = {}
                 self.T_backup[state_name] = {}
-
-    def add_transition(self):
-        pass
 
     def add_transitions(self, i, j, obs, probs):
         for obs, prob in zip(obs, probs):
