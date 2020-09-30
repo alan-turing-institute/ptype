@@ -429,24 +429,14 @@ class MissingsNew(Machine):
             "",
             " ",
         ]
-        self.LEN_1_PROB = 1e-7
-        self.set_probs()
-
-    def set_probs(self):
-        self.probs = {
-            alpha: np.log(self.LEN_1_PROB)
-            if len(alpha) == 1
-            else np.log((1.0 - self.LEN_1_PROB) / (len(self.alphabet) - 7))
-            for alpha in self.alphabet
-        }
 
     def calculate_probability(self, word):
         self.ignore = False
+        LEN_1_PROB = 1e-7
         if word in self.alphabet:
-            return self.probs[word]
+            return np.log(LEN_1_PROB) if len(word) == 1 else np.log((1.0 - LEN_1_PROB) / (len(self.alphabet) - 7))
         else:
             return LOG_EPS
-
 
 class AnomalyNew(Machine):
     def __init__(self):
