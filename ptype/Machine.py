@@ -115,7 +115,7 @@ class Machine(object):
 
         self.T_new = T_new
 
-    def find_possible_targets(self, candidate_path_prob, current_state, word, current_index, p):
+    def find_possible_targets(self, current_state, word, current_index, p):
         # repeat at a given state
         repeat_p = 0
 
@@ -128,12 +128,10 @@ class Machine(object):
                     self.repeat_count -= 1
                 else:
                     self.candidate_path_prob = 0
-                    candidate_path_prob = 0
                     self.ignore = True
                     break
             else:
                 self.candidate_path_prob = 0
-                candidate_path_prob = 0
                 self.ignore = True
                 break
 
@@ -141,13 +139,9 @@ class Machine(object):
             if self.F[current_state] != LOG_EPS:
                 if self.candidate_path_prob == 0:
                     self.candidate_path_prob = p + self.F[current_state]
-                    candidate_path_prob = p + self.F[current_state]
                 else:
                     self.candidate_path_prob = log_sum_probs(
                         self.candidate_path_prob, p + self.F[current_state]
-                    )
-                    candidate_path_prob = log_sum_probs(
-                        candidate_path_prob, p + self.F[current_state]
                     )
         else:
             if not self.ignore:
@@ -159,7 +153,6 @@ class Machine(object):
                     for target_state_name in self.T[current_state][alpha]:
                         tran_p = self.T[current_state][alpha][target_state_name]
                         self.find_possible_targets(
-                            candidate_path_prob,
                             target_state_name,
                             word,
                             current_index + 1,
@@ -246,7 +239,7 @@ class Machine(object):
                     print("\tcurrent_state_name", current_state)
 
                 self.find_possible_targets(
-                    0, current_state, word, 0, self.I[current_state]
+                    current_state, word, 0, self.I[current_state]
                 )
 
                 # add probability of each successful path that leads to the given word
