@@ -254,12 +254,12 @@ class Machine(object):
                 assert candidate_path_prob == self.candidate_path_prob
 
                 # add probability of each successful path that leads to the given word
-                if self.candidate_path_prob != 0:
+                if candidate_path_prob != 0:
                     if word_prob == LOG_EPS:
-                        word_prob = self.candidate_path_prob
+                        word_prob = candidate_path_prob
                     else:
                         word_prob = log_sum_probs(
-                            word_prob, self.candidate_path_prob
+                            word_prob, candidate_path_prob
                         )
 
             return word_prob
