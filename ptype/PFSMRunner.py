@@ -45,14 +45,9 @@ class PFSMRunner:
     def generate_machine_probabilities(self, col):
         """ generates automata probabilities for a given column of data
         """
-        probs = {}
-        for input_string in col:
-            probs[str(input_string)] = [
-                self.machines[j].calculate_probability(str(input_string))
-                for j in range(len(self.machines))
-            ]
-
-        return probs
+        return {
+            str(v): [m.calculate_probability(str(v)) for m in self.machines] for v in col
+        }
 
     def set_unique_values(self, unique_values):
         for i, machine in enumerate(self.machines):
