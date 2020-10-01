@@ -3,12 +3,10 @@ from ptype.utils import (
     log_weighted_sum_probs,
     log_weighted_sum_normalize_probs,
 )
-from collections import OrderedDict
 from copy import copy
 from scipy import optimize
 import numpy as np
 import time
-import sys
 
 Inf = np.Inf
 
@@ -436,9 +434,6 @@ class Model:
         return -np.array(g_j) / counts_array.sum()
 
     def g_cols(self, w_j_z):
-        # print_to_file("g_cols is called")
-        time_init = time.time()
-
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
@@ -446,18 +441,13 @@ class Model:
         runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        # time_init2 = time.time()
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
-        # print_to_file(str(time.time() - time_init2))
 
         q_total = None
         counter_ = 0
 
         for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
-            # print(i)
             for j, column_name in enumerate(list(data_frame.columns)):
-                time_temp1 = time.time()
-                # print(column_name)
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
                         runner, str(i), column_name, labels[j] - 1
