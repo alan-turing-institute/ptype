@@ -133,12 +133,10 @@ class Machine(object):
                 else:
                     candidate_path_prob = 0
                     candidate_path_parameter_count = 0
-                    self.ignore = True
                     ignore = True
                     break
             else:
                 candidate_path_prob = 0
-                self.ignore = True
                 ignore = True
                 break
 
@@ -192,8 +190,6 @@ class Machine(object):
 
             # Traverse each initial state which might lead to the given word
             for init_state in possible_init_states:
-                self.ignore = False
-
                 current_state = init_state
                 if PRINT:
                     print("\tcurrent_state_name", current_state)
@@ -312,8 +308,6 @@ class Machine(object):
 
             # Traverse each initial state which might lead to the given word
             for init_state in possible_init_states:
-                self.ignore = False
-
                 if self.repeat_state is not None:
                     self.repeat_count = 4
 
@@ -375,7 +369,6 @@ class MissingsNew(Machine):
         ]
 
     def calculate_probability(self, word):
-        self.ignore = False
         LEN_1_PROB = 1e-7
         if word in self.alphabet:
             return np.log(LEN_1_PROB) if len(word) == 1 else np.log((1.0 - LEN_1_PROB) / (len(self.alphabet) - 7))
@@ -399,7 +392,6 @@ class AnomalyNew(Machine):
         )
 
     def calculate_probability(self, word):
-        self.ignore = False
         if self.supported_words[word] and len(word) != 0:
             if len(word) > 100:
                 return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
