@@ -30,7 +30,9 @@ class Machine(object):
     def create_pfsm_from_fsm(self,):
         fsm_obj = parse(self.reg_exp).to_fsm()
 
-        self.alphabet = sorted([str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"])
+        self.alphabet = sorted(
+            [str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"]
+        )
 
         states = list(fsm_obj.states)
         self.add_states(states)
@@ -613,11 +615,6 @@ class MissingsNew(Machine):
             "?",
             "*",
             ".",
-            "0",
-            "-1",
-            "-9",
-            "-99",
-            "-999",
             "-9999",
             "-99999",
             "",
