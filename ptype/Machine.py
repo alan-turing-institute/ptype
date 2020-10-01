@@ -159,7 +159,7 @@ class Machine(object):
                 if alpha in self.T[current_state]:
                     for target_state_name in self.T[current_state][alpha]:
                         tran_p = self.T[current_state][alpha][target_state_name]
-                        candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
+                        ignore, candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
                             ignore,
                             candidate_path_prob,
                             candidate_path_parameter_count,
@@ -169,7 +169,7 @@ class Machine(object):
                             p + tran_p + repeat_p,
                             final_state
                         )
-        return candidate_path_prob, candidate_path_parameter_count
+        return ignore, candidate_path_prob, candidate_path_parameter_count
 
     def calculate_probability(self, word):
         if not self.supported_words[word]:
@@ -198,7 +198,7 @@ class Machine(object):
                 if PRINT:
                     print("\tcurrent_state_name", current_state)
 
-                candidate_path_prob, _ = self.find_possible_targets(
+                _, candidate_path_prob, _ = self.find_possible_targets(
                     False, 0, 0, current_state, word, 0, self.I[current_state], None
                 )
 
@@ -317,7 +317,7 @@ class Machine(object):
                 if self.repeat_state is not None:
                     self.repeat_count = 4
 
-                candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
+                _, candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
                     False, 0, 0, init_state, x_i, 0, self.I[init_state], final_state
                 )
 
@@ -664,8 +664,8 @@ class ISO_8601NewAuto(Machine):
         self, ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
-        if (not self.supported_words[word]) or (len(word) < 4):
-            return 0
+        if not self.supported_words[word] or len(word) < 4:
+            return ignore, candidate_path_prob, candidate_path_parameter_count
         else:
             return super().find_possible_targets(ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
 
