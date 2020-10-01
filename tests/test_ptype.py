@@ -1,9 +1,9 @@
 import json
+import jsonpickle
 import numpy as np
 import os
 import pandas as pd
 
-from ptype.Column import Column2ARFF
 from ptype.Ptype import Ptype
 from tests.utils import evaluate_predictions
 
@@ -63,7 +63,7 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
 
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
-    if not (type_predictions == expected):
+    if not (type_predictions == expected): # dictionary comparison
         for k in type_predictions:
             if type_predictions[k] != expected[k]:
                 print(f"Differs on {k} ({type_predictions[k]} != {expected[k]})")
@@ -145,6 +145,21 @@ def notebook_tests():
         raise Exception("Notebook test(s) failed.")
 
 
+def check_expected(actual, filename):
+    filename_ = filename + ".json"
+    with open(filename_, "r") as file:
+        expected_str = file.read()
+    actual_str = jsonpickle.encode(actual, indent=2)
+    if expected_str != actual_str:  # deep comparison
+        with open(filename_, "w") as file:
+            file.write(actual_str)
+        print("Result of 'git diff':")
+        stream = os.popen(f"git diff {filename_}")
+        output = stream.read()
+        print(output)
+        raise Exception(f"{filename_} comparison failed.")
+
+
 def training_tests():
     df_trainings, y_trainings = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
@@ -153,13 +168,16 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-#    np.random.seed(0)
-    ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
+    initial, final, training_error = ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
+
+    check_expected(initial, "models/training_runner_initial")
+    check_expected(final, "models/training_runner_final")
+    check_expected(training_error, "models/training_error")
 
 
 def main():
-#    core_tests()
-#    notebook_tests()
+    core_tests()
+    notebook_tests()
     training_tests()
 
 
