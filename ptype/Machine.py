@@ -390,8 +390,6 @@ class IntegersNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[\-+]?[0-9]+")
         self.create_T_new()
         self.copy_to_z()
@@ -401,8 +399,6 @@ class EmailAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?")
         self.create_T_new()
         self.copy_to_z()
@@ -412,8 +408,6 @@ class IPAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])")
         self.create_T_new()
         self.copy_to_z()
@@ -423,8 +417,6 @@ class UKPostcodeAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})")
         self.create_T_new()
         self.copy_to_z()
@@ -434,8 +426,6 @@ class UKPhoneNumbers(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}")
         self.create_T_new()
         self.copy_to_z()
@@ -448,8 +438,6 @@ class StringsNewAuto(Machine):
         self.STOP_P = 1e-15
         self.DIGIT_WEIGHT = 0.001
         self.EMPTY_WEIGHT = 1e-11
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
         self.create_T_new()
         self.copy_to_z()
@@ -483,8 +471,6 @@ class FloatsNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)")
         self.create_T_new()
         self.copy_to_z()
@@ -508,8 +494,6 @@ class BooleansNew(Machine):
             + list("FALSEfalse")
             + ["1", "0", "-1"]
         )
-        self.repeat_count = 0
-        self.repeat_state = None
         self.add_states(["q_" + str(i) for i in range(19)])
         Is = []
         for state in self.states:
@@ -581,8 +565,6 @@ class Genders(Machine):
             + list("FALSEfalse")
             + ["1", "0", "-1"]
         )
-        self.repeat_count = 0
-        self.repeat_state = None
         self.add_states(["q_" + str(i) for i in range(14)])
         self.set_I(
             [
@@ -626,8 +608,6 @@ class ISO_8601NewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-2
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?")
         self.create_T_new()
         self.copy_to_z()
@@ -642,8 +622,6 @@ class ISO_8601NewAuto(Machine):
             return super().find_possible_targets(ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
 
     def calculate_probability(self, word):
-        self.repeat_count = 4
-
         if len(word) < 4:
             return LOG_EPS
         else:
@@ -654,8 +632,6 @@ class Date_EUNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))")
         self.create_T_new()
         self.copy_to_z()
@@ -665,8 +641,6 @@ class Nonstd_DateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)")
         self.create_T_new()
         self.copy_to_z()
@@ -676,8 +650,6 @@ class SubTypeNonstdDateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)")
         self.create_T_new()
         self.copy_to_z()
