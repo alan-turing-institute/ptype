@@ -187,7 +187,6 @@ class Machine(object):
                 else:
                     self.candidate_path_prob = 0
                     candidate_path_prob = 0
-                    self.candidate_path_parameter_count = 0
                     candidate_path_parameter_count = 0
                     self.ignore = True
                     break
@@ -213,7 +212,6 @@ class Machine(object):
                     )
 
                 if final_state is not None and current_state == final_state:
-                    self.candidate_path_parameter_count = 1
                     candidate_path_parameter_count = 1
         else:
             if not self.ignore:
@@ -381,7 +379,6 @@ class Machine(object):
 
                 # reset path probability to 0
                 self.candidate_path_prob = 0
-                self.candidate_path_parameter_count = 0
 
                 if self.repeat_state is not None:
                     self.repeat_count = 4
@@ -390,7 +387,6 @@ class Machine(object):
                     0, 0, init_state, x_i, 0, self.I[init_state], final_state
                 )
                 assert candidate_path_prob == self.candidate_path_prob
-                assert candidate_path_parameter_count == self.candidate_path_parameter_count
 
                 # break when a successful path is found, assuming there'll only be one successful path. check if that's the case.
                 if candidate_path_parameter_count != 0:
