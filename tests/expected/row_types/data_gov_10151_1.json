@@ -685,7 +685,7 @@
     "99": "Status.TYPE"
   },
   "Ref_ID": {
-    "-1": "Status.MISSING",
+    "-1": "Status.TYPE",
     "1093082": "Status.TYPE",
     "16296": "Status.TYPE",
     "2654758": "Status.TYPE",
