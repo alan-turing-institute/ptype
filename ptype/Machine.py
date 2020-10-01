@@ -154,7 +154,7 @@ class Machine(object):
                 if final_state is not None and current_state == final_state:
                     candidate_path_parameter_count = 1
         else:
-            if not self.ignore:
+            if not ignore:
                 alpha = word[current_index]
                 if alpha in self.T[current_state]:
                     for target_state_name in self.T[current_state][alpha]:
