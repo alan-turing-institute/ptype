@@ -170,7 +170,7 @@ class Machine(object):
         return candidate_path_prob
 
     def find_possible_targets_counts_final(
-        self, current_state, word, current_index, p, final_state
+        self, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
         repeat_p = 0
@@ -201,7 +201,7 @@ class Machine(object):
                         self.candidate_path_prob, p + self.F[current_state]
                     )
 
-                if current_state == final_state:
+                if final_state is not None and current_state == final_state:
                     self.candidate_path_parameter_count = 1
 
         else:
