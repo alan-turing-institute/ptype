@@ -123,23 +123,6 @@ class Machine(object):
         # repeat at a given state
         repeat_p = 0
 
-        while current_state == self.repeat_state and self.repeat_count != 0:
-            alpha = word[current_index]
-            if alpha in self.T[current_state]:
-                if current_state in self.T[current_state][alpha]:
-                    repeat_p += self.T[current_state][alpha][current_state]
-                    current_index += 1
-                    self.repeat_count -= 1
-                else:
-                    candidate_path_prob = 0
-                    candidate_path_parameter_count = 0
-                    ignore = True
-                    break
-            else:
-                candidate_path_prob = 0
-                ignore = True
-                break
-
         if current_index == len(word):
             if self.F[current_state] != LOG_EPS:
                 if candidate_path_prob == 0:
@@ -308,9 +291,6 @@ class Machine(object):
 
             # Traverse each initial state which might lead to the given word
             for init_state in possible_init_states:
-                if self.repeat_state is not None:
-                    self.repeat_count = 4
-
                 _, candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
                     False, 0, 0, init_state, x_i, 0, self.I[init_state], final_state
                 )
