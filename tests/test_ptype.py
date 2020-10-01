@@ -63,7 +63,7 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
 
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
-    if not (type_predictions == expected): # dictionary comparison
+    if not (type_predictions == expected):  # dictionary comparison
         for k in type_predictions:
             if type_predictions[k] != expected[k]:
                 print(f"Differs on {k} ({type_predictions[k]} != {expected[k]})")
@@ -168,7 +168,9 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-    initial, final, training_error = ptype.train_model(df_trainings, labels=y_trainings, _uniformly=False)
+    initial, final, training_error = ptype.train_model(
+        df_trainings, labels=y_trainings, _uniformly=False
+    )
 
     check_expected(initial, "models/training_runner_initial")
     check_expected(final, "models/training_runner_final")
