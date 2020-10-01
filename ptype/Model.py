@@ -130,38 +130,6 @@ class Model:
         self.p_t = {t: p for t, p in zip(self.types, p_t)}
         self.p_z = p_z
 
-    def calculate_likelihoods(self, logP, counts):
-        # Constants
-        I, J = logP.shape  # I: num of rows in a data column.
-        # J: num of data types including missing and catch-all
-        K = J - 2  # K: num of possible column data types (excluding missing and catch-all)
-
-        # Initializations
-        pi = [self.PI for j in range(K)]  # mixture weights of row types
-
-        # Inference
-        p_t = []  # p_t: posterior probability distribution of column types
-        counts_array = np.array(counts)
-
-        # Iterates for each possible column type
-        for j in range(K):
-
-            # Sum of weighted likelihoods (log-domain)
-            p_t.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        pi[j][0],
-                        logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                        pi[j][1],
-                        logP[:, self.MISSING_INDEX - 1],
-                        pi[j][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-        self.p_t = np.array(p_t)
-
     def update_PFSMs(self, runner):
         w_j_z = self.get_all_parameters_z(runner)
 
@@ -336,9 +304,6 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-#                        common_chars = list(
-#                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
-#                        )
                         common_chars = [x for x in runner.machines[t + 2].alphabet if x in list(str(x_i))]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
@@ -513,10 +478,6 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    ### GETTERS - SETTERS ###
-    def set_likelihoods(self, likelihoods):
-        self.likelihoods = likelihoods
-
     def get_all_parameters_z(self, runner):
         w_j = []
         for t in range(len(self.types)):
@@ -536,39 +497,7 @@ class Model:
         return w_j
 
     @staticmethod
-    def normalize_a_state(self, F, T, a):
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for b in T[a]:
-            for c in T[a][b]:
-                if T[a][b][c] > log_mx:
-                    log_mx = T[a][b][c]
-        # sum
-        sm = 0
-        for b in T[a]:
-            for c in T[a][b]:
-                sm += np.exp(T[a][b][c] - log_mx)
-
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                sm += 1.0
-            else:
-                sm += np.exp(F[a] - log_mx)
-
-        # normalize
-        for b in T[a]:
-            for c in T[a][b]:
-                T[a][b][c] = np.log(np.exp(T[a][b][c] - log_mx) / sm)
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                F[a] = 0.0
-            else:
-                F[a] = np.log(np.exp(F[a] - log_mx) / sm)
-
-        return F, T
-
-    @staticmethod
-    def normalize_a_state_new(F, T, a):
+    def normalize_a_state(F, T, a):
         # find maximum log probability
         params = []
         for b in T[a]:
@@ -614,29 +543,8 @@ class Model:
         return I
 
     @staticmethod
-    def normalize_initial_z(I_z):
-        # I = deepcopy(I)
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for a in I_z:
-            if I_z[a] != LOG_EPS and I_z[a] > log_mx:
-                log_mx = I_z[a]
-        # sum
-        sm = 0
-        for a in I_z:
-            if I_z[a] != LOG_EPS:
-                sm += np.exp(I_z[a] - log_mx)
-
-        # normalize
-        for a in I_z:
-            if I_z[a] != LOG_EPS:
-                I_z[a] = I_z[a] - log_mx - np.log(sm)
-
-        return I_z
-
-    @staticmethod
     def normalize_final(F, T):
         for state in F:
-            F, T = Model.normalize_a_state_new(F, T, state)
+            F, T = Model.normalize_a_state(F, T, state)
 
         return F, T
