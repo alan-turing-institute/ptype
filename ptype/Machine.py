@@ -393,10 +393,10 @@ class Machine(object):
                 assert candidate_path_parameter_count == self.candidate_path_parameter_count
 
                 # break when a successful path is found, assuming there'll only be one successful path. check if that's the case.
-                if self.candidate_path_parameter_count != 0:
+                if candidate_path_parameter_count != 0:
                     break
 
-            return self.candidate_path_parameter_count
+            return candidate_path_parameter_count
 
     def copy_to_z(self):
         self.I_z = deepcopy(self.I)
