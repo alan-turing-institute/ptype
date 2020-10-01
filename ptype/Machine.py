@@ -118,7 +118,7 @@ class Machine(object):
         self.T_new = T_new
 
     def find_possible_targets(
-        self, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
+        self, ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
         repeat_p = 0
@@ -134,10 +134,12 @@ class Machine(object):
                     candidate_path_prob = 0
                     candidate_path_parameter_count = 0
                     self.ignore = True
+                    ignore = True
                     break
             else:
                 candidate_path_prob = 0
                 self.ignore = True
+                ignore = True
                 break
 
         if current_index == len(word):
@@ -158,6 +160,7 @@ class Machine(object):
                     for target_state_name in self.T[current_state][alpha]:
                         tran_p = self.T[current_state][alpha][target_state_name]
                         candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
+                            ignore,
                             candidate_path_prob,
                             candidate_path_parameter_count,
                             target_state_name,
@@ -196,7 +199,7 @@ class Machine(object):
                     print("\tcurrent_state_name", current_state)
 
                 candidate_path_prob, _ = self.find_possible_targets(
-                    0, 0, current_state, word, 0, self.I[current_state], None
+                    False, 0, 0, current_state, word, 0, self.I[current_state], None
                 )
 
                 # add probability of each successful path that leads to the given word
@@ -315,7 +318,7 @@ class Machine(object):
                     self.repeat_count = 4
 
                 candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
-                    0, 0, init_state, x_i, 0, self.I[init_state], final_state
+                    False, 0, 0, init_state, x_i, 0, self.I[init_state], final_state
                 )
 
                 # break when a successful path is found, assuming there'll only be one successful path. check if that's the case.
@@ -658,13 +661,13 @@ class ISO_8601NewAuto(Machine):
         self.copy_to_z()
 
     def find_possible_targets(
-        self, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
+        self, ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
         if (not self.supported_words[word]) or (len(word) < 4):
             return 0
         else:
-            return super().find_possible_targets(candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
+            return super().find_possible_targets(ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
 
     def calculate_probability(self, word):
         self.repeat_count = 4
