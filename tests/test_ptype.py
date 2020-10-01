@@ -149,7 +149,7 @@ def check_expected(actual, filename):
     filename_ = filename + ".json"
     with open(filename_, "r") as file:
         expected_str = file.read()
-    actual_str = jsonpickle.encode(actual, indent=2)
+    actual_str = jsonpickle.encode(actual, indent=2, unpicklable=False)
     if expected_str != actual_str:  # deep comparison
         with open(filename_, "w") as file:
             file.write(actual_str)

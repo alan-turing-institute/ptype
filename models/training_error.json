@@ -1,76 +1,17 @@
 [
   {
-    "py/reduce": [
-      {
-        "py/function": "numpy.core.multiarray.scalar"
-      },
-      {
-        "py/tuple": [
-          {
-            "py/reduce": [
-              {
-                "py/type": "numpy.dtype"
-              },
-              {
-                "py/tuple": [
-                  "f8",
-                  false,
-                  true
-                ]
-              },
-              {
-                "py/tuple": [
-                  3,
-                  "<",
-                  null,
-                  null,
-                  null,
-                  -1,
-                  -1,
-                  0
-                ]
-              }
-            ]
-          },
-          {
-            "py/b64": "zgvctm1bZEA="
-          }
-        ]
-      }
+    "py/newargs": [
+      162.85714285829312
     ]
   },
   {
-    "py/reduce": [
-      {
-        "py/function": "numpy.core.multiarray.scalar"
-      },
-      {
-        "py/tuple": [
-          {
-            "py/id": 2
-          },
-          {
-            "py/b64": "zgvctm1bZEA="
-          }
-        ]
-      }
+    "py/newargs": [
+      162.85714285829312
     ]
   },
   {
-    "py/reduce": [
-      {
-        "py/function": "numpy.core.multiarray.scalar"
-      },
-      {
-        "py/tuple": [
-          {
-            "py/id": 2
-          },
-          {
-            "py/b64": "zgvctm1bZEA="
-          }
-        ]
-      }
+    "py/newargs": [
+      162.85714285829312
     ]
   }
 ]
