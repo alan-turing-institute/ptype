@@ -45,9 +45,9 @@ class Model:
 
     def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
-        return {str(i): {col: [us, np.array(counts)]
-                         for col, (us, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
-                                                   for col in df.columns}.items()}
+        return {i: {col: [vs, np.array(counts)]
+                    for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
+                                              for col in df.columns}.items()}
                 for i, df in enumerate(dfs)}
 
     ###################### MAIN METHODS #######################
