@@ -115,7 +115,7 @@ class Machine(object):
 
         self.T_new = T_new
 
-    def find_possible_targets(self, current_state, word, current_index, p):
+    def find_possible_targets(self, candidate_path_prob, current_state, word, current_index, p):
         # repeat at a given state
         repeat_p = 0
 
@@ -128,10 +128,12 @@ class Machine(object):
                     self.repeat_count -= 1
                 else:
                     self.candidate_path_prob = 0
+                    candidate_path_prob = 0
                     self.ignore = True
                     break
             else:
                 self.candidate_path_prob = 0
+                candidate_path_prob = 0
                 self.ignore = True
                 break
 
@@ -143,6 +145,12 @@ class Machine(object):
                     self.candidate_path_prob = log_sum_probs(
                         self.candidate_path_prob, p + self.F[current_state]
                     )
+                if candidate_path_prob == 0:
+                    candidate_path_prob = p + self.F[current_state]
+                else:
+                    candidate_path_prob = log_sum_probs(
+                        candidate_path_prob, p + self.F[current_state]
+                    )
         else:
             if not self.ignore:
                 alpha = word[current_index]
@@ -152,12 +160,14 @@ class Machine(object):
                 if alpha in self.T[current_state]:
                     for target_state_name in self.T[current_state][alpha]:
                         tran_p = self.T[current_state][alpha][target_state_name]
-                        self.find_possible_targets(
+                        candidate_path_prob = self.find_possible_targets(
+                            candidate_path_prob,
                             target_state_name,
                             word,
                             current_index + 1,
                             p + tran_p + repeat_p,
                         )
+        return candidate_path_prob
 
     def find_possible_targets_counts_final(
         self, current_state, word, current_index, p, final_state
@@ -238,9 +248,10 @@ class Machine(object):
                 if PRINT:
                     print("\tcurrent_state_name", current_state)
 
-                self.find_possible_targets(
-                    current_state, word, 0, self.I[current_state]
+                candidate_path_prob = self.find_possible_targets(
+                    0, current_state, word, 0, self.I[current_state]
                 )
+                assert candidate_path_prob == self.candidate_path_prob
 
                 # add probability of each successful path that leads to the given word
                 if self.candidate_path_prob != 0:
