@@ -12,7 +12,7 @@ from ptype.utils import print_to_file
 class TrainingParams:
     def __init__(self, current_runner, dfs, labels):
         self.current_runner = current_runner
-        self.data_frames = dfs
+        self.dfs = dfs
         self.labels = labels
 
 class Ptype:
@@ -49,7 +49,7 @@ class Ptype:
         self.PFSMRunner.normalize_params()
 
         # Generate binary mask matrix to check if a word is supported by a PFSM or not (this is just to optimize the implementation)
-        self.PFSMRunner.update_values(np.unique(self.model.data.values))
+        self.PFSMRunner.update_values(np.unique(self.model.df.values))
 
         # Calculate probabilities for each column and run inference.
         for _, col_name in enumerate(list(df.columns)):
@@ -154,13 +154,13 @@ class Ptype:
 
     # OUTPUT METHODS #########################
     def show_schema(self):
-        df = self.model.data.iloc[0:0, :].copy()
+        df = self.model.df.iloc[0:0, :].copy()
         df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
         return df.rename(index={0: "type"})
 
     def show_missing_values(self):
         missing_values = {}
-        for col_name in self.model.data:
+        for col_name in self.model.df:
             missing_values[col_name] = np.unique(
                 self.cols[col_name].get_missing_values()
             )
@@ -212,7 +212,7 @@ class Ptype:
         [normals, missings, anomalies] = self.detect_missing_anomalies(predicted_type)
 
         return Column(
-            series=self.model.data[col_name],
+            series=self.model.df[col_name],
             counts=counts,
             p_t=self.model.p_t,
             predicted_type=predicted_type,
@@ -230,9 +230,7 @@ class Ptype:
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_vs, counts = get_unique_vals(
-            self.model.data[column_name], return_counts=True
-        )
+        unique_vs, counts = get_unique_vals(self.model.df[column_name], return_counts=True)
         probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
 

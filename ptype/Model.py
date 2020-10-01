@@ -6,7 +6,6 @@ from ptype.utils import (
 from copy import copy
 from scipy import optimize
 import numpy as np
-import time
 
 Inf = np.Inf
 
@@ -33,41 +32,28 @@ class Model:
         self, types, df=None, training_params=None, PI=[0.98, 0.01, 0.01],
     ):
         self.types = types
-        self.data = df
+        self.df = df
         self.PI = PI  # weight of pi variable
         if training_params is not None:
             self.training_params = training_params
             self.current_runner = copy(training_params.current_runner)
-            self.unique_vals = self.get_unique_vals(self.training_params.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.training_params.data_frames)
+            self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
             self.current_runner.set_unique_values(self.unique_vals)
-            self.J = len(self.current_runner.machines)
-            self.K = self.J - 2
-            self.pi = [self.PI for j in range(self.K)]
+            self.K = len(self.current_runner.machines) - 2
+            self.pi = [self.PI for _ in range(self.K)]
 
-    def get_unique_vals(self, data_frames):
-        # find the unique values in all of the columns once
-        for i, df in enumerate(data_frames):
-            if i == 0:
-                unique_vals = np.unique(df.values)
-            else:
-                unique_vals = np.concatenate((unique_vals, np.unique(df.values)))
-        return unique_vals
-
-    def get_unique_vals_counts(self, data_frames):
+    def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
         dfs_unique_vals_counts = {}
-        for i, df in enumerate(data_frames):
+        for i, df in enumerate(dfs):
             df_unique_vals_counts = {}
-            for column_name in list(df.columns):
-                temp_x, counts = np.unique(
-                    [str(int_element) for int_element in df[column_name].tolist()],
-                    return_counts=True,
-                )
-                counts = {u_data: c for u_data, c in zip(temp_x, counts)}
+            for col_name in list(df.columns):
+                us, counts = np.unique([v for v in df[col_name].tolist()], return_counts=True)
+                counts = {u: count for u, count in zip(us, counts)}
                 temp_counts = list(counts.values())
                 counts_array = np.array(temp_counts)
-                df_unique_vals_counts[column_name] = [temp_x, counts_array]
+                df_unique_vals_counts[col_name] = [us, counts_array]
             dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
         return dfs_unique_vals_counts
 
@@ -207,7 +193,7 @@ class Model:
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
+        for i, (data_frame, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
@@ -411,8 +397,8 @@ class Model:
         q_total = None
         counter_ = 0
 
-        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
-            for j, column_name in enumerate(list(data_frame.columns)):
+        for i, (df, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
+            for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
                         runner, str(i), column_name, labels[j] - 1
