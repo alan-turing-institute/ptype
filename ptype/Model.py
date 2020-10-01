@@ -51,9 +51,7 @@ class Model:
             for col_name in list(df.columns):
                 us, counts = np.unique([v for v in df[col_name].tolist()], return_counts=True)
                 counts = {u: count for u, count in zip(us, counts)}
-                temp_counts = list(counts.values())
-                counts_array = np.array(temp_counts)
-                df_unique_vals_counts[col_name] = [us, counts_array]
+                df_unique_vals_counts[col_name] = [us, np.array(counts.values())]
             dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
         return dfs_unique_vals_counts
 
