@@ -49,7 +49,7 @@ class Model:
         for i, df in enumerate(dfs):
             df_unique_vals_counts = {}
             for col_name in list(df.columns):
-                us, counts = np.unique([v for v in df[col_name].tolist()], return_counts=True)
+                us, counts = np.unique(df[col_name].tolist(), return_counts=True)
                 df_unique_vals_counts[col_name] = [us, np.array(counts)]
             dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
         return dfs_unique_vals_counts
