@@ -183,8 +183,9 @@ def training_tests():
 
 
 def main():
+    np.random.seed(0)
     core_tests()
-    notebook_tests()
+#    notebook_tests()
     training_tests()
 
 
