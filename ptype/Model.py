@@ -45,14 +45,11 @@ class Model:
 
     def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
-        dfs_unique_vals_counts = {}
+        dfs_vals_counts = {}
         for i, df in enumerate(dfs):
-            df_unique_vals_counts = {}
-            for col_name in list(df.columns):
-                us, counts = np.unique(df[col_name].tolist(), return_counts=True)
-                df_unique_vals_counts[col_name] = [us, np.array(counts)]
-            dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
-        return dfs_unique_vals_counts
+            dfs_vals_counts[str(i)] = {col: [us, np.array(counts)] for col, (us, counts) in
+                                       {col: np.unique(df[col].tolist(), return_counts=True) for col in df.columns}.items()}
+        return dfs_vals_counts
 
     ###################### MAIN METHODS #######################
     def run_inference(self, logP, counts):
