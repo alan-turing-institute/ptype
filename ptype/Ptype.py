@@ -138,10 +138,7 @@ class Ptype:
         training_error = [self.calculate_total_error(data_frames, labels)]
 
         # Iterates over whole data points
-        for it in range(_max_iter):
-            if self.verbose:
-                print_to_file("iteration = " + str(it))
-
+        for n in range(_max_iter):
             # Trains machines using all of the training data frames
             self.model.current_runner = self.model.update_PFSMs(self.PFSMRunner)
 
@@ -149,10 +146,8 @@ class Ptype:
             training_error.append(self.calculate_total_error(data_frames, labels))
             print(training_error)
 
-            if it > 0:
+            if n > 0:
                 if training_error[-2] - training_error[-1] < 1e-4:
-                    if self.verbose:
-                        print_to_file("converged!")
                     break
 
         return initial, self.model.current_runner, training_error

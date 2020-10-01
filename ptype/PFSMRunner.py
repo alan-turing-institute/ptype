@@ -20,7 +20,7 @@ from ptype.utils import contains_all
 from ptype.Model import Model
 from ptype.Model import LOG_EPS
 
-sys.path.insert(0, "src/")
+# sys.path.insert(0, "src/")
 MACHINES = {
     "integer": IntegersNewAuto(),
     "string": StringsNewAuto(),
