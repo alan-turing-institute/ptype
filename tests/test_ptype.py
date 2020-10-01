@@ -157,7 +157,9 @@ def check_expected(actual, filename):
         stream = os.popen(f"git diff {filename_}")
         output = stream.read()
         print(output)
-        raise Exception(f"{filename_} comparison failed.")
+        print(f"{filename_} comparison failed.")
+        return False
+    return True
 
 
 def training_tests():
@@ -172,9 +174,12 @@ def training_tests():
         df_trainings, labels=y_trainings, _uniformly=False
     )
 
-    check_expected(initial, "models/training_runner_initial")
-    check_expected(final, "models/training_runner_final")
-    check_expected(training_error, "models/training_error")
+    all_passed = True
+    all_passed &= check_expected(initial, "models/training_runner_initial")
+    all_passed &= check_expected(final, "models/training_runner_final")
+    all_passed &= check_expected(training_error, "models/training_error")
+    if not all_passed:
+        raise Exception("Training tests failed.")
 
 
 def main():
