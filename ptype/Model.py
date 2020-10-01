@@ -30,10 +30,10 @@ class Model:
     LLHOOD_TYPE_START_INDEX = 2
 
     def __init__(
-        self, types, data_frame=None, training_params=None, PI=[0.98, 0.01, 0.01],
+        self, types, df=None, training_params=None, PI=[0.98, 0.01, 0.01],
     ):
         self.types = types
-        self.data = data_frame
+        self.data = df
         self.PI = PI  # weight of pi variable
         if training_params is not None:
             self.training_params = training_params
