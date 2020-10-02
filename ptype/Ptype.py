@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, get_unique_vals
+from ptype.Column import Column, get_unique_vals, Status
 from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import print_to_file
@@ -137,7 +137,9 @@ class Ptype:
         assert self.model is None
         self.model = Model(self.types, training_params=training_params)
 
-        initial = deepcopy(self.PFSMRunner) # shouldn't need this, but too much mutation going on
+        initial = deepcopy(
+            self.PFSMRunner
+        )  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(data_frames, labels)]
 
         # Iterates over whole data points
@@ -157,9 +159,25 @@ class Ptype:
 
     # OUTPUT METHODS #########################
     def show_schema(self):
-        df = self.model.df.iloc[0:0, :].copy()
-        df.loc[0] = [col.type for _, col in self.cols.items()]
-        return df.rename(index={0: "type"})
+        df = self.model.data.iloc[0:0, :].copy()
+        df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
+        df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
+        df.loc[2] = [col.get_ratio(Status.TYPE) for _, col in self.cols.items()]
+        df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
+        df.loc[4] = [col.get_ratio(Status.MISSING) for _, col in self.cols.items()]
+        df.loc[5] = [col.get_anomalous_values() for _, col in self.cols.items()]
+        df.loc[6] = [col.get_ratio(Status.ANOMALOUS) for _, col in self.cols.items()]
+        return df.rename(
+            index={
+                0: "type",
+                1: "normal values",
+                2: "ratio of normal values",
+                3: "missing values",
+                4: "ratio of missing values",
+                5: "anomalous values",
+                6: "ratio of anomalous values",
+            }
+        )
 
     def show_missing_values(self):
         missing_values = {}
