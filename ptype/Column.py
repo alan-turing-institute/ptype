@@ -59,6 +59,7 @@ class Column:
         ]
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
+        self.arff_posterior = column2ARFF.get_arff(self.features)[1]
         self.categorical_values = (
             self.get_normal_values() if self.arff_type == "nominal" else None
         )
@@ -162,7 +163,7 @@ class Column:
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
-            self.p_z[i, :] = [1.0, 0.0, 0.0]
+            self.p_z[self.predicted_type][i, :] = [1.0, 0.0, 0.0]
 
     def get_features(self, counts):
         posterior = OrderedDict()
@@ -189,6 +190,25 @@ class Column:
             u_ratio_clean = U_clean / N_clean
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
+
+    def set_row_types(self, normal_values, missing_values, anomalous_values):
+
+        self.normal_values = normal_values
+        self.missing_values = missing_values
+        self.anomalous_values = anomalous_values
+
+        self.unique_vals_status = [
+            Status.TYPE
+            if i in self.normal_values
+            else Status.MISSING
+            if i in self.missing_values
+            else Status.ANOMALOUS
+            if i in self.anomalous_values
+            else None  # only happens in the "all identical" case?
+            for i, _ in enumerate(self.unique_vals)
+        ]
+
+        # update arff related things
 
 
 class Column2ARFF:

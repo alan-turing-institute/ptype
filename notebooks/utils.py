@@ -89,7 +89,7 @@ def plot_row_type_posterior(col, t="missing"):
         i = 2
     plot_bar(
         col.unique_vals,
-        col.p_z[:, i],
+        col.p_z[col.predicted_type][:, i],
         title="p(z_i=" + t + "|t,x_i): posterior dist. for row type",
         xlabel="unique value",
         ylabel="posterior " + t + " probability",
