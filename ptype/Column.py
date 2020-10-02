@@ -3,6 +3,7 @@ from enum import Enum
 import joblib
 import numpy as np
 from ptype.utils import project_root
+from ptype.Model import TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
 
 
 def get_unique_vals(col, return_counts=False):
@@ -90,6 +91,19 @@ class Column:
             return "all identical"
         else:
             return max(self.p_t, key=self.p_t.get)
+
+    def detect_missing_anomalies(self):
+        if self.type != "all identical":
+            row_posteriors = self.p_z[self.type]
+            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+
+            return [
+                list(np.where(max_row_posterior_indices == TYPE_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]),
+            ]
+        else:
+            return [[], [], []]
 
     def has_missing(self):
         return self.get_missing_values() != []

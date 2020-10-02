@@ -21,12 +21,13 @@ def vecnorm(x, ord=2):
 
 LOG_EPS = -1e150
 
+TYPE_INDEX = 0
+MISSING_INDEX = 1
+ANOMALIES_INDEX = 2
+LLHOOD_TYPE_START_INDEX = 2
+
 
 class Model:
-    TYPE_INDEX = 0
-    MISSING_INDEX = 1
-    ANOMALIES_INDEX = 2
-    LLHOOD_TYPE_START_INDEX = 2
 
     def __init__(
         self, types, df=None, training_params=None, PI=[0.98, 0.01, 0.01],
@@ -79,11 +80,11 @@ class Model:
                     counts_array
                     * log_weighted_sum_probs(
                         pi[k][0],
-                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                        logP[:, k + LLHOOD_TYPE_START_INDEX],
                         pi[k][1],
-                        logP[:, self.MISSING_INDEX - 1],
+                        logP[:, MISSING_INDEX - 1],
                         pi[k][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
+                        logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
             )
@@ -93,16 +94,16 @@ class Model:
             # Normalizes
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
                 pi[k][0],
-                logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                logP[:, k + LLHOOD_TYPE_START_INDEX],
                 pi[k][1],
-                logP[:, self.MISSING_INDEX - 1],
+                logP[:, MISSING_INDEX - 1],
                 pi[k][2],
-                logP[:, self.ANOMALIES_INDEX - 1],
+                logP[:, ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, k, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, k, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, k, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[:, k, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z[:, k, MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z[:, k, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
             p_z[:, k, :] = p_z[:, k, :] / p_z[:, k, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
@@ -161,11 +162,11 @@ class Model:
                     counts_array
                     * log_weighted_sum_probs(
                         self.pi[k][0],
-                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                        logP[:, k + LLHOOD_TYPE_START_INDEX],
                         self.pi[k][1],
-                        logP[:, self.MISSING_INDEX - 1],
+                        logP[:, MISSING_INDEX - 1],
                         self.pi[k][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
+                        logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
             )
@@ -205,11 +206,11 @@ class Model:
                     counts_array
                     * log_weighted_sum_probs(
                         self.pi[k][0],
-                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                        logP[:, k + LLHOOD_TYPE_START_INDEX],
                         self.pi[k][1],
-                        logP[:, self.MISSING_INDEX - 1],
+                        logP[:, MISSING_INDEX - 1],
                         self.pi[k][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
+                        logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
             )
@@ -226,11 +227,11 @@ class Model:
             ]
             A = log_weighted_sum_probs(
                 self.pi[t][0],
-                logP[:, t + self.LLHOOD_TYPE_START_INDEX],
+                logP[:, t + LLHOOD_TYPE_START_INDEX],
                 self.pi[t][1],
-                logP[:, self.MISSING_INDEX - 1],
+                logP[:, MISSING_INDEX - 1],
                 self.pi[t][2],
-                logP[:, self.ANOMALIES_INDEX - 1],
+                logP[:, ANOMALIES_INDEX - 1],
             )
             temp_gra = np.exp(self.pi[t][0] + logP[:, t + 2] - A)
 
