@@ -15,6 +15,7 @@ class TrainingParams:
         self.dfs = dfs
         self.labels = labels
 
+
 class Ptype:
     def __init__(self, _types=None):
         default_types = [
@@ -91,7 +92,9 @@ class Ptype:
                 df[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
                 # TODO: explain why this case needed
-                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(new_dtype)
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
+                    new_dtype
+                )
         return df
 
     def fit_transform_schema(self, df):
@@ -182,17 +185,19 @@ class Ptype:
             lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
 
-    def detect_missing_anomalies(self, inferred_column_type):
+    def detect_missing_anomalies(self, p_z, inferred_column_type):
         if inferred_column_type != "all identical":
-            row_posteriors = self.model.p_z[
-                :, self.types.index(max(self.model.p_t, key=self.model.p_t.get)), :
-            ]
+            row_posteriors = p_z[inferred_column_type]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
             return [
                 list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]),
+                list(
+                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
+                ),
+                list(
+                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
+                ),
             ]
         else:
             return [[], [], []]
@@ -209,13 +214,15 @@ class Ptype:
             type = type_
 
         # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(type)
+        [normals, missings, anomalies] = self.detect_missing_anomalies(
+            self.model.p_z, type
+        )
 
         return Column(
             series=self.model.df[col_name],
             counts=counts,
             p_t=self.model.p_t,
-            p_z=self.model.p_z[:, self.types.index(type_), :],  # need to handle the uniform case
+            p_z=self.model.p_z,  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
             anomalous_values=anomalies,
@@ -255,4 +262,12 @@ class Ptype:
         self.cols[col_name].p_t = OrderedDict(
             [(t, 1.0) if t == new_t else (t, 0.0) for t in self.types]
         )
+
+        # Indices for the unique values
+        [normals, missings, anomalies] = self.detect_missing_anomalies(
+            self.cols[col_name].p_z, new_t
+        )
+
+        self.cols[col_name].set_row_types(normals, missings, anomalies)
+
         # update the arff types?

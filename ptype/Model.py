@@ -107,7 +107,7 @@ class Model:
 
         p_t = normalize_log_probs(np.array(p_t))
         self.p_t = {t: p for t, p in zip(self.types, p_t)}
-        self.p_z = p_z
+        self.p_z = {t: p_z[:, j, :] for j, t in enumerate(self.types)}
 
     def update_PFSMs(self, runner):
         w_j_z = self.get_all_parameters_z(runner)
@@ -186,7 +186,9 @@ class Model:
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
+        for i, (data_frame, labels) in enumerate(
+            zip(self.training_params.dfs, self.training_params.labels)
+        ):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
@@ -283,7 +285,11 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        common_chars = [x for x in runner.machines[t + 2].alphabet if x in list(str(x_i))]
+                        common_chars = [
+                            x
+                            for x in runner.machines[t + 2].alphabet
+                            if x in list(str(x_i))
+                        ]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
                             for l in common_char_ls:

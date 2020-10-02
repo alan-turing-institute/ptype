@@ -89,7 +89,7 @@ def plot_row_type_posterior(col, t="missing"):
         i = 2
     plot_bar(
         col.unique_vals,
-        col.p_z[:, i],
+        col.p_z[col.type][:, i],
         title="p(z_i=" + t + "|t,x_i): posterior dist. for row type",
         xlabel="unique value",
         ylabel="posterior " + t + " probability",
@@ -157,7 +157,7 @@ def plot_confusion_matrix(
     fig.tight_layout()
 
     plt.show()
-    # plt.savefig(figure_path, dpi=300, bbox_inches="tight")    
+    # plt.savefig(figure_path, dpi=300, bbox_inches="tight")
 
 
 # Heatmap and annotate_annotate are adapted from https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/image_annotated_heatmap.html
@@ -299,4 +299,4 @@ def annotate_heatmap(
             text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
             texts.append(text)
 
-    return texts    
+    return texts
