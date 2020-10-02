@@ -41,7 +41,9 @@ class Model:
             self.training_params = training_params
             self.current_runner = copy(training_params.current_runner)
             self.unique_vals = self.get_unique_vals(self.training_params.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(self.training_params.data_frames)
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(
+                self.training_params.data_frames
+            )
             self.current_runner.set_unique_values(self.unique_vals)
             self.J = len(self.current_runner.machines)
             self.K = self.J - 2
@@ -130,13 +132,15 @@ class Model:
 
         p_t = normalize_log_probs(np.array(p_t))
         self.p_t = {t: p for t, p in zip(self.types, p_t)}
-        self.p_z = p_z
+        self.p_z = {t: p_z[:, j, :] for j, t in enumerate(self.types)}
 
     def calculate_likelihoods(self, logP, counts):
         # Constants
         I, J = logP.shape  # I: num of rows in a data column.
         # J: num of data types including missing and catch-all
-        K = J - 2  # K: num of possible column data types (excluding missing and catch-all)
+        K = (
+            J - 2
+        )  # K: num of possible column data types (excluding missing and catch-all)
 
         # Initializations
         pi = [self.PI for j in range(K)]  # mixture weights of row types
@@ -241,7 +245,9 @@ class Model:
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
+        for i, (data_frame, labels) in enumerate(
+            zip(self.training_params.data_frames, self.training_params.labels)
+        ):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
@@ -338,10 +344,14 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-#                        common_chars = list(
-#                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
-#                        )
-                        common_chars = [x for x in runner.machines[t + 2].alphabet if x in list(str(x_i))]
+                        #                        common_chars = list(
+                        #                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
+                        #                        )
+                        common_chars = [
+                            x
+                            for x in runner.machines[t + 2].alphabet
+                            if x in list(str(x_i))
+                        ]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
                             for l in common_char_ls:
@@ -453,7 +463,9 @@ class Model:
         q_total = None
         counter_ = 0
 
-        for i, (data_frame, labels) in enumerate(zip(self.training_params.data_frames, self.training_params.labels)):
+        for i, (data_frame, labels) in enumerate(
+            zip(self.training_params.data_frames, self.training_params.labels)
+        ):
             # print(i)
             for j, column_name in enumerate(list(data_frame.columns)):
                 time_temp1 = time.time()
