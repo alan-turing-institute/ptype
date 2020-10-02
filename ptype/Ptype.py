@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ptype.Column import Column, get_unique_vals, Status
-from ptype.Model import Model
+from ptype.Model import Model, TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
 from ptype.PFSMRunner import PFSMRunner
 from ptype.utils import print_to_file
 
@@ -216,13 +216,9 @@ class Ptype:
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
             return [
-                list(np.where(max_row_posterior_indices == self.model.TYPE_INDEX)[0]),
-                list(
-                    np.where(max_row_posterior_indices == self.model.MISSING_INDEX)[0]
-                ),
-                list(
-                    np.where(max_row_posterior_indices == self.model.ANOMALIES_INDEX)[0]
-                ),
+                list(np.where(max_row_posterior_indices == TYPE_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == MISSING_INDEX)[0]),
+                list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]),
             ]
         else:
             return [[], [], []]
@@ -248,9 +244,6 @@ class Ptype:
             counts=counts,
             p_t=self.model.p_t,
             p_z=self.model.p_z,  # need to handle the uniform case
-            normal_values=normals,
-            missing_values=missings,
-            anomalous_values=anomalies,
         )
 
     def generate_probs(self, column_name):

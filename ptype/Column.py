@@ -3,6 +3,7 @@ from enum import Enum
 import joblib
 import numpy as np
 from ptype.utils import project_root
+from ptype.Model import TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
 
 
 def get_unique_vals(col, return_counts=False):
@@ -31,19 +32,14 @@ class Column:
         counts,
         p_t,
         p_z,
-        normal_values,
-        missing_values,
-        anomalous_values,
     ):
         self.series = series
         self.p_t = p_t
         self.p_t_canonical = {}
         self.p_z = p_z
-        self.normal_values = normal_values
-        self.missing_values = missing_values
-        self.anomalous_values = anomalous_values
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
+        self.initialise_missing_anomalies()
         self.unique_vals_status = [
             Status.TYPE
             if i in self.normal_values
@@ -90,6 +86,19 @@ class Column:
             return "all identical"
         else:
             return max(self.p_t, key=self.p_t.get)
+
+    def initialise_missing_anomalies(self):
+        if self.type != "all identical":
+            row_posteriors = self.p_z[self.type]
+            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+
+            self.normal_values = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+            self.missing_values = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+            self.anomalous_values = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
+        else:
+            self.normal_values = []
+            self.missing_values = []
+            self.anomalous_values = []
 
     def has_missing(self):
         return self.get_missing_values() != []
