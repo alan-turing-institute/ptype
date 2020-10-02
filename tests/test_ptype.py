@@ -46,7 +46,7 @@ def get_predictions(dataset_name):
     print("Anomalies:\n", df_anomaly)
     print("Normal:\n", df_normal)
 
-    col_types = {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
+    col_types = {col_name: col.type for col_name, col in ptype.cols.items()}
     col_arff_types = {col_name: col.arff_type for col_name, col in ptype.cols.items()}
     row_types = {
         col_name: {v: str(s) for v, s in zip(col.unique_vals, col.unique_vals_status)}
@@ -149,7 +149,7 @@ def check_expected(actual, filename):
     filename_ = filename + ".json"
     with open(filename_, "r") as file:
         expected_str = file.read()
-    actual_str = jsonpickle.encode(actual, indent=2)
+    actual_str = jsonpickle.encode(actual, indent=2, unpicklable=False)
     if expected_str != actual_str:  # deep comparison
         with open(filename_, "w") as file:
             file.write(actual_str)
@@ -157,7 +157,9 @@ def check_expected(actual, filename):
         stream = os.popen(f"git diff {filename_}")
         output = stream.read()
         print(output)
-        raise Exception(f"{filename_} comparison failed.")
+        print(f"{filename_} comparison failed.")
+        return False
+    return True
 
 
 def training_tests():
@@ -172,15 +174,19 @@ def training_tests():
         df_trainings, labels=y_trainings, _uniformly=False
     )
 
-    check_expected(initial, "models/training_runner_initial")
-    check_expected(final, "models/training_runner_final")
-    check_expected(training_error, "models/training_error")
+    all_passed = True
+    all_passed &= check_expected(initial, "models/training_runner_initial")
+    all_passed &= check_expected(final, "models/training_runner_final")
+    all_passed &= check_expected(training_error, "models/training_error")
+    if not all_passed:
+        raise Exception("Training tests failed.")
 
 
 def main():
+    np.random.seed(0)
     core_tests()
-    notebook_tests()
     training_tests()
+    notebook_tests()
 
 
 if __name__ == "__main__":

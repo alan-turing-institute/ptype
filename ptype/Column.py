@@ -30,7 +30,6 @@ class Column:
         series,
         counts,
         p_t,
-        predicted_type,
         p_z,
         normal_values,
         missing_values,
@@ -39,14 +38,12 @@ class Column:
         self.series = series
         self.p_t = p_t
         self.p_t_canonical = {}
-        self.predicted_type = predicted_type
         self.p_z = p_z
         self.normal_values = normal_values
         self.missing_values = missing_values
         self.anomalous_values = anomalous_values
-        self.unique_vals = []
-        self.unique_vals_counts = []
-        self.cache_unique_vals()
+        self.type = self.inferred_type()
+        self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
         self.unique_vals_status = [
             Status.TYPE
             if i in self.normal_values
@@ -75,8 +72,8 @@ class Column:
             "float": "float64",
         }  # ouch
         props = {
-            "type": self.predicted_type,
-            "dtype": ptype_pandas_mapping[self.predicted_type],
+            "type": self.type,
+            "dtype": ptype_pandas_mapping[self.type],
             "arff_type": self.arff_type,
             "normal_values": self.get_normal_values(),
             "missing_values": self.get_missing_values(),
@@ -87,11 +84,12 @@ class Column:
         }
         return repr(props)
 
-    def cache_unique_vals(self):
-        """Call this to (re)initialise the cache of my unique values."""
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(
-            self.series, return_counts=True
-        )
+    def inferred_type(self):
+        # Unpleasant special case when posterior vector has entries which are equal
+        if len(set(self.p_t.values())) == 1:
+            return "all identical"
+        else:
+            return max(self.p_t, key=self.p_t.get)
 
     def has_missing(self):
         return self.get_missing_values() != []
@@ -116,7 +114,7 @@ class Column:
 
     def show_results(self):
         print("col: " + str(self.series.name))
-        print("\tpredicted type: " + self.predicted_type)
+        print("\tpredicted type: " + self.type)
         print("\tposterior probs: ", self.p_t)
 
         normal = self.show_results_for(Status.TYPE, "some normal data values: ")
@@ -163,7 +161,6 @@ class Column:
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
-            self.p_z[self.predicted_type][i, :] = [1.0, 0.0, 0.0]
 
     def get_features(self, counts):
         posterior = OrderedDict()

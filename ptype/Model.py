@@ -3,12 +3,9 @@ from ptype.utils import (
     log_weighted_sum_probs,
     log_weighted_sum_normalize_probs,
 )
-from collections import OrderedDict
 from copy import copy
 from scipy import optimize
 import numpy as np
-import time
-import sys
 
 Inf = np.Inf
 
@@ -32,48 +29,26 @@ class Model:
     LLHOOD_TYPE_START_INDEX = 2
 
     def __init__(
-        self, types, data_frame=None, training_params=None, PI=[0.98, 0.01, 0.01],
+        self, types, df=None, training_params=None, PI=[0.98, 0.01, 0.01],
     ):
         self.types = types
-        self.data = data_frame
+        self.df = df
         self.PI = PI  # weight of pi variable
         if training_params is not None:
             self.training_params = training_params
             self.current_runner = copy(training_params.current_runner)
-            self.unique_vals = self.get_unique_vals(self.training_params.data_frames)
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(
-                self.training_params.data_frames
-            )
+            self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
+            self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
             self.current_runner.set_unique_values(self.unique_vals)
-            self.J = len(self.current_runner.machines)
-            self.K = self.J - 2
-            self.pi = [self.PI for j in range(self.K)]
+            self.K = len(self.current_runner.machines) - 2
+            self.pi = [self.PI for _ in range(self.K)]
 
-    def get_unique_vals(self, data_frames):
-        # find the unique values in all of the columns once
-        for i, df in enumerate(data_frames):
-            if i == 0:
-                unique_vals = np.unique(df.values)
-            else:
-                unique_vals = np.concatenate((unique_vals, np.unique(df.values)))
-        return unique_vals
-
-    def get_unique_vals_counts(self, data_frames):
+    def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
-        dfs_unique_vals_counts = {}
-        for i, df in enumerate(data_frames):
-            df_unique_vals_counts = {}
-            for column_name in list(df.columns):
-                temp_x, counts = np.unique(
-                    [str(int_element) for int_element in df[column_name].tolist()],
-                    return_counts=True,
-                )
-                counts = {u_data: c for u_data, c in zip(temp_x, counts)}
-                temp_counts = list(counts.values())
-                counts_array = np.array(temp_counts)
-                df_unique_vals_counts[column_name] = [temp_x, counts_array]
-            dfs_unique_vals_counts[str(i)] = df_unique_vals_counts
-        return dfs_unique_vals_counts
+        return {str(i): {col: [vs, np.array(counts)]
+                         for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
+                                                   for col in df.columns}.items()}
+                for i, df in enumerate(dfs)}
 
     ###################### MAIN METHODS #######################
     def run_inference(self, logP, counts):
@@ -85,7 +60,7 @@ class Model:
         )  # K: num of possible column data types (excluding missing and catch-all)
 
         # Initializations
-        pi = [self.PI for j in range(K)]  # mixture weights of row types
+        pi = [self.PI for k in range(K)]  # mixture weights of row types
 
         # Inference
         p_t = []  # p_t: posterior probability distribution of column types
@@ -96,18 +71,18 @@ class Model:
         counts_array = np.array(counts)
 
         # Iterates for each possible column type
-        for j in range(K):
+        for k in range(K):
 
             # Sum of weighted likelihoods (log-domain)
             p_t.append(
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        pi[j][0],
-                        logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                        pi[j][1],
+                        pi[k][0],
+                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                        pi[k][1],
                         logP[:, self.MISSING_INDEX - 1],
-                        pi[j][2],
+                        pi[k][2],
                         logP[:, self.ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -117,56 +92,22 @@ class Model:
 
             # Normalizes
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                pi[j][0],
-                logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                pi[j][1],
+                pi[k][0],
+                logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                pi[k][1],
                 logP[:, self.MISSING_INDEX - 1],
-                pi[j][2],
+                pi[k][2],
                 logP[:, self.ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, j, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, j, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, j, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
-            p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
+            p_z[:, k, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z[:, k, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z[:, k, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[:, k, :] = p_z[:, k, :] / p_z[:, k, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
         self.p_t = {t: p for t, p in zip(self.types, p_t)}
         self.p_z = {t: p_z[:, j, :] for j, t in enumerate(self.types)}
-
-    def calculate_likelihoods(self, logP, counts):
-        # Constants
-        I, J = logP.shape  # I: num of rows in a data column.
-        # J: num of data types including missing and catch-all
-        K = (
-            J - 2
-        )  # K: num of possible column data types (excluding missing and catch-all)
-
-        # Initializations
-        pi = [self.PI for j in range(K)]  # mixture weights of row types
-
-        # Inference
-        p_t = []  # p_t: posterior probability distribution of column types
-        counts_array = np.array(counts)
-
-        # Iterates for each possible column type
-        for j in range(K):
-
-            # Sum of weighted likelihoods (log-domain)
-            p_t.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        pi[j][0],
-                        logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                        pi[j][1],
-                        logP[:, self.MISSING_INDEX - 1],
-                        pi[j][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-        self.p_t = np.array(p_t)
 
     def update_PFSMs(self, runner):
         w_j_z = self.get_all_parameters_z(runner)
@@ -246,7 +187,7 @@ class Model:
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(
-            zip(self.training_params.data_frames, self.training_params.labels)
+            zip(self.training_params.dfs, self.training_params.labels)
         ):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
@@ -344,9 +285,6 @@ class Model:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        #                        common_chars = list(
-                        #                            set(list(str(x_i))) & set(runner.machines[t + 2].alphabet)
-                        #                        )
                         common_chars = [
                             x
                             for x in runner.machines[t + 2].alphabet
@@ -446,9 +384,6 @@ class Model:
         return -np.array(g_j) / counts_array.sum()
 
     def g_cols(self, w_j_z):
-        # print_to_file("g_cols is called")
-        time_init = time.time()
-
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
@@ -456,20 +391,13 @@ class Model:
         runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        # time_init2 = time.time()
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
-        # print_to_file(str(time.time() - time_init2))
 
         q_total = None
         counter_ = 0
 
-        for i, (data_frame, labels) in enumerate(
-            zip(self.training_params.data_frames, self.training_params.labels)
-        ):
-            # print(i)
-            for j, column_name in enumerate(list(data_frame.columns)):
-                time_temp1 = time.time()
-                # print(column_name)
+        for i, (df, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
+            for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
                         runner, str(i), column_name, labels[j] - 1
@@ -535,10 +463,6 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    ### GETTERS - SETTERS ###
-    def set_likelihoods(self, likelihoods):
-        self.likelihoods = likelihoods
-
     def get_all_parameters_z(self, runner):
         w_j = []
         for t in range(len(self.types)):
@@ -558,39 +482,7 @@ class Model:
         return w_j
 
     @staticmethod
-    def normalize_a_state(self, F, T, a):
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for b in T[a]:
-            for c in T[a][b]:
-                if T[a][b][c] > log_mx:
-                    log_mx = T[a][b][c]
-        # sum
-        sm = 0
-        for b in T[a]:
-            for c in T[a][b]:
-                sm += np.exp(T[a][b][c] - log_mx)
-
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                sm += 1.0
-            else:
-                sm += np.exp(F[a] - log_mx)
-
-        # normalize
-        for b in T[a]:
-            for c in T[a][b]:
-                T[a][b][c] = np.log(np.exp(T[a][b][c] - log_mx) / sm)
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                F[a] = 0.0
-            else:
-                F[a] = np.log(np.exp(F[a] - log_mx) / sm)
-
-        return F, T
-
-    @staticmethod
-    def normalize_a_state_new(F, T, a):
+    def normalize_a_state(F, T, a):
         # find maximum log probability
         params = []
         for b in T[a]:
@@ -636,29 +528,8 @@ class Model:
         return I
 
     @staticmethod
-    def normalize_initial_z(I_z):
-        # I = deepcopy(I)
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for a in I_z:
-            if I_z[a] != LOG_EPS and I_z[a] > log_mx:
-                log_mx = I_z[a]
-        # sum
-        sm = 0
-        for a in I_z:
-            if I_z[a] != LOG_EPS:
-                sm += np.exp(I_z[a] - log_mx)
-
-        # normalize
-        for a in I_z:
-            if I_z[a] != LOG_EPS:
-                I_z[a] = I_z[a] - log_mx - np.log(sm)
-
-        return I_z
-
-    @staticmethod
     def normalize_final(F, T):
         for state in F:
-            F, T = Model.normalize_a_state_new(F, T, state)
+            F, T = Model.normalize_a_state(F, T, state)
 
         return F, T

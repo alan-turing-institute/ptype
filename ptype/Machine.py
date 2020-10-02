@@ -117,94 +117,14 @@ class Machine(object):
 
         self.T_new = T_new
 
-    def find_possible_targets(self, candidate_path_prob, current_state, word, current_index, p):
-        # repeat at a given state
-        repeat_p = 0
-
-        while current_state == self.repeat_state and self.repeat_count != 0:
-            alpha = word[current_index]
-            if alpha in self.T[current_state]:
-                if current_state in self.T[current_state][alpha]:
-                    repeat_p += self.T[current_state][alpha][current_state]
-                    current_index += 1
-                    self.repeat_count -= 1
-                else:
-                    self.candidate_path_prob = 0
-                    candidate_path_prob = 0
-                    self.ignore = True
-                    break
-            else:
-                self.candidate_path_prob = 0
-                candidate_path_prob = 0
-                self.ignore = True
-                break
-
-        if current_index == len(word):
-            if self.F[current_state] != LOG_EPS:
-                if self.candidate_path_prob == 0:
-                    self.candidate_path_prob = p + self.F[current_state]
-                else:
-                    self.candidate_path_prob = log_sum_probs(
-                        self.candidate_path_prob, p + self.F[current_state]
-                    )
-                if candidate_path_prob == 0:
-                    candidate_path_prob = p + self.F[current_state]
-                else:
-                    candidate_path_prob = log_sum_probs(
-                        candidate_path_prob, p + self.F[current_state]
-                    )
-        else:
-            if not self.ignore:
-                alpha = word[current_index]
-                if PRINT:
-                    print("\tcurrent_state", current_state)
-                    print("\tchar =", alpha)
-                if alpha in self.T[current_state]:
-                    for target_state_name in self.T[current_state][alpha]:
-                        tran_p = self.T[current_state][alpha][target_state_name]
-                        candidate_path_prob = self.find_possible_targets(
-                            candidate_path_prob,
-                            target_state_name,
-                            word,
-                            current_index + 1,
-                            p + tran_p + repeat_p,
-                        )
-        return candidate_path_prob
-
-    def find_possible_targets_counts_final(
-        self, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
+    def find_possible_targets(
+        self, ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
         repeat_p = 0
 
-        while current_state == self.repeat_state and self.repeat_count != 0:
-            alpha = word[current_index]
-            if alpha in self.T[current_state]:
-                if current_state in self.T[current_state][alpha]:
-                    repeat_p += self.T[current_state][alpha][current_state]
-                    current_index += 1
-                    self.repeat_count -= 1
-                else:
-                    self.candidate_path_prob = 0
-                    candidate_path_prob = 0
-                    self.candidate_path_parameter_count = 0
-                    candidate_path_parameter_count = 0
-                    self.ignore = True
-                    break
-            else:
-                self.candidate_path_prob = 0
-                candidate_path_prob = 0
-                self.ignore = True
-                break
-
         if current_index == len(word):
             if self.F[current_state] != LOG_EPS:
-                if self.candidate_path_prob == 0:
-                    self.candidate_path_prob = p + self.F[current_state]
-                else:
-                    self.candidate_path_prob = log_sum_probs(
-                        self.candidate_path_prob, p + self.F[current_state]
-                    )
                 if candidate_path_prob == 0:
                     candidate_path_prob = p + self.F[current_state]
                 else:
@@ -213,15 +133,15 @@ class Machine(object):
                     )
 
                 if final_state is not None and current_state == final_state:
-                    self.candidate_path_parameter_count = 1
                     candidate_path_parameter_count = 1
         else:
-            if not self.ignore:
+            if not ignore:
                 alpha = word[current_index]
                 if alpha in self.T[current_state]:
                     for target_state_name in self.T[current_state][alpha]:
                         tran_p = self.T[current_state][alpha][target_state_name]
-                        candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets_counts_final(
+                        ignore, candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
+                            ignore,
                             candidate_path_prob,
                             candidate_path_parameter_count,
                             target_state_name,
@@ -230,7 +150,7 @@ class Machine(object):
                             p + tran_p + repeat_p,
                             final_state
                         )
-        return candidate_path_prob, candidate_path_parameter_count
+        return ignore, candidate_path_prob, candidate_path_parameter_count
 
     def calculate_probability(self, word):
         if not self.supported_words[word]:
@@ -253,19 +173,13 @@ class Machine(object):
 
             # Traverse each initial state which might lead to the given word
             for init_state in possible_init_states:
-                self.ignore = False
-
-                # reset path probability to 0
-                self.candidate_path_prob = 0
-
                 current_state = init_state
                 if PRINT:
                     print("\tcurrent_state_name", current_state)
 
-                candidate_path_prob = self.find_possible_targets(
-                    0, current_state, word, 0, self.I[current_state]
+                _, candidate_path_prob, _ = self.find_possible_targets(
+                    False, 0, 0, current_state, word, 0, self.I[current_state], None
                 )
-                assert candidate_path_prob == self.candidate_path_prob
 
                 # add probability of each successful path that leads to the given word
                 if candidate_path_prob != 0:
@@ -377,26 +291,15 @@ class Machine(object):
 
             # Traverse each initial state which might lead to the given word
             for init_state in possible_init_states:
-                self.ignore = False
-
-                # reset path probability to 0
-                self.candidate_path_prob = 0
-                self.candidate_path_parameter_count = 0
-
-                if self.repeat_state is not None:
-                    self.repeat_count = 4
-
-                candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets_counts_final(
-                    0, 0, init_state, x_i, 0, self.I[init_state], final_state
+                _, candidate_path_prob, candidate_path_parameter_count = self.find_possible_targets(
+                    False, 0, 0, init_state, x_i, 0, self.I[init_state], final_state
                 )
-                assert candidate_path_prob == self.candidate_path_prob
-                assert candidate_path_parameter_count == self.candidate_path_parameter_count
 
                 # break when a successful path is found, assuming there'll only be one successful path. check if that's the case.
-                if self.candidate_path_parameter_count != 0:
+                if candidate_path_parameter_count != 0:
                     break
 
-            return self.candidate_path_parameter_count
+            return candidate_path_parameter_count
 
     def copy_to_z(self):
         self.I_z = deepcopy(self.I)
@@ -446,7 +349,6 @@ class MissingsNew(Machine):
         ]
 
     def calculate_probability(self, word):
-        self.ignore = False
         LEN_1_PROB = 1e-7
         if word in self.alphabet:
             return np.log(LEN_1_PROB) if len(word) == 1 else np.log((1.0 - LEN_1_PROB) / (len(self.alphabet) - 7))
@@ -470,7 +372,6 @@ class AnomalyNew(Machine):
         )
 
     def calculate_probability(self, word):
-        self.ignore = False
         if self.supported_words[word] and len(word) != 0:
             if len(word) > 100:
                 return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
@@ -489,8 +390,6 @@ class IntegersNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[\-+]?[0-9]+")
         self.create_T_new()
         self.copy_to_z()
@@ -500,8 +399,6 @@ class EmailAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?")
         self.create_T_new()
         self.copy_to_z()
@@ -511,8 +408,6 @@ class IPAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])")
         self.create_T_new()
         self.copy_to_z()
@@ -522,8 +417,6 @@ class UKPostcodeAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})")
         self.create_T_new()
         self.copy_to_z()
@@ -533,8 +426,6 @@ class UKPhoneNumbers(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}")
         self.create_T_new()
         self.copy_to_z()
@@ -547,8 +438,6 @@ class StringsNewAuto(Machine):
         self.STOP_P = 1e-15
         self.DIGIT_WEIGHT = 0.001
         self.EMPTY_WEIGHT = 1e-11
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
         self.create_T_new()
         self.copy_to_z()
@@ -582,8 +471,6 @@ class FloatsNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)")
         self.create_T_new()
         self.copy_to_z()
@@ -607,8 +494,6 @@ class BooleansNew(Machine):
             + list("FALSEfalse")
             + ["1", "0", "-1"]
         )
-        self.repeat_count = 0
-        self.repeat_state = None
         self.add_states(["q_" + str(i) for i in range(19)])
         Is = []
         for state in self.states:
@@ -680,8 +565,6 @@ class Genders(Machine):
             + list("FALSEfalse")
             + ["1", "0", "-1"]
         )
-        self.repeat_count = 0
-        self.repeat_state = None
         self.add_states(["q_" + str(i) for i in range(14)])
         self.set_I(
             [
@@ -725,24 +608,20 @@ class ISO_8601NewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-2
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?")
         self.create_T_new()
         self.copy_to_z()
 
-    def find_possible_targets_counts_final(
-        self, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
+    def find_possible_targets(
+        self, ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state=None
     ):
         # repeat at a given state
-        if (not self.supported_words[word]) or (len(word) < 4):
-            return 0
+        if not self.supported_words[word] or len(word) < 4:
+            return ignore, candidate_path_prob, candidate_path_parameter_count
         else:
-            return super().find_possible_targets_counts_final(candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
+            return super().find_possible_targets(ignore, candidate_path_prob, candidate_path_parameter_count, current_state, word, current_index, p, final_state)
 
     def calculate_probability(self, word):
-        self.repeat_count = 4
-
         if len(word) < 4:
             return LOG_EPS
         else:
@@ -753,8 +632,6 @@ class Date_EUNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))")
         self.create_T_new()
         self.copy_to_z()
@@ -764,8 +641,6 @@ class Nonstd_DateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)")
         self.create_T_new()
         self.copy_to_z()
@@ -775,8 +650,6 @@ class SubTypeNonstdDateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.repeat_count = 0
-        self.repeat_state = None
         self.create_pfsm_from_fsm("(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)")
         self.create_T_new()
         self.copy_to_z()
