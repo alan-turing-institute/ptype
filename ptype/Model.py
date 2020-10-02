@@ -60,7 +60,7 @@ class Model:
         )  # K: num of possible column data types (excluding missing and catch-all)
 
         # Initializations
-        pi = [self.PI for j in range(K)]  # mixture weights of row types
+        pi = [self.PI for k in range(K)]  # mixture weights of row types
 
         # Inference
         p_t = []  # p_t: posterior probability distribution of column types
@@ -71,18 +71,18 @@ class Model:
         counts_array = np.array(counts)
 
         # Iterates for each possible column type
-        for j in range(K):
+        for k in range(K):
 
             # Sum of weighted likelihoods (log-domain)
             p_t.append(
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        pi[j][0],
-                        logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                        pi[j][1],
+                        pi[k][0],
+                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                        pi[k][1],
                         logP[:, self.MISSING_INDEX - 1],
-                        pi[j][2],
+                        pi[k][2],
                         logP[:, self.ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -92,18 +92,18 @@ class Model:
 
             # Normalizes
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                pi[j][0],
-                logP[:, j + self.LLHOOD_TYPE_START_INDEX],
-                pi[j][1],
+                pi[k][0],
+                logP[:, k + self.LLHOOD_TYPE_START_INDEX],
+                pi[k][1],
                 logP[:, self.MISSING_INDEX - 1],
-                pi[j][2],
+                pi[k][2],
                 logP[:, self.ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, j, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, j, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, j, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
-            p_z[:, j, :] = p_z[:, j, :] / p_z[:, j, :].sum(axis=1)[:, np.newaxis]
+            p_z[:, k, self.TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z[:, k, self.MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z[:, k, self.ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[:, k, :] = p_z[:, k, :] / p_z[:, k, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
         self.p_t = {t: p for t, p in zip(self.types, p_t)}

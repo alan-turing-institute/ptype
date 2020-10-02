@@ -86,7 +86,7 @@ class Ptype:
             "float": "float64",
         }
         for col_name in df:
-            new_dtype = ptype_pandas_mapping[schema[col_name].predicted_type]
+            new_dtype = ptype_pandas_mapping[schema[col_name].type]
             try:
                 df[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
@@ -155,7 +155,7 @@ class Ptype:
     # OUTPUT METHODS #########################
     def show_schema(self):
         df = self.model.df.iloc[0:0, :].copy()
-        df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
+        df.loc[0] = [col.type for _, col in self.cols.items()]
         return df.rename(index={0: "type"})
 
     def show_missing_values(self):
@@ -201,22 +201,21 @@ class Ptype:
         """ First stores the posterior distribution of the column type, and the predicted column type.
             Secondly, it stores the indices of the rows categorized according to the row types.
         """
-        predicted_type_ = max(self.model.p_t, key=self.model.p_t.get)
+        type_ = max(self.model.p_t, key=self.model.p_t.get)
         # Unpleasant special case when posterior vector has entries which are equal
         if len(set(self.model.p_t.values())) == 1:
-            predicted_type = "all identical"
+            type = "all identical"
         else:
-            predicted_type = predicted_type_
+            type = type_
 
         # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(predicted_type)
+        [normals, missings, anomalies] = self.detect_missing_anomalies(type)
 
         return Column(
             series=self.model.df[col_name],
             counts=counts,
             p_t=self.model.p_t,
-            predicted_type=predicted_type,
-            p_z=self.model.p_z[:, self.types.index(predicted_type_), :],  # need to handle the uniform case
+            p_z=self.model.p_z[:, self.types.index(type_), :],  # need to handle the uniform case
             normal_values=normals,
             missing_values=missings,
             anomalous_values=anomalies,
@@ -252,7 +251,7 @@ class Ptype:
     def reclassify_column(self, col_name, new_t):
         if new_t not in self.types:
             print("Given type is unknown!")
-        self.cols[col_name].predicted_type = new_t
+        self.cols[col_name].type = new_t
         self.cols[col_name].p_t = OrderedDict(
             [(t, 1.0) if t == new_t else (t, 0.0) for t in self.types]
         )
