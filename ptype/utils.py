@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import pathlib
-import jsonpickle
 
 LOG_EPS = -1e150
 
@@ -185,11 +184,6 @@ def write_data(data, filepath="../../automata/example.dat"):
     for line in data:
         f.write(str(line) + "\n")
     f.close()
-
-
-def save_object(obj, filename):
-    with open(filename + ".json", "w") as file:
-        file.write(jsonpickle.encode(obj,indent=2))
 
 
 def print_to_file(txt, filename="output.txt"):

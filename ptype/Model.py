@@ -252,107 +252,6 @@ class Model:
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
 
-    def g_col(self, runner, i_, column_name, y_i):
-        [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
-        logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
-
-        set_chars = np.unique(sum([list(str(x_i)) for x_i in temp_x], []))
-
-        # calculates posterior values of types
-        q = []
-        for k in range(self.K):
-            q.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        self.pi[k][0],
-                        logP[:, k + self.LLHOOD_TYPE_START_INDEX],
-                        self.pi[k][1],
-                        logP[:, self.MISSING_INDEX - 1],
-                        self.pi[k][2],
-                        logP[:, self.ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-
-        # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
-        g_j = []
-        for t, _ in enumerate(self.types):
-            x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
-            possible_states = [
-                state
-                for state in runner.machines[2 + t].states
-                if runner.machines[2 + t].I[state] != LOG_EPS
-            ]
-            A = log_weighted_sum_probs(
-                self.pi[t][0],
-                logP[:, t + self.LLHOOD_TYPE_START_INDEX],
-                self.pi[t][1],
-                logP[:, self.MISSING_INDEX - 1],
-                self.pi[t][2],
-                logP[:, self.ANOMALIES_INDEX - 1],
-            )
-            temp_gra = np.exp(self.pi[t][0] + logP[:, t + 2] - A)
-
-            temp_g_j = []
-            for state in possible_states:
-                temp_g_j.append(
-                    self.gradient_initial_optimized_new(
-                        runner,
-                        state,
-                        t,
-                        temp_x[x_i_indices],
-                        q,
-                        temp_gra[x_i_indices],
-                        counts_array[x_i_indices],
-                        y_i,
-                    )
-                )
-            g_j = g_j + temp_g_j
-
-            for a in runner.machines[2 + t].T:
-                temp_g_j = []
-                for b in runner.machines[2 + t].T[a]:
-                    if str(b) not in set_chars:
-                        temp_g_j = temp_g_j + [
-                            0 for i in range(len(runner.machines[2 + t].T[a][b].keys()))
-                        ]
-                    else:
-                        for c in runner.machines[2 + t].T[a][b]:
-                            temp_g_j.append(
-                                self.gradient_transition_optimized_new(
-                                    runner,
-                                    a,
-                                    b,
-                                    c,
-                                    t,
-                                    q,
-                                    temp_x[x_i_indices],
-                                    y_i,
-                                    temp_gra[x_i_indices],
-                                    counts_array[x_i_indices],
-                                )
-                            )
-                g_j = g_j + temp_g_j
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-
-                    g_j.append(
-                        self.gradient_final_optimized_new(
-                            runner,
-                            state,
-                            t,
-                            temp_x[x_i_indices],
-                            q,
-                            temp_gra[x_i_indices],
-                            counts_array[x_i_indices],
-                            y_i,
-                        )
-                    )
-
-        return -np.array(g_j) / counts_array.sum()
-
     def g_col_marginals(self, runner, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
@@ -602,24 +501,6 @@ class Model:
         cs = np.array(cs_temp)
 
         gradient = (temp * counter * cs * exp_param).sum()
-        return self.scale_wrt_type(gradient, q, t, y_i)
-
-    def gradient_transition_optimized_new(
-        self, runner, a, b, c, t, q, x, y_i, temp_gra, counts_array
-    ):
-
-        cs_temp = [
-            runner.machines[2 + t].calculate_gradient_abc_new_optimized(
-                str(x_i), a, b, c
-            )
-            for x_i in x
-        ]
-        cs_temp = np.array(cs_temp)
-        temp_mult = (temp_gra * cs_temp * counts_array).sum()
-
-        exp_param = 1 - np.exp(runner.machines[2 + t].T[a][b][c])
-        gradient = exp_param * temp_mult
-
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_transition_optimized_new_marginals(
