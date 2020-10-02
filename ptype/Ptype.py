@@ -83,11 +83,18 @@ class Ptype:
             "date-eu": "datetime64",
             "date-non-std": "datetime64",
             "string": "string",
-            "boolean": "bool",  # will remove boolean later
+            "boolean": "boolean",  # will remove boolean later
             "float": "float64",
         }
         for col_name in df:
             new_dtype = ptype_pandas_mapping[schema[col_name].type]
+            if new_dtype == "boolean":
+                df[col_name] = df[col_name].apply(
+                    lambda x: False
+                    if str(x) in ["F"]
+                    else (True if str(x) in ["T"] else x)
+                )
+
             try:
                 df[col_name] = df[col_name].astype(new_dtype)
             except TypeError:
@@ -159,8 +166,8 @@ class Ptype:
 
     # OUTPUT METHODS #########################
     def show_schema(self):
-        df = self.model.data.iloc[0:0, :].copy()
-        df.loc[0] = [col.predicted_type for _, col in self.cols.items()]
+        df = self.model.df.iloc[0:0, :].copy()
+        df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
         df.loc[2] = [col.get_ratio(Status.TYPE) for _, col in self.cols.items()]
         df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
@@ -254,7 +261,9 @@ class Ptype:
                 counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
 
         """
-        unique_vs, counts = get_unique_vals(self.model.df[column_name], return_counts=True)
+        unique_vs, counts = get_unique_vals(
+            self.model.df[column_name], return_counts=True
+        )
         probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
         probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
 
