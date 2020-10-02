@@ -32,19 +32,14 @@ class Column:
         counts,
         p_t,
         p_z,
-        normal_values,
-        missing_values,
-        anomalous_values,
     ):
         self.series = series
         self.p_t = p_t
         self.p_t_canonical = {}
         self.p_z = p_z
-        self.normal_values = normal_values
-        self.missing_values = missing_values
-        self.anomalous_values = anomalous_values
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
+        self.initialise_missing_anomalies()
         self.unique_vals_status = [
             Status.TYPE
             if i in self.normal_values
@@ -92,18 +87,18 @@ class Column:
         else:
             return max(self.p_t, key=self.p_t.get)
 
-    def detect_missing_anomalies(self):
+    def initialise_missing_anomalies(self):
         if self.type != "all identical":
             row_posteriors = self.p_z[self.type]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            return [
-                list(np.where(max_row_posterior_indices == TYPE_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == MISSING_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]),
-            ]
+            self.normal_values = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+            self.missing_values = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+            self.anomalous_values = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
         else:
-            return [[], [], []]
+            self.normal_values = []
+            self.missing_values = []
+            self.anomalous_values = []
 
     def has_missing(self):
         return self.get_missing_values() != []
@@ -159,22 +154,18 @@ class Column:
         ]
 
     def get_missing_values(self):
-        if self.type != "all identical":
-            row_posteriors = self.p_z[self.type]
-            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
-            indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
-        else:
-            indices = []
-        return [v for i, v in enumerate(self.unique_vals) if i in indices]
+        return [
+            v
+            for i, v in enumerate(self.unique_vals)
+            if self.unique_vals_status[i] == Status.MISSING
+        ]
 
     def get_anomalous_values(self):
-        if self.type != "all identical":
-            row_posteriors = self.p_z[self.type]
-            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
-            indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
-        else:
-            indices = []
-        return [v for i, v in enumerate(self.unique_vals) if i in indices]
+        return [
+            v
+            for i, v in enumerate(self.unique_vals)
+            if self.unique_vals_status[i] == Status.ANOMALOUS
+        ]
 
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:

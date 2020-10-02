@@ -244,9 +244,6 @@ class Ptype:
             counts=counts,
             p_t=self.model.p_t,
             p_z=self.model.p_z,  # need to handle the uniform case
-            normal_values=normals,
-            missing_values=missings,
-            anomalous_values=anomalies,
         )
 
     def generate_probs(self, column_name):
