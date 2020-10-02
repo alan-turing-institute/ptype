@@ -44,9 +44,7 @@ class Column:
         self.normal_values = normal_values
         self.missing_values = missing_values
         self.anomalous_values = anomalous_values
-        self.unique_vals = []
-        self.unique_vals_counts = []
-        self.cache_unique_vals()
+        self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
         self.unique_vals_status = [
             Status.TYPE
             if i in self.normal_values
@@ -85,12 +83,6 @@ class Column:
             "categorical_values": self.categorical_values,
         }
         return repr(props)
-
-    def cache_unique_vals(self):
-        """Call this to (re)initialise the cache of my unique values."""
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(
-            self.series, return_counts=True
-        )
 
     def has_missing(self):
         return self.get_missing_values() != []
@@ -162,7 +154,7 @@ class Column:
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
             self.unique_vals_status[i] = Status.TYPE
-            self.p_z[i, :] = [1.0, 0.0, 0.0]
+#            self.p_z[i, :] = [1.0, 0.0, 0.0]
 
     def get_features(self, counts):
         posterior = OrderedDict()
