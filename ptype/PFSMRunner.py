@@ -20,7 +20,7 @@ from ptype.utils import contains_all
 from ptype.Model import Model
 from ptype.Model import LOG_EPS
 
-sys.path.insert(0, "src/")
+# sys.path.insert(0, "src/")
 MACHINES = {
     "integer": IntegersNewAuto(),
     "string": StringsNewAuto(),
@@ -42,20 +42,12 @@ class PFSMRunner:
         self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
         self.normalize_params()
 
-    def generate_machine_probabilities(self, data):
+    def generate_machine_probabilities(self, col):
         """ generates automata probabilities for a given column of data
-
-        :param data:
-        :return params:
         """
-        probs = {}
-        for input_string in data:
-            probs[str(input_string)] = [
-                self.machines[j].calculate_probability(str(input_string))
-                for j in range(len(self.machines))
-            ]
-
-        return probs
+        return {
+            str(v): [m.calculate_probability(str(v)) for m in self.machines] for v in col
+        }
 
     def set_unique_values(self, unique_values):
         for i, machine in enumerate(self.machines):
@@ -144,7 +136,7 @@ class PFSMRunner:
                 (
                     self.machines[2 + t].F_z,
                     self.machines[2 + t].T_z,
-                ) = Model.normalize_a_state_new(
+                ) = Model.normalize_a_state(
                     self.machines[2 + t].F_z, self.machines[2 + t].T_z, state
                 )
                 self.machines[2 + t].F, self.machines[2 + t].T = (

@@ -46,7 +46,7 @@ def get_predictions(dataset_name):
     print("Anomalies:\n", df_anomaly)
     print("Normal:\n", df_normal)
 
-    col_types = {col_name: col.predicted_type for col_name, col in ptype.cols.items()}
+    col_types = {col_name: col.type for col_name, col in ptype.cols.items()}
     col_arff_types = {col_name: col.arff_type for col_name, col in ptype.cols.items()}
     row_types = {
         col_name: {v: str(s) for v, s in zip(col.unique_vals, col.unique_vals_status)}
@@ -185,8 +185,8 @@ def training_tests():
 def main():
     np.random.seed(0)
     core_tests()
-#    notebook_tests()
     training_tests()
+    notebook_tests()
 
 
 if __name__ == "__main__":

@@ -596,7 +596,7 @@ def evaluate_types(
     true_values = annotations["Type"].values.tolist()
     true_values = [true_value.split("-")[0] for true_value in true_values]
 
-    predictions = [col.predicted_type for col in _ptype.cols.values()]
+    predictions = [col.type for col in _ptype.cols.values()]
     predictions = [
         prediction.replace("date-eu", "date")
         .replace("date-iso-8601", "date")
