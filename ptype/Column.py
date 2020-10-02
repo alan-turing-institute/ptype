@@ -159,18 +159,22 @@ class Column:
         ]
 
     def get_missing_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.MISSING
-        ]
+        if self.type != "all identical":
+            row_posteriors = self.p_z[self.type]
+            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+            indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+        else:
+            indices = []
+        return [v for i, v in enumerate(self.unique_vals) if i in indices]
 
     def get_anomalous_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.ANOMALOUS
-        ]
+        if self.type != "all identical":
+            row_posteriors = self.p_z[self.type]
+            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+            indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
+        else:
+            indices = []
+        return [v for i, v in enumerate(self.unique_vals) if i in indices]
 
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
