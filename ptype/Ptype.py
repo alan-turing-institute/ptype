@@ -174,11 +174,11 @@ class Ptype:
         df = self.model.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_normal_ratio for _, col in self.cols.items()]
+        df.loc[2] = [col.get_normal_ratio() for _, col in self.cols.items()]
         df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
-        df.loc[4] = [col.get_missing_ratio for _, col in self.cols.items()]
+        df.loc[4] = [col.get_missing_ratio() for _, col in self.cols.items()]
         df.loc[5] = [col.get_anomalous_values() for _, col in self.cols.items()]
-        df.loc[6] = [col.get_anomalous_ratio for _, col in self.cols.items()]
+        df.loc[6] = [col.get_anomalous_ratio() for _, col in self.cols.items()]
         return df.rename(
             index={
                 0: "type",
@@ -256,17 +256,3 @@ class Ptype:
                 error += temp
 
         return error
-
-    def reclassify_column(self, col_name, new_t):
-        if new_t not in self.types:
-            raise Exception(f"Type {new_t} is unknown.")
-        self.cols[col_name].type = new_t
-
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            self.cols[col_name].p_z, new_t
-        )
-
-        self.cols[col_name].set_row_types(normals, missings, anomalies)
-
-        # update the arff types?

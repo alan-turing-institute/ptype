@@ -48,27 +48,7 @@ class Column:
         )
 
     def __repr__(self):
-        ptype_pandas_mapping = {
-            "integer": "Int64",
-            "date-iso-8601": "datetime64",
-            "date-eu": "datetime64",
-            "date-non-std": "datetime64",
-            "string": "string",
-            "boolean": "bool",  # will remove boolean later
-            "float": "float64",
-        }  # ouch
-        props = {
-            "type": self.type,
-            "dtype": ptype_pandas_mapping[self.type],
-            "arff_type": self.arff_type,
-            "normal_values": self.get_normal_values(),
-            "missing_values": self.get_missing_values(),
-            "missingness_ratio": self.get_missing_ratio(),
-            "anomalies": self.get_anomalous_values(),
-            "anomalous_ratio": self.get_anomalous_ratio(),
-            "categorical_values": self.categorical_values,
-        }
-        return repr(props)
+        return repr(self.__dict__)
 
     def inferred_type(self):
         # Unpleasant special case when posterior vector has entries which are equal
@@ -143,10 +123,12 @@ class Column:
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
-    def set_row_types(self, normal_values, missing_values, anomalous_values):
-        self.normal_indices = normal_values
-        self.missing_indices = missing_values
-        self.anomalous_indices = anomalous_values
+    def reclassify(self, new_t):
+        if new_t not in self.p_z:
+            raise Exception(f"Type {new_t} is unknown.")
+        self.type = new_t
+        self.initialise_missing_anomalies()
+        # update the arff types?
 
 
 class Column2ARFF:
