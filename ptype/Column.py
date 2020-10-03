@@ -42,11 +42,11 @@ class Column:
         self.initialise_missing_anomalies()
         self.unique_vals_status = [
             Status.TYPE
-            if i in self.normal_values
+            if i in self.normal_indices
             else Status.MISSING
-            if i in self.missing_values
+            if i in self.missing_indices
             else Status.ANOMALOUS
-            if i in self.anomalous_values
+            if i in self.anomalous_indices
             else None  # only happens in the "all identical" case?
             for i, _ in enumerate(self.unique_vals)
         ]
@@ -92,13 +92,13 @@ class Column:
             row_posteriors = self.p_z[self.type]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            self.normal_values = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
-            self.missing_values = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
-            self.anomalous_values = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
+            self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+            self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+            self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
         else:
-            self.normal_values = []
-            self.missing_values = []
-            self.anomalous_values = []
+            self.normal_indices = []
+            self.missing_indices = []
+            self.anomalous_indices = []
 
     def has_missing(self):
         return self.get_missing_values() != []
@@ -116,13 +116,13 @@ class Column:
         return round(sum(self.unique_vals_counts[indices]) / total, 2)
 
     def get_normal_values(self):
-        return [v for i, v in enumerate(self.unique_vals) if i in self.normal_values]
+        return list(self.unique_vals[self.normal_indices])
 
     def get_missing_values(self):
-        return [v for i, v in enumerate(self.unique_vals) if i in self.missing_values]
+        return list(self.unique_vals[self.missing_indices])
 
     def get_anomalous_values(self):
-        return [v for i, v in enumerate(self.unique_vals) if i in self.anomalous_values]
+        return list(self.unique_vals[self.anomalous_indices])
 
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
@@ -141,10 +141,10 @@ class Column:
 
         entries = [str(int_element) for int_element in self.series.tolist()]
         U = len(np.unique(entries))
-        U_clean = len(self.normal_values)
+        U_clean = len(self.normal_indices)
 
         N = len(entries)
-        N_clean = sum([counts[index] for index in self.normal_values])
+        N_clean = sum([counts[index] for index in self.normal_indices])
 
         u_ratio = U / N
         if U_clean == 0 and N_clean == 0:
@@ -156,17 +156,17 @@ class Column:
 
     def set_row_types(self, normal_values, missing_values, anomalous_values):
 
-        self.normal_values = normal_values
-        self.missing_values = missing_values
-        self.anomalous_values = anomalous_values
+        self.normal_indices = normal_values
+        self.missing_indices = missing_values
+        self.anomalous_indices = anomalous_values
 
         self.unique_vals_status = [
             Status.TYPE
-            if i in self.normal_values
+            if i in self.normal_indices
             else Status.MISSING
-            if i in self.missing_values
+            if i in self.missing_indices
             else Status.ANOMALOUS
-            if i in self.anomalous_values
+            if i in self.anomalous_indices
             else None  # only happens in the "all identical" case?
             for i, _ in enumerate(self.unique_vals)
         ]
