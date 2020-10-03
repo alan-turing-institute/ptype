@@ -215,19 +215,6 @@ class Ptype:
             lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
 
-    def detect_missing_anomalies(self, p_z, inferred_column_type):
-        if inferred_column_type != "all identical":
-            row_posteriors = p_z[inferred_column_type]
-            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
-
-            return [
-                list(np.where(max_row_posterior_indices == TYPE_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == MISSING_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]),
-            ]
-        else:
-            return [[], [], []]
-
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
