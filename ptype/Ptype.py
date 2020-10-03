@@ -61,7 +61,12 @@ class Ptype:
             # apply user feedback for missing data and anomalies
             # temporarily overwrite the proabilities for a given value and a column?
             self.model.run_inference(probabilities, counts)
-            self.cols[col_name] = self.column(col_name, counts)
+            self.cols[col_name] = Column(
+                series=self.model.df[col_name],
+                counts=counts,
+                p_t=self.model.p_t,
+                p_z=self.model.p_z,  # need to handle the uniform case
+            )
 
         return self.cols
 
@@ -222,29 +227,6 @@ class Ptype:
             ]
         else:
             return [[], [], []]
-
-    def column(self, col_name, counts):
-        """ First stores the posterior distribution of the column type, and the predicted column type.
-            Secondly, it stores the indices of the rows categorized according to the row types.
-        """
-        type_ = max(self.model.p_t, key=self.model.p_t.get)
-        # Unpleasant special case when posterior vector has entries which are equal
-        if len(set(self.model.p_t.values())) == 1:
-            type = "all identical"
-        else:
-            type = type_
-
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            self.model.p_z, type
-        )
-
-        return Column(
-            series=self.model.df[col_name],
-            counts=counts,
-            p_t=self.model.p_t,
-            p_z=self.model.p_z,  # need to handle the uniform case
-        )
 
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
