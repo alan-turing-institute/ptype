@@ -46,27 +46,33 @@ def get_predictions(dataset_name):
     print("Anomalies:\n", df_anomaly)
     print("Normal:\n", df_normal)
 
-    col_types = {col_name: col.type for col_name, col in ptype.cols.items()}
-    col_arff_types = {col_name: col.arff_type for col_name, col in ptype.cols.items()}
-    row_types = {
-        col_name: {v: str(s) for v, s in zip(col.unique_vals, col.unique_vals_status)}
-        for col_name, col in ptype.cols.items()
-    }
-
-    return (col_types, col_arff_types, row_types)
+    return (
+        {col_name: col.type for col_name, col in ptype.cols.items()},
+        {col_name: col.arff_type for col_name, col in ptype.cols.items()},
+        {col_name: {
+            "missing_values": col.get_missing_values(),
+            "anomalous_values": col.get_anomalous_values()
+        } for col_name, col in ptype.cols.items()}
+    )
 
 
 def check_predictions(type_predictions, expected_folder, dataset_name):
     expected_file = expected_folder + "/" + os.path.splitext(dataset_name)[0]
-    with open(expected_file + ".json", "r", encoding="utf-8-sig") as read_file:
-        expected = json.load(read_file)
+    try:
+        with open(expected_file + ".json", "r", encoding="utf-8-sig") as read_file:
+            expected = json.load(read_file)
+    except FileNotFoundError:
+        expected = {}
 
     # JSON doesn't support integer keys
     type_predictions = {str(k): v for k, v in type_predictions.items()}
     if not (type_predictions == expected):  # dictionary comparison
         for k in type_predictions:
-            if type_predictions[k] != expected[k]:
-                print(f"Differs on {k} ({type_predictions[k]} != {expected[k]})")
+            if k in expected:
+                if type_predictions[k] != expected[k]:
+                    print(f"Differs on {k} ({type_predictions[k]} != {expected[k]})")
+            else:
+                print(f"Key {k} not expected")
         # prettyprint new JSON, omitting optional BOM char
         with open(expected_file + ".new.json", "w", encoding="utf-8-sig") as write_file:
             json.dump(
@@ -127,11 +133,11 @@ def core_tests():
 
     type_predictions = {}
     for dataset_name in datasets:
-        col_predictions, col_arff_types, row_predictions = get_predictions(dataset_name)
+        col_predictions, col_arff_types, missing_anomalous = get_predictions(dataset_name)
 
         check_predictions(col_predictions, expected_folder, dataset_name)
         check_predictions(col_arff_types, expected_folder + "/arff", dataset_name)
-        check_predictions(row_predictions, expected_folder + "/row_types", dataset_name)
+        check_predictions(missing_anomalous, expected_folder + "/missing_anomalous", dataset_name)
 
         type_predictions[dataset_name] = col_predictions
 

@@ -40,16 +40,6 @@ class Column:
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
         self.initialise_missing_anomalies()
-        self.unique_vals_status = [
-            Status.TYPE
-            if i in self.normal_values
-            else Status.MISSING
-            if i in self.missing_values
-            else Status.ANOMALOUS
-            if i in self.anomalous_values
-            else None  # only happens in the "all identical" case?
-            for i, _ in enumerate(self.unique_vals)
-        ]
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
         self.arff_posterior = column2ARFF.get_arff(self.features)[1]
@@ -58,27 +48,7 @@ class Column:
         )
 
     def __repr__(self):
-        ptype_pandas_mapping = {
-            "integer": "Int64",
-            "date-iso-8601": "datetime64",
-            "date-eu": "datetime64",
-            "date-non-std": "datetime64",
-            "string": "string",
-            "boolean": "bool",  # will remove boolean later
-            "float": "float64",
-        }  # ouch
-        props = {
-            "type": self.type,
-            "dtype": ptype_pandas_mapping[self.type],
-            "arff_type": self.arff_type,
-            "normal_values": self.get_normal_values(),
-            "missing_values": self.get_missing_values(),
-            "missingness_ratio": self.get_ratio(Status.MISSING),
-            "anomalies": self.get_anomalous_values(),
-            "anomalous_ratio": self.get_ratio(Status.ANOMALOUS),
-            "categorical_values": self.categorical_values,
-        }
-        return repr(props)
+        return repr(self.__dict__)
 
     def inferred_type(self):
         # Unpleasant special case when posterior vector has entries which are equal
@@ -92,13 +62,13 @@ class Column:
             row_posteriors = self.p_z[self.type]
             max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            self.normal_values = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
-            self.missing_values = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
-            self.anomalous_values = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
+            self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+            self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+            self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
         else:
-            self.normal_values = []
-            self.missing_values = []
-            self.anomalous_values = []
+            self.normal_indices = []
+            self.missing_indices = []
+            self.anomalous_indices = []
 
     def has_missing(self):
         return self.get_missing_values() != []
@@ -106,70 +76,26 @@ class Column:
     def has_anomalous(self):
         return self.get_anomalous_values() != []
 
-    def show_results_for(self, status, desc):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        if len(indices) == 0:
-            return 0
-        else:
-            print("\t" + desc, [self.unique_vals[i] for i in indices][:20])
-            print(
-                "\ttheir counts: ", [self.unique_vals_counts[i] for i in indices][:20]
-            )
-            return sum(self.unique_vals_counts[indices])
+    def get_normal_ratio(self):
+        return round(sum(self.unique_vals_counts[self.normal_indices]) / sum(self.unique_vals_counts), 2)
 
-    def show_results(self):
-        print("col: " + str(self.series.name))
-        print("\tpredicted type: " + self.type)
-        print("\tposterior probs: ", self.p_t)
+    def get_missing_ratio(self):
+        return round(sum(self.unique_vals_counts[self.missing_indices]) / sum(self.unique_vals_counts), 2)
 
-        normal = self.show_results_for(Status.TYPE, "some normal data values: ")
-        missing = self.show_results_for(Status.MISSING, "missing values:")
-        anomalies = self.show_results_for(Status.ANOMALOUS, "anomalies:")
-
-        total = normal + missing + anomalies
-
-        print("\tfraction of normal:", round(normal / total, 2), "\n")
-        print("\tfraction of missing:", round(missing / total, 2), "\n")
-        print("\tfraction of anomalies:", round(anomalies / total, 2), "\n")
-
-    def get_ratio(self, status):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        total = sum(self.unique_vals_counts)
-        return round(sum(self.unique_vals_counts[indices]) / total, 2)
+    def get_anomalous_ratio(self):
+        return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_normal_values(self):
-        """Values identified as 'normal'."""
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.TYPE
-        ]
+        return list(self.unique_vals[self.normal_indices])
 
     def get_missing_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.MISSING
-        ]
+        return list(self.unique_vals[self.missing_indices])
 
     def get_anomalous_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.ANOMALOUS
-        ]
+        return list(self.unique_vals[self.anomalous_indices])
 
     def reclassify_normal(self, vs):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
-            self.unique_vals_status[i] = Status.TYPE
+        pass
 
     def get_features(self, counts):
         posterior = OrderedDict()
@@ -184,10 +110,10 @@ class Column:
 
         entries = [str(int_element) for int_element in self.series.tolist()]
         U = len(np.unique(entries))
-        U_clean = len(self.normal_values)
+        U_clean = len(self.normal_indices)
 
         N = len(entries)
-        N_clean = sum([counts[index] for index in self.normal_values])
+        N_clean = sum([counts[index] for index in self.normal_indices])
 
         u_ratio = U / N
         if U_clean == 0 and N_clean == 0:
@@ -197,24 +123,12 @@ class Column:
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
-    def set_row_types(self, normal_values, missing_values, anomalous_values):
-
-        self.normal_values = normal_values
-        self.missing_values = missing_values
-        self.anomalous_values = anomalous_values
-
-        self.unique_vals_status = [
-            Status.TYPE
-            if i in self.normal_values
-            else Status.MISSING
-            if i in self.missing_values
-            else Status.ANOMALOUS
-            if i in self.anomalous_values
-            else None  # only happens in the "all identical" case?
-            for i, _ in enumerate(self.unique_vals)
-        ]
-
-        # update arff related things
+    def reclassify(self, new_t):
+        if new_t not in self.p_z:
+            raise Exception(f"Type {new_t} is unknown.")
+        self.type = new_t
+        self.initialise_missing_anomalies()
+        # update the arff types?
 
 
 class Column2ARFF:

@@ -61,7 +61,12 @@ class Ptype:
             # apply user feedback for missing data and anomalies
             # temporarily overwrite the proabilities for a given value and a column?
             self.model.run_inference(probabilities, counts)
-            self.cols[col_name] = self.column(col_name, counts)
+            self.cols[col_name] = Column(
+                series=self.model.df[col_name],
+                counts=counts,
+                p_t=self.model.p_t,
+                p_z=self.model.p_z,  # need to handle the uniform case
+            )
 
         return self.cols
 
@@ -169,11 +174,11 @@ class Ptype:
         df = self.model.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_ratio(Status.TYPE) for _, col in self.cols.items()]
+        df.loc[2] = [col.get_normal_ratio() for _, col in self.cols.items()]
         df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
-        df.loc[4] = [col.get_ratio(Status.MISSING) for _, col in self.cols.items()]
+        df.loc[4] = [col.get_missing_ratio() for _, col in self.cols.items()]
         df.loc[5] = [col.get_anomalous_values() for _, col in self.cols.items()]
-        df.loc[6] = [col.get_ratio(Status.ANOMALOUS) for _, col in self.cols.items()]
+        df.loc[6] = [col.get_anomalous_ratio() for _, col in self.cols.items()]
         return df.rename(
             index={
                 0: "type",
@@ -210,42 +215,6 @@ class Ptype:
             lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
 
-    def detect_missing_anomalies(self, p_z, inferred_column_type):
-        if inferred_column_type != "all identical":
-            row_posteriors = p_z[inferred_column_type]
-            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
-
-            return [
-                list(np.where(max_row_posterior_indices == TYPE_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == MISSING_INDEX)[0]),
-                list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]),
-            ]
-        else:
-            return [[], [], []]
-
-    def column(self, col_name, counts):
-        """ First stores the posterior distribution of the column type, and the predicted column type.
-            Secondly, it stores the indices of the rows categorized according to the row types.
-        """
-        type_ = max(self.model.p_t, key=self.model.p_t.get)
-        # Unpleasant special case when posterior vector has entries which are equal
-        if len(set(self.model.p_t.values())) == 1:
-            type = "all identical"
-        else:
-            type = type_
-
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            self.model.p_z, type
-        )
-
-        return Column(
-            series=self.model.df[col_name],
-            counts=counts,
-            p_t=self.model.p_t,
-            p_z=self.model.p_z,  # need to handle the uniform case
-        )
-
     def generate_probs(self, column_name):
         """ Generates probabilities for the unique data values in a column.
 
@@ -274,20 +243,3 @@ class Ptype:
                 error += temp
 
         return error
-
-    def reclassify_column(self, col_name, new_t):
-        if new_t not in self.types:
-            print("Given type is unknown!")
-        self.cols[col_name].type = new_t
-        self.cols[col_name].p_t = OrderedDict(
-            [(t, 1.0) if t == new_t else (t, 0.0) for t in self.types]
-        )
-
-        # Indices for the unique values
-        [normals, missings, anomalies] = self.detect_missing_anomalies(
-            self.cols[col_name].p_z, new_t
-        )
-
-        self.cols[col_name].set_row_types(normals, missings, anomalies)
-
-        # update the arff types?
