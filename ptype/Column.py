@@ -40,16 +40,6 @@ class Column:
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
         self.initialise_missing_anomalies()
-        self.unique_vals_status = [
-            Status.TYPE
-            if i in self.normal_indices
-            else Status.MISSING
-            if i in self.missing_indices
-            else Status.ANOMALOUS
-            if i in self.anomalous_indices
-            else None  # only happens in the "all identical" case?
-            for i, _ in enumerate(self.unique_vals)
-        ]
         self.features = self.get_features(counts)
         self.arff_type = column2ARFF.get_arff(self.features)[0]
         self.arff_posterior = column2ARFF.get_arff(self.features)[1]
@@ -154,23 +144,9 @@ class Column:
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
     def set_row_types(self, normal_values, missing_values, anomalous_values):
-
         self.normal_indices = normal_values
         self.missing_indices = missing_values
         self.anomalous_indices = anomalous_values
-
-        self.unique_vals_status = [
-            Status.TYPE
-            if i in self.normal_indices
-            else Status.MISSING
-            if i in self.missing_indices
-            else Status.ANOMALOUS
-            if i in self.anomalous_indices
-            else None  # only happens in the "all identical" case?
-            for i, _ in enumerate(self.unique_vals)
-        ]
-
-        # update arff related things
 
 
 class Column2ARFF:
