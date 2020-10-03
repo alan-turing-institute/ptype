@@ -124,6 +124,9 @@ class Column:
     def get_anomalous_values(self):
         return list(self.unique_vals[self.anomalous_indices])
 
+    def reclassify_normal(self, vs):
+        pass
+
     def get_features(self, counts):
         posterior = OrderedDict()
         for t, p in sorted(self.p_t.items()):
