@@ -277,11 +277,8 @@ class Ptype:
 
     def reclassify_column(self, col_name, new_t):
         if new_t not in self.types:
-            print("Given type is unknown!")
+            raise Exception(f"Type {new_t} is unknown.")
         self.cols[col_name].type = new_t
-        self.cols[col_name].p_t = OrderedDict(
-            [(t, 1.0) if t == new_t else (t, 0.0) for t in self.types]
-        )
 
         # Indices for the unique values
         [normals, missings, anomalies] = self.detect_missing_anomalies(

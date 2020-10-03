@@ -146,26 +146,13 @@ class Column:
         return round(sum(self.unique_vals_counts[indices]) / total, 2)
 
     def get_normal_values(self):
-        """Values identified as 'normal'."""
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.TYPE
-        ]
+        return [v for i, v in enumerate(self.unique_vals) if i in self.normal_values]
 
     def get_missing_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.MISSING
-        ]
+        return [v for i, v in enumerate(self.unique_vals) if i in self.missing_values]
 
     def get_anomalous_values(self):
-        return [
-            v
-            for i, v in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == Status.ANOMALOUS
-        ]
+        return [v for i, v in enumerate(self.unique_vals) if i in self.anomalous_values]
 
     def reclassify_normal(self, vs):
         for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
