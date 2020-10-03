@@ -106,36 +106,6 @@ class Column:
     def has_anomalous(self):
         return self.get_anomalous_values() != []
 
-    def show_results_for(self, status, desc):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        if len(indices) == 0:
-            return 0
-        else:
-            print("\t" + desc, [self.unique_vals[i] for i in indices][:20])
-            print(
-                "\ttheir counts: ", [self.unique_vals_counts[i] for i in indices][:20]
-            )
-            return sum(self.unique_vals_counts[indices])
-
-    def show_results(self):
-        print("col: " + str(self.series.name))
-        print("\tpredicted type: " + self.type)
-        print("\tposterior probs: ", self.p_t)
-
-        normal = self.show_results_for(Status.TYPE, "some normal data values: ")
-        missing = self.show_results_for(Status.MISSING, "missing values:")
-        anomalies = self.show_results_for(Status.ANOMALOUS, "anomalies:")
-
-        total = normal + missing + anomalies
-
-        print("\tfraction of normal:", round(normal / total, 2), "\n")
-        print("\tfraction of missing:", round(missing / total, 2), "\n")
-        print("\tfraction of anomalies:", round(anomalies / total, 2), "\n")
-
     def get_ratio(self, status):
         indices = [
             i
