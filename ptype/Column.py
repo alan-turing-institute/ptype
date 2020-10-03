@@ -73,9 +73,9 @@ class Column:
             "arff_type": self.arff_type,
             "normal_values": self.get_normal_values(),
             "missing_values": self.get_missing_values(),
-            "missingness_ratio": self.get_ratio(Status.MISSING),
+            "missingness_ratio": self.get_missing_ratio(),
             "anomalies": self.get_anomalous_values(),
-            "anomalous_ratio": self.get_ratio(Status.ANOMALOUS),
+            "anomalous_ratio": self.get_anomalous_ratio(),
             "categorical_values": self.categorical_values,
         }
         return repr(props)
@@ -106,14 +106,14 @@ class Column:
     def has_anomalous(self):
         return self.get_anomalous_values() != []
 
-    def get_ratio(self, status):
-        indices = [
-            i
-            for i, _ in enumerate(self.unique_vals)
-            if self.unique_vals_status[i] == status
-        ]
-        total = sum(self.unique_vals_counts)
-        return round(sum(self.unique_vals_counts[indices]) / total, 2)
+    def get_normal_ratio(self):
+        return round(sum(self.unique_vals_counts[self.normal_indices]) / sum(self.unique_vals_counts), 2)
+
+    def get_missing_ratio(self):
+        return round(sum(self.unique_vals_counts[self.missing_indices]) / sum(self.unique_vals_counts), 2)
+
+    def get_anomalous_ratio(self):
+        return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_normal_values(self):
         return list(self.unique_vals[self.normal_indices])
@@ -123,10 +123,6 @@ class Column:
 
     def get_anomalous_values(self):
         return list(self.unique_vals[self.anomalous_indices])
-
-    def reclassify_normal(self, vs):
-        for i in [np.where(self.unique_vals == v)[0][0] for v in vs]:
-            self.unique_vals_status[i] = Status.TYPE
 
     def get_features(self, counts):
         posterior = OrderedDict()

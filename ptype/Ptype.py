@@ -174,11 +174,11 @@ class Ptype:
         df = self.model.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_ratio(Status.TYPE) for _, col in self.cols.items()]
+        df.loc[2] = [col.get_normal_ratio for _, col in self.cols.items()]
         df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
-        df.loc[4] = [col.get_ratio(Status.MISSING) for _, col in self.cols.items()]
+        df.loc[4] = [col.get_missing_ratio for _, col in self.cols.items()]
         df.loc[5] = [col.get_anomalous_values() for _, col in self.cols.items()]
-        df.loc[6] = [col.get_ratio(Status.ANOMALOUS) for _, col in self.cols.items()]
+        df.loc[6] = [col.get_anomalous_ratio for _, col in self.cols.items()]
         return df.rename(
             index={
                 0: "type",
