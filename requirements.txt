@@ -1,12 +1,11 @@
-# TODO: add versions
-joblib
-jsonpickle
-clevercsv
-greenery
-matplotlib
-nbval
-numpy
-pandas
-scipy
+joblib==0.17.0
+jsonpickle==1.4.1
+clevercsv==0.6.4
+greenery==3.2
+matplotlib==3.3.2
+nbval==0.9.6
+numpy==1.19.2
+pandas==1.1.2
+scipy==1.5.2
 scikit-learn==0.23.0
 wheel
