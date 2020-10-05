@@ -5,7 +5,7 @@ build () {
   rm -rf dist # clean
 
   python -m pip install -r requirements.txt
-  python -m pip freeze > requirements.txt.new # useful for debugging
+  python -m pip freeze # useful for debugging
 
   python setup.py sdist bdist_wheel
 
