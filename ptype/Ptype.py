@@ -1,12 +1,10 @@
-from collections import OrderedDict
 from copy import deepcopy
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, get_unique_vals, Status
-from ptype.Model import Model, TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
+from ptype.Column import get_unique_vals
+from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import print_to_file
 
 
 class TrainingParams:
