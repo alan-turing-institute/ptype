@@ -105,14 +105,12 @@ class Model:
             p_z[:, k, :] = p_z[:, k, :] / p_z[:, k, :].sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
-        self.p_t = {t: p for t, p in zip(self.types, p_t)}
-        self.p_z = {t: p_z[:, j, :] for j, t in enumerate(self.types)}
 
         return Column(
             series=self.df[col_name],
             counts=counts,
-            p_t=self.p_t,
-            p_z=self.p_z,  # need to handle the uniform case
+            p_t={t: p for t, p in zip(self.types, p_t)},
+            p_z={t: p_z[:, j, :] for j, t in enumerate(self.types)},  # need to handle the uniform case
         )
 
     def update_PFSMs(self, runner):
