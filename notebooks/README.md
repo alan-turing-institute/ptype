@@ -10,4 +10,6 @@
 
 - Evaluation of cells may also emit warnings to `stderr`. These are also unlikely to be stable across system configurations (e.g. because they contain absolute paths), so ideally cells should not produce warnings when they evaluate.
 
+- Unhelpfully, some Python values will render with unstable content, such as the `matplotlib.axes.Axes` returned by `DataFrame.plot`. If a function call which returns such a value occurs as the last statement in a cell, the value will need to be explicitly disgarded using `_ = (expr)`.
+
 - `# NBVAL_IGNORE_OUTPUT` can be used to instruct `nbval` to ignore the output of a cell when checking for expected behaviour. This should be avoided unless absolutely necessary.
