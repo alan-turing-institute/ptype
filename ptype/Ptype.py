@@ -1,12 +1,10 @@
-from collections import OrderedDict
 from copy import deepcopy
 import numpy as np
 import pandas as pd
 
-from ptype.Column import Column, get_unique_vals, Status
-from ptype.Model import Model, TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
+from ptype.Column import get_unique_vals
+from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import print_to_file
 
 
 class TrainingParams:
@@ -40,33 +38,25 @@ class Ptype:
 
         :param df:
         """
-        df = df.applymap(str)
+        df = df.applymap(str) # really?
         self.cols = {}
-
-        # Ptype model for inference
         self.model = Model(self.types, df)
-
-        # Normalize the parameters to make sure they're probabilities
         self.PFSMRunner.normalize_params()
 
-        # Generate binary mask matrix to check if a word is supported by a PFSM or not (this is just to optimize the implementation)
+        # Optimisation: generate binary mask matrix to check if words are supported by PFSMs
         self.PFSMRunner.update_values(np.unique(self.model.df.values))
 
         # Calculate probabilities for each column and run inference.
         for _, col_name in enumerate(list(df.columns)):
-            probabilities, counts = self.generate_probs(col_name)
-            if self.verbose:
-                print_to_file("\tinference is running...")
+            unique_vs, counts = get_unique_vals(
+                self.model.df[col_name], return_counts=True
+            )
+            probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
+            probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
 
             # apply user feedback for missing data and anomalies
             # temporarily overwrite the proabilities for a given value and a column?
-            self.model.run_inference(probabilities, counts)
-            self.cols[col_name] = Column(
-                series=self.model.df[col_name],
-                counts=counts,
-                p_t=self.model.p_t,
-                p_z=self.model.p_z,  # need to handle the uniform case
-            )
+            self.cols[col_name] = self.model.run_inference(col_name, probabilities, counts)
 
         return self.cols
 
@@ -191,15 +181,6 @@ class Ptype:
             }
         )
 
-    def show_missing_values(self):
-        missing_values = {}
-        for col_name in self.model.df:
-            missing_values[col_name] = np.unique(
-                self.cols[col_name].get_missing_values()
-            )
-
-        return pd.Series(missing_values)
-
     def as_normal(self):
         return lambda series: series.map(
             lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
@@ -214,22 +195,6 @@ class Ptype:
         return lambda series: series.map(
             lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
-
-    def generate_probs(self, column_name):
-        """ Generates probabilities for the unique data values in a column.
-
-        :param column_name: name of a column
-        :return probabilities: an IxJ sized np array, where probabilities[i][j] is the probability generated for i^th unique value by the j^th PFSM.
-                counts: an I sized np array, where counts[i] is the number of times i^th unique value is observed in a column.
-
-        """
-        unique_vs, counts = get_unique_vals(
-            self.model.df[column_name], return_counts=True
-        )
-        probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
-        probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
-
-        return probabilities, counts
 
     def calculate_total_error(self, dfs, labels):
         self.model.all_probs = self.model.current_runner.generate_machine_probabilities(

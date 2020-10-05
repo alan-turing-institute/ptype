@@ -3,7 +3,11 @@ from enum import Enum
 import joblib
 import numpy as np
 from ptype.utils import project_root
-from ptype.Model import TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
+
+
+TYPE_INDEX = 0
+MISSING_INDEX = 1
+ANOMALIES_INDEX = 2
 
 
 def get_unique_vals(col, return_counts=False):
