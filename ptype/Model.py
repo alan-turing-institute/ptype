@@ -6,6 +6,7 @@ from ptype.utils import (
 from copy import copy
 from scipy import optimize
 import numpy as np
+from ptype.Column import Column, TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
 
 Inf = np.Inf
 
@@ -21,9 +22,6 @@ def vecnorm(x, ord=2):
 
 LOG_EPS = -1e150
 
-TYPE_INDEX = 0
-MISSING_INDEX = 1
-ANOMALIES_INDEX = 2
 LLHOOD_TYPE_START_INDEX = 2
 
 
@@ -52,7 +50,7 @@ class Model:
                 for i, df in enumerate(dfs)}
 
     ###################### MAIN METHODS #######################
-    def run_inference(self, logP, counts):
+    def run_inference(self, col_name, logP, counts):
         # Constants
         I, J = logP.shape  # I: num of rows in a data column.
         # J: num of data types including missing and catch-all
@@ -109,6 +107,13 @@ class Model:
         p_t = normalize_log_probs(np.array(p_t))
         self.p_t = {t: p for t, p in zip(self.types, p_t)}
         self.p_z = {t: p_z[:, j, :] for j, t in enumerate(self.types)}
+
+        return Column(
+            series=self.df[col_name],
+            counts=counts,
+            p_t=self.p_t,
+            p_z=self.p_z,  # need to handle the uniform case
+        )
 
     def update_PFSMs(self, runner):
         w_j_z = self.get_all_parameters_z(runner)
