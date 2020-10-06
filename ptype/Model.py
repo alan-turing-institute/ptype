@@ -496,7 +496,7 @@ class Model:
         # find maximum log probability
         log_mx = LOG_EPS
         for a in I:
-            if I[a] != LOG_EPS and I[a] > log_mx:
+            if I[a] > log_mx:
                 log_mx = I[a]
         # sum
         sm = 0

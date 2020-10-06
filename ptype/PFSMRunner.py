@@ -155,17 +155,8 @@ class PFSMRunner:
         for t, _ in enumerate(self.types):
             machine = self.machines[2 + t]
 
-            for state in machine.I:
-                if machine.I[state] != LOG_EPS:
-                    w_j.append(machine.I_z[state])
-
-            for a in machine.T_z:
-                for b in machine.T[a]:
-                    for c in machine.T[a][b]:
-                        w_j.append(machine.T_z[a][b][c])
-
-            for state in machine.F:
-                if machine.F[state] != LOG_EPS:
-                    w_j.append(machine.F_z[state])
+            w_j.extend([p for p in machine.I.values() if p != LOG_EPS])
+            w_j.extend([p for a in machine.T_z.values() for b in a.values() for p in b.values()])
+            w_j.extend([p for p in machine.F.values() if p != LOG_EPS])
 
         return w_j
