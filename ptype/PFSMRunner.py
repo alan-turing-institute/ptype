@@ -102,25 +102,21 @@ class PFSMRunner:
 
     def set_all_probabilities_z(self, w_j_z, normalize=False) -> object:
         counter = 0
-        temp = []
         for t, _ in enumerate(self.types):
             machine = self.machines[2 + t]
             for state in machine.I:
                 if machine.I[state] != LOG_EPS:
-                    temp.append(machine.I_z[state])
                     machine.I_z[state] = w_j_z[counter]
                     counter += 1
 
             for a in machine.T:
                 for b in machine.T[a]:
                     for c in machine.T[a][b]:
-                        temp.append(machine.T_z[a][b][c])
                         machine.T_z[a][b][c] = w_j_z[counter]
                         counter += 1
 
             for state in machine.F:
                 if machine.F[state] != LOG_EPS:
-                    temp.append(machine.F_z[state])
                     machine.F_z[state] = w_j_z[counter]
                     counter += 1
 
@@ -130,7 +126,7 @@ class PFSMRunner:
                     machine.I_z = Model.normalize_initial(machine.I_z)
                     machine.I = machine.I_z
 
-        return self, temp
+        return self
 
     def get_all_parameters_z(self):
         w_j = []

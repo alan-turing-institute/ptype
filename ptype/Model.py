@@ -120,7 +120,7 @@ class Model:
         w_j_z, j = self.conjugate_gradient(w_j_z)
 
         new_runner = copy(runner)
-        new_runner, _ = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
+        new_runner = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
 
         return new_runner
 
@@ -184,7 +184,7 @@ class Model:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
+        runner = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
@@ -392,7 +392,7 @@ class Model:
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
         # updates the parameters
-        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
+        runner = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
