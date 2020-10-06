@@ -20,7 +20,6 @@ from ptype.utils import contains_all
 from ptype.Model import Model
 from ptype.Model import LOG_EPS
 
-# sys.path.insert(0, "src/")
 MACHINES = {
     "integer": IntegersNewAuto(),
     "string": StringsNewAuto(),
@@ -71,12 +70,9 @@ class PFSMRunner:
         self.set_unique_values(unique_values)
 
     def normalize_params(self):
-        for i, machine in enumerate(self.machines):
-            if i not in [0, 1]:
-                self.machines[i].I = Model.normalize_initial(machine.I_z)
-                self.machines[i].F, self.machines[i].T = Model.normalize_final(
-                    machine.F_z, machine.T_z
-                )
+        for i, machine in enumerate(self.machines[2:]):
+            machine.I = Model.normalize_initial(machine.I_z)
+            machine.F, machine.T = Model.normalize_final(machine.F_z, machine.T_z)
 
     def initialize_params_uniformly(self):
         # make uniform
@@ -108,45 +104,35 @@ class PFSMRunner:
                     for a in machine.F
                 }
 
-    def set_all_probabilities_z(self, w_j_z, normalize = False) -> object:
+    def set_all_probabilities_z(self, w_j_z, normalize=False) -> object:
         counter = 0
         temp = []
-        for t in range(len(self.types)):
-            for state in self.machines[2 + t].I:
-                if self.machines[2 + t].I[state] != LOG_EPS:
-                    temp.append(self.machines[2 + t].I_z[state])
-                    self.machines[2 + t].I_z[state] = w_j_z[counter]
+        for t, _ in enumerate(self.types):
+            machine = self.machines[2 + t]
+            for state in machine.I:
+                if machine.I[state] != LOG_EPS:
+                    temp.append(machine.I_z[state])
+                    machine.I_z[state] = w_j_z[counter]
                     counter += 1
 
-            for a in self.machines[2 + t].T:
-                for b in self.machines[2 + t].T[a]:
-                    for c in self.machines[2 + t].T[a][b]:
-                        temp.append(self.machines[2 + t].T_z[a][b][c])
-                        self.machines[2 + t].T_z[a][b][c] = w_j_z[counter]
+            for a in machine.T:
+                for b in machine.T[a]:
+                    for c in machine.T[a][b]:
+                        temp.append(machine.T_z[a][b][c])
+                        machine.T_z[a][b][c] = w_j_z[counter]
                         counter += 1
 
-            for state in self.machines[2 + t].F:
-                if self.machines[2 + t].F[state] != LOG_EPS:
-                    temp.append(self.machines[2 + t].F_z[state])
-                    self.machines[2 + t].F_z[state] = w_j_z[counter]
+            for state in machine.F:
+                if machine.F[state] != LOG_EPS:
+                    temp.append(machine.F_z[state])
+                    machine.F_z[state] = w_j_z[counter]
                     counter += 1
 
             if normalize:
-                (
-                    self.machines[2 + t].F_z,
-                    self.machines[2 + t].T_z,
-                ) = Model.normalize_a_state(
-                    self.machines[2 + t].F_z, self.machines[2 + t].T_z, state
-                )
-                self.machines[2 + t].F, self.machines[2 + t].T = (
-                    self.machines[2 + t].F_z,
-                    self.machines[2 + t].T_z,
-                )
-
-                self.machines[2 + t].I_z = Model.normalize_initial(
-                    self.machines[2 + t].I_z
-                )
-                self.machines[2 + t].I = self.machines[2 + t].I_z
+                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F, machine.T = machine.F_z, machine.T_z
+                machine.I_z = Model.normalize_initial(machine.I_z)
+                machine.I = machine.I_z
 
         return self, temp
 
