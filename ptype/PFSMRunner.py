@@ -153,10 +153,10 @@ class PFSMRunner:
     def get_all_parameters_z(self):
         w_j = []
         for t, _ in enumerate(self.types):
-            I, T_z, F = self.machines[2 + t]
+            machine = self.machines[2 + t]
 
-            w_j.extend([p for p in I.values() if p != LOG_EPS])
-            w_j.extend([p for a in T_z.values() for b in a.values() for p in b.values()])
-            w_j.extend([p for p in F.values() if p != LOG_EPS])
+            w_j.extend([p for p in machine.I.values() if p != LOG_EPS])
+            w_j.extend([p for a in machine.T_z.values() for b in a.values() for p in b.values()])
+            w_j.extend([p for p in machine.F.values() if p != LOG_EPS])
 
         return w_j
