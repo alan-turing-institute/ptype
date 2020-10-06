@@ -38,7 +38,7 @@ class Ptype:
 
         :param df:
         """
-        df = df.applymap(str) # really?
+        df = df.applymap(str)  # really?
         self.cols = {}
         self.model = Model(self.types, df)
         self.PFSMRunner.normalize_params()
@@ -51,12 +51,18 @@ class Ptype:
             unique_vs, counts = get_unique_vals(
                 self.model.df[col_name], return_counts=True
             )
-            probabilities_dict = self.PFSMRunner.generate_machine_probabilities(unique_vs)
-            probabilities = np.array([probabilities_dict[str(x_i)] for x_i in unique_vs])
+            probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
+                unique_vs
+            )
+            probabilities = np.array(
+                [probabilities_dict[str(x_i)] for x_i in unique_vs]
+            )
 
             # apply user feedback for missing data and anomalies
             # temporarily overwrite the proabilities for a given value and a column?
-            self.cols[col_name] = self.model.run_inference(col_name, probabilities, counts)
+            self.cols[col_name] = self.model.run_inference(
+                col_name, probabilities, counts
+            )
 
         return self.cols
 
@@ -208,3 +214,10 @@ class Ptype:
                 error += temp
 
         return error
+
+    # fix magic number 0
+    def set_na_values(self, na_values):
+        self.PFSMRunner.machines[0].alphabet = na_values
+
+    def get_na_values(self):
+        return self.PFSMRunner.machines[0].alphabet
