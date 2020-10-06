@@ -128,11 +128,11 @@ class PFSMRunner:
                     machine.F_z[state] = w_j_z[counter]
                     counter += 1
 
-            if normalize:
-                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
-                machine.F, machine.T = machine.F_z, machine.T_z
-                machine.I_z = Model.normalize_initial(machine.I_z)
-                machine.I = machine.I_z
+                if normalize:
+                    machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                    machine.F, machine.T = machine.F_z, machine.T_z
+                    machine.I_z = Model.normalize_initial(machine.I_z)
+                    machine.I = machine.I_z
 
         return self, temp
 
