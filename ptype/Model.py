@@ -114,13 +114,13 @@ class Model:
         )
 
     def update_PFSMs(self, runner):
-        w_j_z = self.get_all_parameters_z(runner)
+        w_j_z = runner.get_all_parameters_z()
 
         # Find new values using Conjugate Gradient method
         w_j_z, j = self.conjugate_gradient(w_j_z)
 
         new_runner = copy(runner)
-        new_runner, _ = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
+        new_runner = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
 
         return new_runner
 
@@ -184,7 +184,7 @@ class Model:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
+        runner = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
@@ -242,7 +242,7 @@ class Model:
             temp_g_j = []
             for state in possible_states:
                 temp_g_j.append(
-                    self.gradient_initial_optimized_new(
+                    self.gradient_initial(
                         runner,
                         state,
                         t,
@@ -316,7 +316,7 @@ class Model:
                                                     ]
                                                 )
                                             ]
-                                        ] += self.gradient_transition_optimized_new_marginals(
+                                        ] += self.gradient_transition_marginals(
                                             runner,
                                             marginals,
                                             runner.machines[t + 2].states[q],
@@ -352,7 +352,7 @@ class Model:
                                                     ]
                                                 )
                                             ]
-                                        ] += self.gradient_transition_optimized_new_marginals(
+                                        ] += self.gradient_transition_marginals(
                                             runner,
                                             marginals,
                                             runner.machines[t + 2].states[q],
@@ -372,7 +372,7 @@ class Model:
             for state in runner.machines[2 + t].F:
                 if runner.machines[2 + t].F[state] != LOG_EPS:
                     g_j.append(
-                        self.gradient_final_optimized_new(
+                        self.gradient_final(
                             runner,
                             state,
                             t,
@@ -392,7 +392,7 @@ class Model:
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
         # updates the parameters
-        runner, temp_w_j_z = self.current_runner.set_all_probabilities_z(w_j_z)
+        runner = self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
         self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
@@ -419,7 +419,7 @@ class Model:
         temp = normalize_log_probs(q)[t]
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
-    def gradient_initial_optimized_new(
+    def gradient_initial(
         self, runner, state, t, x, q, temp, counter, y_i
     ):
         exp_param = 1 - np.exp(runner.machines[2 + t].I[state])
@@ -435,10 +435,9 @@ class Model:
         gradient = (temp * counter * cs * exp_param).sum()
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_transition_optimized_new_marginals(
+    def gradient_transition_marginals(
         self, runner, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
-
         temp_mult = (
             temp_gra
             * runner.machines[2 + t].calculate_gradient_abc_new_optimized_marginals(
@@ -451,39 +450,20 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_final_optimized_new(
+    def gradient_final(
         self, runner, final_state, t, x, q, temp, counter, y_i
     ):
         exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
 
-        cs_temp = [
+        cs = np.array([
             runner.machines[2 + t].calculate_gradient_final_state_optimized(
                 str(x_i), final_state
             )
             for x_i in x
-        ]
-        cs = np.array(cs_temp)
+        ])
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
-
-    def get_all_parameters_z(self, runner):
-        w_j = []
-        for t in range(len(self.types)):
-            for state in runner.machines[2 + t].I:
-                if runner.machines[2 + t].I[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].I_z[state])
-
-            for a in runner.machines[2 + t].T_z:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
-                        w_j.append(runner.machines[2 + t].T_z[a][b][c])
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].F_z[state])
-
-        return w_j
 
     @staticmethod
     def normalize_a_state(F, T, a):
@@ -516,7 +496,7 @@ class Model:
         # find maximum log probability
         log_mx = LOG_EPS
         for a in I:
-            if I[a] != LOG_EPS and I[a] > log_mx:
+            if I[a] > log_mx:
                 log_mx = I[a]
         # sum
         sm = 0
