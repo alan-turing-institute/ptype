@@ -152,18 +152,20 @@ class PFSMRunner:
 
     def get_all_parameters_z(self):
         w_j = []
-        for t in range(len(self.types)):
-            for state in self.machines[2 + t].I:
-                if self.machines[2 + t].I[state] != LOG_EPS:
-                    w_j.append(self.machines[2 + t].I_z[state])
+        for t, _ in enumerate(self.types):
+            machine = self.machines[2 + t]
 
-            for a in self.machines[2 + t].T_z:
-                for b in self.machines[2 + t].T[a]:
-                    for c in self.machines[2 + t].T[a][b]:
-                        w_j.append(self.machines[2 + t].T_z[a][b][c])
+            for state in machine.I:
+                if machine.I[state] != LOG_EPS:
+                    w_j.append(machine.I_z[state])
 
-            for state in self.machines[2 + t].F:
-                if self.machines[2 + t].F[state] != LOG_EPS:
-                    w_j.append(self.machines[2 + t].F_z[state])
+            for a in machine.T_z:
+                for b in machine.T[a]:
+                    for c in machine.T[a][b]:
+                        w_j.append(machine.T_z[a][b][c])
+
+            for state in machine.F:
+                if machine.F[state] != LOG_EPS:
+                    w_j.append(machine.F_z[state])
 
         return w_j
