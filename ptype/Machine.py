@@ -17,7 +17,6 @@ class Machine(object):
     def __init__(self):
         self.states = []
         self.T = {}
-        self.T_backup = {}
         self.alphabet = []
 
     def create_pfsm_from_fsm(self, reg_exp):
@@ -83,15 +82,12 @@ class Machine(object):
             if state_name not in self.states:
                 self.states.append(state_name)
                 self.T[state_name] = {}
-                self.T_backup[state_name] = {}
 
     def add_transitions(self, i, j, obs, probs):
         for obs, prob in zip(obs, probs):
             if obs not in self.T[i]:
                 self.T[i][obs] = {}
-                self.T_backup[i][obs] = {}
             self.T[i][obs][j] = np.log(prob)
-            self.T_backup[i][obs][j] = np.log(prob)
 
             # for faster search later
             if obs not in self.alphabet:
@@ -218,8 +214,7 @@ class Machine(object):
         :param x:
         :return: beta_messages : beta_messages[l] stores the message from l+1 to l where l in {0,...,L}
         """
-        beta_messages = []
-        beta_messages.append(np.exp(np.array(list(self.F.values()))))
+        beta_messages = [np.exp(np.array(list(self.F.values())))]
         for l, alpha in enumerate(reversed(x[1:])):
             if alpha not in self.T_new:
                 beta_messages = [np.zeros(len(beta_messages[0]))] + beta_messages
