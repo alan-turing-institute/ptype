@@ -115,23 +115,17 @@ class Model:
 
     def update_PFSMs(self, runner):
         w_j_z = runner.get_all_parameters_z()
-
-        # Find new values using Conjugate Gradient method
-        w_j_z, j = self.conjugate_gradient(w_j_z)
-
-        new_runner = copy(runner)
-        new_runner.set_all_probabilities_z(w_j_z)
+        w_j_z, _ = self.conjugate_gradient(w_j_z)
+        runner.set_all_probabilities_z(w_j_z)
 
         # normalise
-        for t, _ in enumerate(new_runner.types):
-            machine = new_runner.machines[2 + t]
+        for t, _ in enumerate(runner.types):
+            machine = runner.machines[2 + t]
             for state in machine.F:
                 machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
                 machine.F, machine.T = machine.F_z, machine.T_z
                 machine.I_z = Model.normalize_initial(machine.I_z)
                 machine.I = machine.I_z
-
-        return new_runner
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
