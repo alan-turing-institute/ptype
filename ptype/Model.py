@@ -242,7 +242,7 @@ class Model:
             temp_g_j = []
             for state in possible_states:
                 temp_g_j.append(
-                    self.gradient_initial_optimized_new(
+                    self.gradient_initial(
                         runner,
                         state,
                         t,
@@ -316,7 +316,7 @@ class Model:
                                                     ]
                                                 )
                                             ]
-                                        ] += self.gradient_transition_optimized_new_marginals(
+                                        ] += self.gradient_transition_marginals(
                                             runner,
                                             marginals,
                                             runner.machines[t + 2].states[q],
@@ -352,7 +352,7 @@ class Model:
                                                     ]
                                                 )
                                             ]
-                                        ] += self.gradient_transition_optimized_new_marginals(
+                                        ] += self.gradient_transition_marginals(
                                             runner,
                                             marginals,
                                             runner.machines[t + 2].states[q],
@@ -372,7 +372,7 @@ class Model:
             for state in runner.machines[2 + t].F:
                 if runner.machines[2 + t].F[state] != LOG_EPS:
                     g_j.append(
-                        self.gradient_final_optimized_new(
+                        self.gradient_final(
                             runner,
                             state,
                             t,
@@ -419,7 +419,7 @@ class Model:
         temp = normalize_log_probs(q)[t]
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
-    def gradient_initial_optimized_new(
+    def gradient_initial(
         self, runner, state, t, x, q, temp, counter, y_i
     ):
         exp_param = 1 - np.exp(runner.machines[2 + t].I[state])
@@ -435,7 +435,7 @@ class Model:
         gradient = (temp * counter * cs * exp_param).sum()
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_transition_optimized_new_marginals(
+    def gradient_transition_marginals(
         self, runner, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
 
@@ -451,7 +451,7 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_final_optimized_new(
+    def gradient_final(
         self, runner, final_state, t, x, q, temp, counter, y_i
     ):
         exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
