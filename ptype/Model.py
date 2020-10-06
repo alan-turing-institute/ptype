@@ -115,14 +115,17 @@ class Model:
 
     def update_PFSMs(self, runner):
         w_j_z = runner.get_all_parameters_z()
+        w_j_z, _ = self.conjugate_gradient(w_j_z)
+        runner.set_all_probabilities_z(w_j_z)
 
-        # Find new values using Conjugate Gradient method
-        w_j_z, j = self.conjugate_gradient(w_j_z)
-
-        new_runner = copy(runner)
-        new_runner = new_runner.set_all_probabilities_z(w_j_z, normalize=True)
-
-        return new_runner
+        # normalise
+        for t, _ in enumerate(runner.types):
+            machine = runner.machines[2 + t]
+            for state in machine.F:
+                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F, machine.T = machine.F_z, machine.T_z
+                machine.I_z = Model.normalize_initial(machine.I_z)
+                machine.I = machine.I_z
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
@@ -184,10 +187,10 @@ class Model:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        runner = self.current_runner.set_all_probabilities_z(w_j_z)
+        self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(
@@ -392,10 +395,10 @@ class Model:
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
         # updates the parameters
-        runner = self.current_runner.set_all_probabilities_z(w_j_z)
+        self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
 
         q_total = None
         counter_ = 0
@@ -404,12 +407,12 @@ class Model:
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
-                        runner, str(i), column_name, labels[j] - 1
+                        self.current_runner, str(i), column_name, labels[j] - 1
                     )
                     counter_ += 1
                 else:
                     q_total += self.g_col_marginals(
-                        runner, str(i), column_name, labels[j] - 1
+                        self.current_runner, str(i), column_name, labels[j] - 1
                     )
 
         return q_total
@@ -468,10 +471,7 @@ class Model:
     @staticmethod
     def normalize_a_state(F, T, a):
         # find maximum log probability
-        params = []
-        for b in T[a]:
-            for c in T[a][b]:
-                params.append(T[a][b][c])
+        params = [c for b in T[a].values() for c in b.values()]
 
         if F[a] != LOG_EPS:
             params.append(F[a])
@@ -480,9 +480,9 @@ class Model:
         sm = sum([np.exp(param - log_mx) for param in params])
 
         # normalize
-        for b in T[a]:
-            for c in T[a][b]:
-                T[a][b][c] = np.log(np.exp(T[a][b][c] - log_mx) / sm)
+        for b in T[a].values():
+            for c in b:
+                b[c] = np.log(np.exp(b[c] - log_mx) / sm)
         if F[a] != LOG_EPS:
             if log_mx == LOG_EPS:
                 F[a] = 0.0
