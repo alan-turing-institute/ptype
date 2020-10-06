@@ -79,7 +79,6 @@ class PFSMRunner:
                 )
 
     def initialize_params_uniformly(self):
-
         # make uniform
         for i, machine in enumerate(self.machines):
             # discards missing and anomaly types
@@ -150,3 +149,21 @@ class PFSMRunner:
                 self.machines[2 + t].I = self.machines[2 + t].I_z
 
         return self, temp
+
+    def get_all_parameters_z(self):
+        w_j = []
+        for t in range(len(self.types)):
+            for state in self.machines[2 + t].I:
+                if self.machines[2 + t].I[state] != LOG_EPS:
+                    w_j.append(self.machines[2 + t].I_z[state])
+
+            for a in self.machines[2 + t].T_z:
+                for b in self.machines[2 + t].T[a]:
+                    for c in self.machines[2 + t].T[a][b]:
+                        w_j.append(self.machines[2 + t].T_z[a][b][c])
+
+            for state in self.machines[2 + t].F:
+                if self.machines[2 + t].F[state] != LOG_EPS:
+                    w_j.append(self.machines[2 + t].F_z[state])
+
+        return w_j

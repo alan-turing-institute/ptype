@@ -114,7 +114,7 @@ class Model:
         )
 
     def update_PFSMs(self, runner):
-        w_j_z = self.get_all_parameters_z(runner)
+        w_j_z = runner.get_all_parameters_z()
 
         # Find new values using Conjugate Gradient method
         w_j_z, j = self.conjugate_gradient(w_j_z)
@@ -438,7 +438,6 @@ class Model:
     def gradient_transition_marginals(
         self, runner, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
-
         temp_mult = (
             temp_gra
             * runner.machines[2 + t].calculate_gradient_abc_new_optimized_marginals(
@@ -456,34 +455,15 @@ class Model:
     ):
         exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
 
-        cs_temp = [
+        cs = np.array([
             runner.machines[2 + t].calculate_gradient_final_state_optimized(
                 str(x_i), final_state
             )
             for x_i in x
-        ]
-        cs = np.array(cs_temp)
+        ])
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
-
-    def get_all_parameters_z(self, runner):
-        w_j = []
-        for t in range(len(self.types)):
-            for state in runner.machines[2 + t].I:
-                if runner.machines[2 + t].I[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].I_z[state])
-
-            for a in runner.machines[2 + t].T_z:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
-                        w_j.append(runner.machines[2 + t].T_z[a][b][c])
-
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
-                    w_j.append(runner.machines[2 + t].F_z[state])
-
-        return w_j
 
     @staticmethod
     def normalize_a_state(F, T, a):
