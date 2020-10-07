@@ -34,7 +34,7 @@ class Ptype:
         self.cols = {}
 
     ###################### MAIN METHODS #######################
-    def fit_schema(self, df):
+    def schema_fit(self, df):
         """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
 
         :param df:
@@ -59,15 +59,13 @@ class Ptype:
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            # apply user feedback for missing data and anomalies
-            # temporarily overwrite the proabilities for a given value and a column?
             self.cols[col_name] = self.model.run_inference(
                 col_name, probabilities, counts
             )
 
         return self.cols
 
-    def transform_schema(self, df, schema):
+    def schema_transform(self, df, schema):
         """Transforms a data frame according to previously inferred schema.
 
          Parameters
@@ -105,19 +103,6 @@ class Ptype:
                     new_dtype
                 )
         return df
-
-    def fit_transform_schema(self, df):
-        """Infers a schema and transforms a data frame accordingly.
-
-        Parameters
-        ----------
-        df: Pandas dataframe object.
-
-        Returns
-        -------
-        Transformed Pandas dataframe object.
-        """
-        return self.transform_schema(df, self.fit_schema(df))
 
     def train_model(
         self,
