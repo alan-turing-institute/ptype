@@ -59,15 +59,13 @@ class Ptype:
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            # apply user feedback for missing data and anomalies
-            # temporarily overwrite the proabilities for a given value and a column?
             self.cols[col_name] = self.model.run_inference(
                 col_name, probabilities, counts
             )
 
         return self.cols
 
-    def transform_schema(self, df, schema):
+    def asschema(self, df, schema):
         """Transforms a data frame according to previously inferred schema.
 
          Parameters
@@ -117,7 +115,7 @@ class Ptype:
         -------
         Transformed Pandas dataframe object.
         """
-        return self.transform_schema(df, self.fit_schema(df))
+        return self.asschema(df, self.fit_schema(df))
 
     def train_model(
         self,
