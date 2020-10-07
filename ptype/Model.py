@@ -52,24 +52,19 @@ class Model:
     ###################### MAIN METHODS #######################
     def run_inference(self, col_name, logP, counts):
         # Constants
-        I, J = logP.shape  # I: num of rows in a data column.
-        # J: num of data types including missing and catch-all
-        K = (
-            J - 2
-        )  # K: num of possible column data types (excluding missing and catch-all)
+        I, J = logP.shape   # num of rows x num of data types
+        K = J - 2           # num of possible column data types (excluding missing and catch-all)
 
         # Initializations
         pi = [self.PI for k in range(K)]  # mixture weights of row types
 
         # Inference
-        p_t = []  # p_t: posterior probability distribution of column types
-        p_z = np.zeros(
-            (I, K, 3)
-        )  # p_z: posterior probability distribution of row types
+        p_t = []            # posterior probability distribution of column types
+        p_z = {}            # posterior probability distribution of row types
 
         counts_array = np.array(counts)
 
-        # Iterates for each possible column type
+        # Iterate for each possible column type
         for k in range(K):
 
             # Sum of weighted likelihoods (log-domain)
@@ -87,9 +82,9 @@ class Model:
                 ).sum()
             )
 
-            # Calculates posterior cell probabilities
+            # Calculate posterior cell probabilities
 
-            # Normalizes
+            # Normalize
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
                 pi[k][0],
                 logP[:, k + LLHOOD_TYPE_START_INDEX],
@@ -99,10 +94,11 @@ class Model:
                 logP[:, ANOMALIES_INDEX - 1],
             )
 
-            p_z[:, k, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
-            p_z[:, k, MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
-            p_z[:, k, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
-            p_z[:, k, :] = p_z[:, k, :] / p_z[:, k, :].sum(axis=1)[:, np.newaxis]
+            p_z_k = np.zeros((I, 3))
+            p_z_k[:, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z_k[:, MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z_k[:, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(np.array(p_t))
 
@@ -110,7 +106,7 @@ class Model:
             series=self.df[col_name],
             counts=counts,
             p_t={t: p for t, p in zip(self.types, p_t)},
-            p_z={t: p_z[:, j, :] for j, t in enumerate(self.types)},  # need to handle the uniform case
+            p_z=p_z
         )
 
     def update_PFSMs(self, runner):
