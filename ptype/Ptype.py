@@ -5,6 +5,7 @@ import pandas as pd
 from ptype.Column import get_unique_vals
 from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
+from ptype.utils import LOG_EPS
 
 
 class TrainingParams:
@@ -154,7 +155,7 @@ class Ptype:
         for n in range(_max_iter):
             # Trains machines using all of the training data frames
             self.model.update_PFSMs(self.PFSMRunner)
-            self.model.current_runner = self.PFSMRunner # why?
+            self.model.current_runner = self.PFSMRunner  # why?
 
             # Calculate training and validation error at each iteration
             training_error.append(self.calculate_total_error(data_frames, labels))
@@ -221,4 +222,18 @@ class Ptype:
         self.PFSMRunner.machines[0].alphabet = na_values
 
     def get_na_values(self):
-        return self.PFSMRunner.machines[0].alphabet
+        return self.PFSMRunner.machines[0].alphabet.copy()
+
+    # fix magic numbers 1, self.model.PI[0]+1e-10
+    def set_anomalous_values(self, anomalous_vals):
+
+        probs = self.PFSMRunner.generate_machine_probabilities(anomalous_vals)
+        ratio = self.model.PI[0] / self.model.PI[2] + 0.1
+        min_probs = {
+            v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
+        }
+
+        self.PFSMRunner.machines[1].set_anomalous_values(anomalous_vals, min_probs)
+
+    def get_anomalous_values(self):
+        return self.PFSMRunner.machines[1].get_anomalous_values().copy()
