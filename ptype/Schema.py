@@ -44,3 +44,43 @@ class Schema:
         return lambda series: series.map(
             lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
         )
+
+    def transform(self, df):
+        """Transforms a dataframe according to the schema.
+
+         Parameters
+         ----------
+         df: Pandas dataframe object.
+
+         Returns
+         -------
+         Transformed Pandas dataframe object.
+         """
+        df = df.apply(self.as_normal(), axis=0)
+        ptype_pandas_mapping = {
+            "integer": "Int64",
+            "date-iso-8601": "datetime64",
+            "date-eu": "datetime64",
+            "date-non-std": "datetime64",
+            "string": "string",
+            "boolean": "boolean",  # will remove boolean later
+            "float": "float64",
+        }
+        for col_name in df:
+            new_dtype = ptype_pandas_mapping[self.cols[col_name].type]
+            if new_dtype == "boolean":
+                df[col_name] = df[col_name].apply(
+                    lambda x: False
+                    if str(x) in ["F"]
+                    else (True if str(x) in ["T"] else x)
+                )
+
+            try:
+                df[col_name] = df[col_name].astype(new_dtype)
+            except TypeError:
+                # TODO: explain why this case needed
+                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
+                    new_dtype
+                )
+        return df
+
