@@ -35,26 +35,22 @@ def get_predictions(dataset_name):
     df = read_dataset(dataset_name)
 
     ptype = Ptype(_types=types)
-    ptype.schema_fit(df)
+    schema = ptype.schema_fit(df)
 
-    df_missing = df.apply(ptype.as_missing(), axis=0)
-    df_anomaly = df.apply(ptype.as_anomaly(), axis=0)
-    df_normal = df.apply(ptype.as_normal(), axis=0)
+    df_normal = df.apply(schema.as_normal(), axis=0)
     print(dataset_name)
     print("Original data:\n", df)
-    print("Missing data:\n", df_missing)
-    print("Anomalies:\n", df_anomaly)
     print("Normal:\n", df_normal)
 
     return (
-        {col_name: col.type for col_name, col in ptype.cols.items()},
-        {col_name: col.arff_type for col_name, col in ptype.cols.items()},
+        {col_name: col.type for col_name, col in schema.cols.items()},
+        {col_name: col.arff_type for col_name, col in schema.cols.items()},
         {
             col_name: {
                 "missing_values": col.get_missing_values(),
                 "anomalous_values": col.get_anomalous_values(),
             }
-            for col_name, col in ptype.cols.items()
+            for col_name, col in schema.cols.items()
         },
     )
 

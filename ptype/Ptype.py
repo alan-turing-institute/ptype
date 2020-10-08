@@ -5,7 +5,7 @@ import pandas as pd
 from ptype.Column import get_unique_vals
 from ptype.Model import Model
 from ptype.PFSMRunner import PFSMRunner
-from ptype.utils import LOG_EPS
+from ptype.Schema import Schema
 
 
 class TrainingParams:
@@ -31,16 +31,13 @@ class Ptype:
         self.PFSMRunner = PFSMRunner(self.types)
         self.model = None
         self.verbose = False
-        self.cols = {}
 
-    ###################### MAIN METHODS #######################
     def schema_fit(self, df):
         """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
 
         :param df:
         """
         df = df.applymap(str)  # really?
-        self.cols = {}
         self.model = Model(self.types, df)
         self.PFSMRunner.normalize_params()
 
@@ -48,6 +45,7 @@ class Ptype:
         self.PFSMRunner.update_values(np.unique(self.model.df.values))
 
         # Calculate probabilities for each column and run inference.
+        cols = {}
         for _, col_name in enumerate(list(df.columns)):
             unique_vs, counts = get_unique_vals(
                 self.model.df[col_name], return_counts=True
@@ -59,50 +57,11 @@ class Ptype:
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            self.cols[col_name] = self.model.run_inference(
+            cols[col_name] = self.model.run_inference(
                 col_name, probabilities, counts
             )
 
-        return self.cols
-
-    def schema_transform(self, df, schema):
-        """Transforms a data frame according to previously inferred schema.
-
-         Parameters
-         ----------
-         df: Pandas dataframe object.
-
-         Returns
-         -------
-         Transformed Pandas dataframe object.
-         """
-        df = df.apply(self.as_normal(), axis=0)
-        ptype_pandas_mapping = {
-            "integer": "Int64",
-            "date-iso-8601": "datetime64",
-            "date-eu": "datetime64",
-            "date-non-std": "datetime64",
-            "string": "string",
-            "boolean": "boolean",  # will remove boolean later
-            "float": "float64",
-        }
-        for col_name in df:
-            new_dtype = ptype_pandas_mapping[schema[col_name].type]
-            if new_dtype == "boolean":
-                df[col_name] = df[col_name].apply(
-                    lambda x: False
-                    if str(x) in ["F"]
-                    else (True if str(x) in ["T"] else x)
-                )
-
-            try:
-                df[col_name] = df[col_name].astype(new_dtype)
-            except TypeError:
-                # TODO: explain why this case needed
-                df[col_name] = pd.to_numeric(df[col_name], errors="coerce").astype(
-                    new_dtype
-                )
-        return df
+        return Schema(df, cols)
 
     def train_model(
         self,
@@ -131,9 +90,7 @@ class Ptype:
         assert self.model is None
         self.model = Model(self.types, training_params=training_params)
 
-        initial = deepcopy(
-            self.PFSMRunner
-        )  # shouldn't need this, but too much mutation going on
+        initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(data_frames, labels)]
 
         # Iterates over whole data points
@@ -151,43 +108,6 @@ class Ptype:
                     break
 
         return initial, self.model.current_runner, training_error
-
-    # OUTPUT METHODS #########################
-    def show_schema(self):
-        df = self.model.df.iloc[0:0, :].copy()
-        df.loc[0] = [col.type for _, col in self.cols.items()]
-        df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_normal_ratio() for _, col in self.cols.items()]
-        df.loc[3] = [col.get_missing_values() for _, col in self.cols.items()]
-        df.loc[4] = [col.get_missing_ratio() for _, col in self.cols.items()]
-        df.loc[5] = [col.get_anomalous_values() for _, col in self.cols.items()]
-        df.loc[6] = [col.get_anomalous_ratio() for _, col in self.cols.items()]
-        return df.rename(
-            index={
-                0: "type",
-                1: "normal values",
-                2: "ratio of normal values",
-                3: "missing values",
-                4: "ratio of missing values",
-                5: "anomalous values",
-                6: "ratio of anomalous values",
-            }
-        )
-
-    def as_normal(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
-        )
-
-    def as_missing(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_missing_values() else pd.NA
-        )
-
-    def as_anomaly(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
-        )
 
     def calculate_total_error(self, dfs, labels):
         self.model.all_probs = self.model.current_runner.generate_machine_probabilities(
