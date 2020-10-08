@@ -131,9 +131,7 @@ class Ptype:
         assert self.model is None
         self.model = Model(self.types, training_params=training_params)
 
-        initial = deepcopy(
-            self.PFSMRunner
-        )  # shouldn't need this, but too much mutation going on
+        initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(data_frames, labels)]
 
         # Iterates over whole data points
@@ -177,16 +175,6 @@ class Ptype:
     def as_normal(self):
         return lambda series: series.map(
             lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
-        )
-
-    def as_missing(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_missing_values() else pd.NA
-        )
-
-    def as_anomaly(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_anomalous_values() else pd.NA
         )
 
     def calculate_total_error(self, dfs, labels):
