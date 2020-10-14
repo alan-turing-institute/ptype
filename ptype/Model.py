@@ -114,8 +114,6 @@ class Model:
         temp = w_j_z
         w_j_z, _ = self.conjugate_gradient(w_j_z)
 
-        print('update_PFSMs', temp == w_j_z)
-
         runner.set_all_probabilities_z(w_j_z)
 
         # normalise
