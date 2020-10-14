@@ -65,7 +65,7 @@ class Ptype:
 
     def train_model(
         self,
-        data_frames,
+        dfs,
         labels,
         _max_iter=20,
         _test_data=None,
@@ -74,6 +74,7 @@ class Ptype:
     ):
         """ Train the PFSMs given a set of dataframes and their labels
 
+        :param dfs: data frames to train with.
         :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
         :param _max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
         :param _test_data:
@@ -86,12 +87,12 @@ class Ptype:
             self.PFSMRunner.normalize_params()
 
         # Ptype model for training
-        training_params = TrainingParams(self.PFSMRunner, data_frames, labels)
+        training_params = TrainingParams(self.PFSMRunner, dfs, labels)
         assert self.model is None
         self.model = Model(self.types, training_params=training_params)
 
         initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
-        training_error = [self.calculate_total_error(data_frames, labels)]
+        training_error = [self.calculate_total_error(dfs, labels)]
 
         # Iterates over whole data points
         for n in range(_max_iter):
@@ -100,7 +101,7 @@ class Ptype:
             self.model.current_runner = self.PFSMRunner  # why?
 
             # Calculate training and validation error at each iteration
-            training_error.append(self.calculate_total_error(data_frames, labels))
+            training_error.append(self.calculate_total_error(dfs, labels))
             print(training_error)
 
             if n > 0:
