@@ -115,6 +115,15 @@ class Model:
 
         runner.set_all_probabilities_z(w_j_z)
 
+        # normalise
+        for t, _ in enumerate(runner.types):
+            machine = runner.machines[2 + t]
+            for state in machine.F:
+                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F, machine.T = machine.F_z, machine.T_z
+                machine.I_z = Model.normalize_initial(machine.I_z)
+                machine.I = machine.I_z
+
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
 
