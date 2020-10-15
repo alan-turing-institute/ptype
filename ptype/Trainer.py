@@ -23,7 +23,7 @@ PI = [0.98, 0.01, 0.01]
 LLHOOD_TYPE_START_INDEX = 2
 
 
-class Model:
+class Trainer:
 
     def __init__(
         self, types, current_runner, dfs, labels
@@ -33,7 +33,7 @@ class Model:
         self.dfs = dfs
         self.labels = labels
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
-        self.dfs_unique_vals_counts = Model.get_unique_vals_counts(dfs)
+        self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
         self.current_runner.set_unique_values(self.unique_vals)
         self.K = len(self.current_runner.machines) - 2
 

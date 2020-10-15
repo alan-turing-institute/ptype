@@ -3,7 +3,7 @@ import numpy as np
 
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machines import Machines
-from ptype.Model import LLHOOD_TYPE_START_INDEX, Model, PI
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, Trainer, PI
 from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
@@ -134,28 +134,26 @@ class Ptype:
         :param _uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
         :return:
         """
+        trainer = Trainer(self.types, self.machines, dfs, labels)
+
         if _uniformly:
             self.machines.initialize_params_uniformly()
             self.machines.normalize_params()
 
-        # Ptype model for training
-        model = Model(self.types, self.machines, dfs, labels)
-
         initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
-        training_error = [model.calculate_total_error(dfs, labels)]
+        training_error = [trainer.calculate_total_error(dfs, labels)]
 
         # Iterates over whole data points
         for n in range(_max_iter):
             # Trains machines using all of the training data frames
-            model.update_PFSMs(self.machines)
+            trainer.update_PFSMs(self.machines)
 
             # Calculate training and validation error at each iteration
-            training_error.append(model.calculate_total_error(dfs, labels))
+            training_error.append(trainer.calculate_total_error(dfs, labels))
             print(training_error)
 
-            if n > 0:
-                if training_error[-2] - training_error[-1] < 1e-4:
-                    break
+            if n > 0 and training_error[-2] - training_error[-1] < 1e-4:
+                break
 
         return initial, self.machines, training_error
 
