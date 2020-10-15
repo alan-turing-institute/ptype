@@ -5,6 +5,7 @@ import os
 import pandas as pd
 
 from ptype.Ptype import Ptype
+from ptype.Trainer import Trainer
 from tests.utils import evaluate_predictions
 
 
@@ -184,9 +185,8 @@ def training_tests():
         y_trainings.append(y_training)
 
     ptype = Ptype(_types=types)
-    initial, final, training_error = ptype.train_model(
-        df_trainings, labels=y_trainings, _uniformly=False
-    )
+    trainer = Trainer(ptype.types, ptype.machines, df_trainings, y_trainings)
+    initial, final, training_error = trainer.train(20, False)
 
     all_passed = True
     all_passed &= check_expected(initial, "models/training_runner_initial")

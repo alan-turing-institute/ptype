@@ -1,21 +1,14 @@
-from copy import deepcopy
 import numpy as np
 
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
-from ptype.Model import LLHOOD_TYPE_START_INDEX, Model, PI
-from ptype.PFSMRunner import PFSMRunner
+from ptype.Machines import Machines
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, PI
 from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
     log_weighted_sum_normalize_probs,
     normalize_log_probs
 )
-
-class TrainingParams:
-    def __init__(self, current_runner, dfs, labels):
-        self.current_runner = current_runner
-        self.dfs = dfs
-        self.labels = labels
 
 
 class Ptype:
@@ -31,8 +24,7 @@ class Ptype:
             "date-non-std",
         ]
         self.types = default_types if _types is None else _types
-        self.PFSMRunner = PFSMRunner(self.types)
-        self.model = None
+        self.machines = Machines(self.types)
         self.verbose = False
 
     def schema_fit(self, df):
@@ -41,10 +33,10 @@ class Ptype:
         :param df:
         """
         df = df.applymap(str)  # really?
-        self.PFSMRunner.normalize_params()
+        self.machines.normalize_params()
 
         # Optimisation: generate binary mask matrix to check if words are supported by PFSMs
-        self.PFSMRunner.update_values(np.unique(df.values))
+        self.machines.update_values(np.unique(df.values))
 
         # Calculate probabilities for each column and run inference.
         cols = {}
@@ -52,18 +44,18 @@ class Ptype:
             unique_vs, counts = get_unique_vals(
                 df[col_name], return_counts=True
             )
-            probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
+            probabilities_dict = self.machines.generate_machine_probabilities(
                 unique_vs
             )
             probabilities = np.array(
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            cols[col_name] = self.run_inference(df, col_name, probabilities, counts)
+            cols[col_name] = self.column(df, col_name, probabilities, counts)
 
         return Schema(df, cols)
 
-    def run_inference(self, df, col_name, logP, counts):
+    def column(self, df, col_name, logP, counts):
         # Constants
         I, J = logP.shape   # num of rows x num of data types
         K = J - 2           # num of possible column data types (excluding missing and catch-all)
@@ -122,69 +114,23 @@ class Ptype:
             p_z=p_z
         )
 
-    def train_model(
-        self,
-        dfs,
-        labels,
-        _max_iter=20,
-        _test_data=None,
-        _test_labels=None,
-        _uniformly=False,
-    ):
-        """ Train the PFSMs given a set of dataframes and their labels
-
-        :param dfs: data frames to train with.
-        :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
-        :param _max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
-        :param _test_data:
-        :param _test_labels:
-        :param _uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
-        :return:
-        """
-        if _uniformly:
-            self.PFSMRunner.initialize_params_uniformly()
-            self.PFSMRunner.normalize_params()
-
-        # Ptype model for training
-        training_params = TrainingParams(self.PFSMRunner, dfs, labels)
-        assert self.model is None
-        self.model = Model(self.types, training_params=training_params)
-
-        initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
-        training_error = [self.model.calculate_total_error(dfs, labels)]
-
-        # Iterates over whole data points
-        for n in range(_max_iter):
-            # Trains machines using all of the training data frames
-            self.model.update_PFSMs(self.PFSMRunner)
-
-            # Calculate training and validation error at each iteration
-            training_error.append(self.model.calculate_total_error(dfs, labels))
-            print(training_error)
-
-            if n > 0:
-                if training_error[-2] - training_error[-1] < 1e-4:
-                    break
-
-        return initial, self.model.current_runner, training_error
-
     # fix magic number 0
     def set_na_values(self, na_values):
-        self.PFSMRunner.machines[0].alphabet = na_values
+        self.machines.machines[0].alphabet = na_values
 
     def get_na_values(self):
-        return self.PFSMRunner.machines[0].alphabet.copy()
+        return self.machines.machines[0].alphabet.copy()
 
     # fix magic numbers 0, 1, 2
     def set_anomalous_values(self, anomalous_vals):
 
-        probs = self.PFSMRunner.generate_machine_probabilities(anomalous_vals)
+        probs = self.machines.generate_machine_probabilities(anomalous_vals)
         ratio = PI[0] / PI[2] + 0.1
         min_probs = {
             v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
         }
 
-        self.PFSMRunner.machines[1].set_anomalous_values(anomalous_vals, min_probs)
+        self.machines.machines[1].set_anomalous_values(anomalous_vals, min_probs)
 
     def get_anomalous_values(self):
-        return self.PFSMRunner.machines[1].get_anomalous_values().copy()
+        return self.machines.machines[1].get_anomalous_values().copy()

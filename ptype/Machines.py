@@ -29,7 +29,7 @@ MACHINES = {
 }
 
 
-class PFSMRunner:
+class Machines:
     def __init__(self, types):
         self.types = types
         self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
