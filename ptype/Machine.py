@@ -1,6 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
+from ptype.utils import contains_all
 
 
 def log_sum_probs(log_p1, log_p2):
@@ -315,6 +316,118 @@ class Machine(object):
         self.T_z = deepcopy(self.T)
         self.F_z = deepcopy(self.F)
 
+    def initialize_params_uniformly(self):
+        self.I = {
+            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
+            for a in self.I
+        }
+        self.I_z = {
+            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
+            for a in self.I
+        }
+
+        for a in self.T:
+            for b in self.T[a]:
+                for c in self.T[a][b]:
+                    self.T[a][b][c] = np.log(0.5)
+                    self.T_z[a][b][c] = np.log(0.5)
+
+        self.F = {
+            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
+            for a in self.F
+        }
+        self.F_z = {
+            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
+            for a in self.F
+        }
+
+    def set_probabilities_z(self, counter, w_j_z):
+        for state in self.I:
+            if self.I[state] != LOG_EPS:
+                self.I_z[state] = w_j_z[counter]
+                counter += 1
+
+        for a in self.T:
+            for b in self.T[a]:
+                for c in self.T[a][b]:
+                    self.T_z[a][b][c] = w_j_z[counter]
+                    counter += 1
+
+        for state in self.F:
+            if self.F[state] != LOG_EPS:
+                self.F_z[state] = w_j_z[counter]
+                counter += 1
+
+        return counter
+
+    def get_parameters_z(self):
+        return ([p for p in self.I.values() if p != LOG_EPS] +
+                [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
+                [p for p in self.F.values() if p != LOG_EPS])
+
+    def set_unique_values(self, unique_values):
+        self.supported_words = {}
+
+        for unique_value in unique_values:
+            if contains_all(unique_value, self.alphabet):
+                self.supported_words[unique_value] = 1
+            else:
+                self.supported_words[unique_value] = 0
+
+    def normalize_params(self):
+        self.I = Machine.normalize_initial(self.I_z)
+        self.F, self.T = Machine.normalize_final(self.F_z, self.T_z)
+
+
+    @staticmethod
+    def normalize_initial(I):
+        # find maximum log probability
+        log_mx = LOG_EPS
+        for a in I:
+            if I[a] > log_mx:
+                log_mx = I[a]
+        # sum
+        sm = 0
+        for a in I:
+            if I[a] != LOG_EPS:
+                sm += np.exp(I[a] - log_mx)
+
+        # normalize
+        for a in I:
+            if I[a] != LOG_EPS:
+                I[a] = I[a] - log_mx - np.log(sm)
+
+        return I
+
+    @staticmethod
+    def normalize_final(F, T):
+        for state in F:
+            F, T = Machine.normalize_a_state(F, T, state)
+
+        return F, T
+
+    @staticmethod
+    def normalize_a_state(F, T, a):
+        # find maximum log probability
+        params = [c for b in T[a].values() for c in b.values()]
+
+        if F[a] != LOG_EPS:
+            params.append(F[a])
+
+        log_mx = max(params)
+        sm = sum([np.exp(param - log_mx) for param in params])
+
+        # normalize
+        for b in T[a].values():
+            for c in b:
+                b[c] = np.log(np.exp(b[c] - log_mx) / sm)
+        if F[a] != LOG_EPS:
+            if log_mx == LOG_EPS:
+                F[a] = 0.0
+            else:
+                F[a] = np.log(np.exp(F[a] - log_mx) / sm)
+
+        return F, T
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################

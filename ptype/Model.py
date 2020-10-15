@@ -1,26 +1,25 @@
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
-    log_weighted_sum_normalize_probs,
 )
 from copy import copy
 from scipy import optimize
 import numpy as np
-from ptype.Column import Column, TYPE_INDEX, MISSING_INDEX, ANOMALIES_INDEX
-
-Inf = np.Inf
+from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
+from ptype.Machine import Machine
 
 
 def vecnorm(x, ord=2):
-    if ord == Inf:
+    if ord == np.Inf:
         return np.amax(np.abs(x))
-    elif ord == -Inf:
+    elif ord == -np.Inf:
         return np.amin(np.abs(x))
     else:
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
 
 
 LOG_EPS = -1e150
+PI = [0.98, 0.01, 0.01]
 
 LLHOOD_TYPE_START_INDEX = 2
 
@@ -28,19 +27,16 @@ LLHOOD_TYPE_START_INDEX = 2
 class Model:
 
     def __init__(
-        self, types, df=None, training_params=None, PI=[0.98, 0.01, 0.01],
+        self, types, training_params,
     ):
         self.types = types
-        self.df = df
-        self.PI = PI  # weight of pi variable
-        if training_params is not None:
-            self.training_params = training_params
-            self.current_runner = copy(training_params.current_runner)
-            self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
-            self.current_runner.set_unique_values(self.unique_vals)
-            self.K = len(self.current_runner.machines) - 2
-            self.pi = [self.PI for _ in range(self.K)]
+        self.training_params = training_params
+        self.current_runner = copy(training_params.current_runner)
+        self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
+        self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
+        self.current_runner.set_unique_values(self.unique_vals)
+        self.K = len(self.current_runner.machines) - 2
+        self.pi = [PI for _ in range(self.K)]
 
     def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
@@ -49,65 +45,16 @@ class Model:
                                                    for col in df.columns}.items()}
                 for i, df in enumerate(dfs)}
 
-    ###################### MAIN METHODS #######################
-    def run_inference(self, col_name, logP, counts):
-        # Constants
-        I, J = logP.shape   # num of rows x num of data types
-        K = J - 2           # num of possible column data types (excluding missing and catch-all)
+    def calculate_total_error(self, dfs, labels):
+        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
 
-        # Initializations
-        pi = [self.PI for k in range(K)]  # mixture weights of row types
+        error = 0.0
+        for j, (df, df_labels) in enumerate(zip(dfs, labels)):
+            for i, column_name in enumerate(list(df.columns)):
+                temp = self.f_col(str(j), column_name, df_labels[i] - 1)
+                error += temp
 
-        # Inference
-        p_t = []            # posterior probability distribution of column types
-        p_z = {}            # posterior probability distribution of row types
-
-        counts_array = np.array(counts)
-
-        # Iterate for each possible column type
-        for k in range(K):
-
-            # Sum of weighted likelihoods (log-domain)
-            p_t.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        pi[k][0],
-                        logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        pi[k][1],
-                        logP[:, MISSING_INDEX - 1],
-                        pi[k][2],
-                        logP[:, ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-
-            # Calculate posterior cell probabilities
-
-            # Normalize
-            x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                pi[k][0],
-                logP[:, k + LLHOOD_TYPE_START_INDEX],
-                pi[k][1],
-                logP[:, MISSING_INDEX - 1],
-                pi[k][2],
-                logP[:, ANOMALIES_INDEX - 1],
-            )
-
-            p_z_k = np.zeros((I, 3))
-            p_z_k[:, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
-            p_z_k[:, MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
-            p_z_k[:, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
-            p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
-
-        p_t = normalize_log_probs(np.array(p_t))
-
-        return Column(
-            series=self.df[col_name],
-            counts=counts,
-            p_t={t: p for t, p in zip(self.types, p_t)},
-            p_z=p_z
-        )
+        return error
 
     def update_PFSMs(self, runner):
         w_j_z = runner.get_all_parameters_z()
@@ -119,9 +66,9 @@ class Model:
         for t, _ in enumerate(runner.types):
             machine = runner.machines[2 + t]
             for state in machine.F:
-                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F_z, machine.T_z = Machine.normalize_a_state(machine.F_z, machine.T_z, state)
                 machine.F, machine.T = machine.F_z, machine.T_z
-                machine.I_z = Model.normalize_initial(machine.I_z)
+                machine.I_z = Machine.normalize_initial(machine.I_z)
                 machine.I = machine.I_z
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
@@ -464,53 +411,3 @@ class Model:
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
-
-    @staticmethod
-    def normalize_a_state(F, T, a):
-        # find maximum log probability
-        params = [c for b in T[a].values() for c in b.values()]
-
-        if F[a] != LOG_EPS:
-            params.append(F[a])
-
-        log_mx = max(params)
-        sm = sum([np.exp(param - log_mx) for param in params])
-
-        # normalize
-        for b in T[a].values():
-            for c in b:
-                b[c] = np.log(np.exp(b[c] - log_mx) / sm)
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                F[a] = 0.0
-            else:
-                F[a] = np.log(np.exp(F[a] - log_mx) / sm)
-
-        return F, T
-
-    @staticmethod
-    def normalize_initial(I):
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for a in I:
-            if I[a] > log_mx:
-                log_mx = I[a]
-        # sum
-        sm = 0
-        for a in I:
-            if I[a] != LOG_EPS:
-                sm += np.exp(I[a] - log_mx)
-
-        # normalize
-        for a in I:
-            if I[a] != LOG_EPS:
-                I[a] = I[a] - log_mx - np.log(sm)
-
-        return I
-
-    @staticmethod
-    def normalize_final(F, T):
-        for state in F:
-            F, T = Model.normalize_a_state(F, T, state)
-
-        return F, T
