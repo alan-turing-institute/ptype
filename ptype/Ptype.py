@@ -1,9 +1,8 @@
-from copy import deepcopy
 import numpy as np
 
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX, Trainer, PI
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, PI
 from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
@@ -114,26 +113,6 @@ class Ptype:
             p_t={t: p for t, p in zip(self.types, p_t)},
             p_z=p_z
         )
-
-    def train_model(
-        self,
-        dfs,
-        labels,
-        max_iter=20,
-        uniformly=False,
-    ):
-        """ Train the PFSMs given a set of dataframes and their labels
-
-        :param dfs: data frames to train with.
-        :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
-        :param max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
-        :param _test_data:
-        :param _test_labels:
-        :param uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
-        :return:
-        """
-        trainer = Trainer(self.types, self.machines, dfs, labels)
-        return trainer.train_model(max_iter, uniformly)
 
     # fix magic number 0
     def set_na_values(self, na_values):

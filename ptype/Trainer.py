@@ -45,7 +45,7 @@ class Trainer:
                                                    for col in df.columns}.items()}
                 for i, df in enumerate(dfs)}
 
-    def train_model(
+    def train(
         self,
         max_iter=20,
         uniformly=False,
@@ -175,7 +175,7 @@ class Trainer:
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
 
-    def g_col_marginals(self, runner, i_, column_name, y_i):
+    def g_col_marginals(self, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
 
@@ -199,12 +199,13 @@ class Trainer:
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
         for t in range(len(self.types)):
+            machine = self.machines.machines[2 + t]
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
             possible_states = [
                 state
-                for state in runner.machines[2 + t].states
-                if runner.machines[2 + t].I[state] != LOG_EPS
+                for state in machine.states
+                if machine.I[state] != LOG_EPS
             ]
             A = log_weighted_sum_probs(
                 PI[0],
@@ -221,7 +222,7 @@ class Trainer:
             for state in possible_states:
                 temp_g_j.append(
                     self.gradient_initial(
-                        runner,
+                        self.machines,
                         state,
                         t,
                         temp_x[x_i_indices],
@@ -243,7 +244,7 @@ class Trainer:
                 }
             else:
                 marginals = {
-                    str(x_i): runner.machines[2 + t].run_forward_backward(str(x_i))
+                    str(x_i): machine.run_forward_backward(str(x_i))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), len(x_i)))
                     for x_i, p_x_i in zip(temp_x, logP)
@@ -251,9 +252,9 @@ class Trainer:
             state_indices = {}
             counter = 0
             temp_g_j = []
-            for a in runner.machines[2 + t].T:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
+            for a in machine.T:
+                for b in machine.T[a]:
+                    for c in machine.T[a][b]:
                         state_indices[str(a) + "*" + str(b) + "*" + str(c)] = counter
                         temp_g_j.append(0)
                         counter += 1
@@ -269,7 +270,7 @@ class Trainer:
                     if t == 1:
                         common_chars = [
                             x
-                            for x in runner.machines[t + 2].alphabet
+                            for x in machine.alphabet
                             if x in list(str(x_i))
                         ]
                         for common_char in common_chars:
@@ -284,22 +285,18 @@ class Trainer:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(runner.machines[t + 2].states[q])
+                                                str(machine.states[q])
                                                 + "*"
                                                 + str(common_char)
                                                 + "*"
-                                                + str(
-                                                    runner.machines[t + 2].states[
-                                                        q_prime
-                                                    ]
-                                                )
+                                                + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            runner,
+                                            self.machines,
                                             marginals,
-                                            runner.machines[t + 2].states[q],
+                                            machine.states[q],
                                             common_char,
-                                            runner.machines[t + 2].states[q_prime],
+                                            machine.states[q_prime],
                                             t,
                                             r,
                                             str(x_i),
@@ -310,7 +307,7 @@ class Trainer:
 
                     else:
                         for l, alpha in enumerate(str(x_i)):
-                            if alpha in runner.machines[t + 2].alphabet:
+                            if alpha in machine.alphabet:
                                 indices_nonzero = np.where(
                                     marginals[str(x_i)][l] != 0.0
                                 )
@@ -320,22 +317,18 @@ class Trainer:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(runner.machines[t + 2].states[q])
+                                                str(machine.states[q])
                                                 + "*"
                                                 + str(alpha)
                                                 + "*"
-                                                + str(
-                                                    runner.machines[t + 2].states[
-                                                        q_prime
-                                                    ]
-                                                )
+                                                + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            runner,
+                                            self.machines,
                                             marginals,
-                                            runner.machines[t + 2].states[q],
+                                            machine.states[q],
                                             alpha,
-                                            runner.machines[t + 2].states[q_prime],
+                                            machine.states[q_prime],
                                             t,
                                             r,
                                             str(x_i),
@@ -347,11 +340,11 @@ class Trainer:
             g_j = g_j + temp_g_j
 
             # gradient for final-state parameters
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
+            for state in machine.F:
+                if machine.F[state] != LOG_EPS:
                     g_j.append(
                         self.gradient_final(
-                            runner,
+                            self.machines,
                             state,
                             t,
                             temp_x[x_i_indices],
@@ -382,12 +375,12 @@ class Trainer:
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
-                        self.machines, str(i), column_name, labels[j] - 1
+                        str(i), column_name, labels[j] - 1
                     )
                     counter_ += 1
                 else:
                     q_total += self.g_col_marginals(
-                        self.machines, str(i), column_name, labels[j] - 1
+                        str(i), column_name, labels[j] - 1
                     )
 
         return q_total
