@@ -28,10 +28,9 @@ LLHOOD_TYPE_START_INDEX = 2
 class Model:
 
     def __init__(
-        self, types, df=None, training_params=None,
+        self, types, training_params=None,
     ):
         self.types = types
-        self.df = df
         if training_params is not None:
             self.training_params = training_params
             self.current_runner = copy(training_params.current_runner)
