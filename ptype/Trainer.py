@@ -1,12 +1,11 @@
+from copy import deepcopy
+from scipy import optimize
+import numpy as np
+from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
 )
-from copy import copy
-from scipy import optimize
-import numpy as np
-from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
-from ptype.Machine import Machine
 
 
 def vecnorm(x, ord=2):
@@ -24,22 +23,19 @@ PI = [0.98, 0.01, 0.01]
 LLHOOD_TYPE_START_INDEX = 2
 
 
-class Model:
-    def __init__(
-        self, types, training_params,
-    ):
+class Trainer:
+    def __init__(self, types, machines, dfs, labels):
         self.types = types
-        self.training_params = training_params
-        self.current_runner = copy(training_params.current_runner)
-        self.unique_vals = np.concatenate(
-            [np.unique(df.values) for df in training_params.dfs]
-        )
-        self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
-        self.current_runner.set_unique_values(self.unique_vals)
-        self.K = len(self.current_runner.machines) - 2
-        self.pi = [PI for _ in range(self.K)]
+        self.machines = machines
+        self.dfs = dfs
+        self.labels = labels
+        self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
+        self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
+        self.machines.set_unique_values(self.unique_vals)
+        self.K = len(self.machines.machines) - 2
 
-    def get_unique_vals_counts(self, dfs):
+    @staticmethod
+    def get_unique_vals_counts(dfs):
         # Finding unique values and their counts
         return {
             str(i): {
@@ -52,10 +48,44 @@ class Model:
             for i, df in enumerate(dfs)
         }
 
+    def train(
+        self, max_iter=20, uniformly=False,
+    ):
+        """ Train the PFSMs given a set of dataframes and their labels
+
+        :param dfs: data frames to train with.
+        :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
+        :param max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
+        :param _test_data:
+        :param _test_labels:
+        :param uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
+        :return:
+        """
+        if uniformly:
+            self.machines.initialize_params_uniformly()
+            self.machines.normalize_params()
+
+        initial = deepcopy(
+            self.machines
+        )  # shouldn't need this, but too much mutation going on
+        training_error = [self.calculate_total_error(self.dfs, self.labels)]
+
+        # Iterates over whole data points
+        for n in range(max_iter):
+            # Trains machines using all of the training data frames
+            self.update_PFSMs()
+
+            # Calculate training and validation error at each iteration
+            training_error.append(self.calculate_total_error(self.dfs, self.labels))
+            print(training_error)
+
+            if n > 0 and training_error[-2] - training_error[-1] < 1e-4:
+                break
+
+        return initial, self.machines, training_error
+
     def calculate_total_error(self, dfs, labels):
-        self.all_probs = self.current_runner.generate_machine_probabilities(
-            self.unique_vals
-        )
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
@@ -65,22 +95,15 @@ class Model:
 
         return error
 
-    def update_PFSMs(self, runner):
-        w_j_z = runner.get_all_parameters_z()
+    def update_PFSMs(self):
+        w_j_z = self.machines.get_all_parameters_z()
         w_j_z, _ = self.conjugate_gradient(w_j_z)
 
-        runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # normalise
-        for t, _ in enumerate(runner.types):
-            machine = runner.machines[2 + t]
-            for state in machine.F:
-                machine.F_z, machine.T_z = Machine.normalize_a_state(
-                    machine.F_z, machine.T_z, state
-                )
-                machine.F, machine.T = machine.F_z, machine.T_z
-                machine.I_z = Machine.normalize_initial(machine.I_z)
-                machine.I = machine.I_z
+        for t, _ in enumerate(self.types):
+            self.machines.machines[2 + t].normalize()
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
@@ -122,11 +145,11 @@ class Model:
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        self.pi[k][0],
+                        PI[0],
                         logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        self.pi[k][1],
+                        PI[1],
                         logP[:, MISSING_INDEX - 1],
-                        self.pi[k][2],
+                        PI[2],
                         logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -142,22 +165,18 @@ class Model:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        self.current_runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(
-            self.unique_vals
-        )
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(
-            zip(self.training_params.dfs, self.training_params.labels)
-        ):
+        for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
 
-    def g_col_marginals(self, runner, i_, column_name, y_i):
+    def g_col_marginals(self, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
 
@@ -168,11 +187,11 @@ class Model:
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        self.pi[k][0],
+                        PI[0],
                         logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        self.pi[k][1],
+                        PI[1],
                         logP[:, MISSING_INDEX - 1],
-                        self.pi[k][2],
+                        PI[2],
                         logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -181,29 +200,27 @@ class Model:
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
         for t in range(len(self.types)):
+            machine = self.machines.machines[2 + t]
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
             possible_states = [
-                state
-                for state in runner.machines[2 + t].states
-                if runner.machines[2 + t].I[state] != LOG_EPS
+                state for state in machine.states if machine.I[state] != LOG_EPS
             ]
             A = log_weighted_sum_probs(
-                self.pi[t][0],
+                PI[0],
                 logP[:, t + LLHOOD_TYPE_START_INDEX],
-                self.pi[t][1],
+                PI[1],
                 logP[:, MISSING_INDEX - 1],
-                self.pi[t][2],
+                PI[2],
                 logP[:, ANOMALIES_INDEX - 1],
             )
-            temp_gra = np.exp(self.pi[t][0] + logP[:, t + 2] - A)
+            temp_gra = np.exp(PI[0] + logP[:, t + 2] - A)
 
             # gradient for initial state parameters
             temp_g_j = []
             for state in possible_states:
                 temp_g_j.append(
                     self.gradient_initial(
-                        runner,
                         state,
                         t,
                         temp_x[x_i_indices],
@@ -225,7 +242,7 @@ class Model:
                 }
             else:
                 marginals = {
-                    str(x_i): runner.machines[2 + t].run_forward_backward(str(x_i))
+                    str(x_i): machine.run_forward_backward(str(x_i))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), len(x_i)))
                     for x_i, p_x_i in zip(temp_x, logP)
@@ -233,9 +250,9 @@ class Model:
             state_indices = {}
             counter = 0
             temp_g_j = []
-            for a in runner.machines[2 + t].T:
-                for b in runner.machines[2 + t].T[a]:
-                    for c in runner.machines[2 + t].T[a][b]:
+            for a in machine.T:
+                for b in machine.T[a]:
+                    for c in machine.T[a][b]:
                         state_indices[str(a) + "*" + str(b) + "*" + str(c)] = counter
                         temp_g_j.append(0)
                         counter += 1
@@ -250,9 +267,7 @@ class Model:
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
                         common_chars = [
-                            x
-                            for x in runner.machines[t + 2].alphabet
-                            if x in list(str(x_i))
+                            x for x in machine.alphabet if x in list(str(x_i))
                         ]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
@@ -266,22 +281,17 @@ class Model:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(runner.machines[t + 2].states[q])
+                                                str(machine.states[q])
                                                 + "*"
                                                 + str(common_char)
                                                 + "*"
-                                                + str(
-                                                    runner.machines[t + 2].states[
-                                                        q_prime
-                                                    ]
-                                                )
+                                                + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            runner,
                                             marginals,
-                                            runner.machines[t + 2].states[q],
+                                            machine.states[q],
                                             common_char,
-                                            runner.machines[t + 2].states[q_prime],
+                                            machine.states[q_prime],
                                             t,
                                             r,
                                             str(x_i),
@@ -292,7 +302,7 @@ class Model:
 
                     else:
                         for l, alpha in enumerate(str(x_i)):
-                            if alpha in runner.machines[t + 2].alphabet:
+                            if alpha in machine.alphabet:
                                 indices_nonzero = np.where(
                                     marginals[str(x_i)][l] != 0.0
                                 )
@@ -302,22 +312,17 @@ class Model:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(runner.machines[t + 2].states[q])
+                                                str(machine.states[q])
                                                 + "*"
                                                 + str(alpha)
                                                 + "*"
-                                                + str(
-                                                    runner.machines[t + 2].states[
-                                                        q_prime
-                                                    ]
-                                                )
+                                                + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            runner,
                                             marginals,
-                                            runner.machines[t + 2].states[q],
+                                            machine.states[q],
                                             alpha,
-                                            runner.machines[t + 2].states[q_prime],
+                                            machine.states[q_prime],
                                             t,
                                             r,
                                             str(x_i),
@@ -329,11 +334,10 @@ class Model:
             g_j = g_j + temp_g_j
 
             # gradient for final-state parameters
-            for state in runner.machines[2 + t].F:
-                if runner.machines[2 + t].F[state] != LOG_EPS:
+            for state in machine.F:
+                if machine.F[state] != LOG_EPS:
                     g_j.append(
                         self.gradient_final(
-                            runner,
                             state,
                             t,
                             temp_x[x_i_indices],
@@ -352,29 +356,21 @@ class Model:
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
         # updates the parameters
-        self.current_runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(
-            self.unique_vals
-        )
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         q_total = None
         counter_ = 0
 
-        for i, (df, labels) in enumerate(
-            zip(self.training_params.dfs, self.training_params.labels)
-        ):
+        for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
-                    q_total = self.g_col_marginals(
-                        self.current_runner, str(i), column_name, labels[j] - 1
-                    )
+                    q_total = self.g_col_marginals(str(i), column_name, labels[j] - 1)
                     counter_ += 1
                 else:
-                    q_total += self.g_col_marginals(
-                        self.current_runner, str(i), column_name, labels[j] - 1
-                    )
+                    q_total += self.g_col_marginals(str(i), column_name, labels[j] - 1)
 
         return q_total
 
@@ -383,13 +379,12 @@ class Model:
         temp = normalize_log_probs(q)[t]
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
-    def gradient_initial(self, runner, state, t, x, q, temp, counter, y_i):
-        exp_param = 1 - np.exp(runner.machines[2 + t].I[state])
+    def gradient_initial(self, state, t, x, q, temp, counter, y_i):
+        machine = self.machines.machines[2 + t]
+        exp_param = 1 - np.exp(machine.I[state])
 
         cs_temp = [
-            runner.machines[2 + t].calculate_gradient_initial_state_optimized(
-                str(x_i), state
-            )
+            machine.calculate_gradient_initial_state_optimized(str(x_i), state)
             for x_i in x
         ]
         cs = np.array(cs_temp)
@@ -398,28 +393,28 @@ class Model:
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_transition_marginals(
-        self, runner, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
+        self, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
+        machine = self.machines.machines[2 + t]
         temp_mult = (
             temp_gra
-            * runner.machines[2 + t].calculate_gradient_abc_new_optimized_marginals(
+            * machine.calculate_gradient_abc_new_optimized_marginals(
                 marginals[str(x)], str(x), a, b, c
             )
             * counts_array
         )
-        exp_param = 1 - np.exp(runner.machines[2 + t].T[a][b][c])
+        exp_param = 1 - np.exp(machine.T[a][b][c])
         gradient = exp_param * temp_mult
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_final(self, runner, final_state, t, x, q, temp, counter, y_i):
-        exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
+    def gradient_final(self, final_state, t, x, q, temp, counter, y_i):
+        machine = self.machines.machines[2 + t]
+        exp_param = 1 - np.exp(machine.F[final_state])
 
         cs = np.array(
             [
-                runner.machines[2 + t].calculate_gradient_final_state_optimized(
-                    str(x_i), final_state
-                )
+                machine.calculate_gradient_final_state_optimized(str(x_i), final_state)
                 for x_i in x
             ]
         )
