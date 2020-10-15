@@ -13,8 +13,6 @@ from ptype.Machine import (
     IPAddress,
     EmailAddress,
 )
-from ptype.utils import contains_all
-from ptype.Model import Model
 
 MACHINES = {
     "integer": IntegersNewAuto(),
@@ -55,9 +53,8 @@ class PFSMRunner:
         self.set_unique_values(unique_values)
 
     def normalize_params(self):
-        for i, machine in enumerate(self.machines[2:]):
-            machine.I = Model.normalize_initial(machine.I_z)
-            machine.F, machine.T = Model.normalize_final(machine.F_z, machine.T_z)
+        for _, machine in enumerate(self.machines[2:]):
+            machine.normalize_params()
 
     def initialize_params_uniformly(self):
         for _, machine in enumerate(self.machines[2:]): # discards missing and anomaly types

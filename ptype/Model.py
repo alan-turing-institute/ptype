@@ -6,6 +6,7 @@ from copy import copy
 from scipy import optimize
 import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
+from ptype.Machine import Machine
 
 
 def vecnorm(x, ord=2):
@@ -65,9 +66,9 @@ class Model:
         for t, _ in enumerate(runner.types):
             machine = runner.machines[2 + t]
             for state in machine.F:
-                machine.F_z, machine.T_z = Model.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F_z, machine.T_z = Machine.normalize_a_state(machine.F_z, machine.T_z, state)
                 machine.F, machine.T = machine.F_z, machine.T_z
-                machine.I_z = Model.normalize_initial(machine.I_z)
+                machine.I_z = Machine.normalize_initial(machine.I_z)
                 machine.I = machine.I_z
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
@@ -410,53 +411,3 @@ class Model:
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
-
-    @staticmethod
-    def normalize_a_state(F, T, a):
-        # find maximum log probability
-        params = [c for b in T[a].values() for c in b.values()]
-
-        if F[a] != LOG_EPS:
-            params.append(F[a])
-
-        log_mx = max(params)
-        sm = sum([np.exp(param - log_mx) for param in params])
-
-        # normalize
-        for b in T[a].values():
-            for c in b:
-                b[c] = np.log(np.exp(b[c] - log_mx) / sm)
-        if F[a] != LOG_EPS:
-            if log_mx == LOG_EPS:
-                F[a] = 0.0
-            else:
-                F[a] = np.log(np.exp(F[a] - log_mx) / sm)
-
-        return F, T
-
-    @staticmethod
-    def normalize_initial(I):
-        # find maximum log probability
-        log_mx = LOG_EPS
-        for a in I:
-            if I[a] > log_mx:
-                log_mx = I[a]
-        # sum
-        sm = 0
-        for a in I:
-            if I[a] != LOG_EPS:
-                sm += np.exp(I[a] - log_mx)
-
-        # normalize
-        for a in I:
-            if I[a] != LOG_EPS:
-                I[a] = I[a] - log_mx - np.log(sm)
-
-        return I
-
-    @staticmethod
-    def normalize_final(F, T):
-        for state in F:
-            F, T = Model.normalize_a_state(F, T, state)
-
-        return F, T
