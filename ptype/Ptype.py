@@ -1,12 +1,15 @@
 from copy import deepcopy
 import numpy as np
-import pandas as pd
 
-from ptype.Column import get_unique_vals
-from ptype.Model import Model
+from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
+from ptype.Model import LLHOOD_TYPE_START_INDEX, Model, PI
 from ptype.PFSMRunner import PFSMRunner
 from ptype.Schema import Schema
-
+from ptype.utils import (
+    log_weighted_sum_probs,
+    log_weighted_sum_normalize_probs,
+    normalize_log_probs
+)
 
 class TrainingParams:
     def __init__(self, current_runner, dfs, labels):
@@ -57,11 +60,68 @@ class Ptype:
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            cols[col_name] = self.model.run_inference(
-                col_name, probabilities, counts
-            )
+            cols[col_name] = self.run_inference(df, col_name, probabilities, counts)
 
         return Schema(df, cols)
+
+    def run_inference(self, df, col_name, logP, counts):
+        # Constants
+        I, J = logP.shape   # num of rows x num of data types
+        K = J - 2           # num of possible column data types (excluding missing and catch-all)
+
+        # Initializations
+        pi = [PI for k in range(K)]  # mixture weights of row types
+
+        # Inference
+        p_t = []            # posterior probability distribution of column types
+        p_z = {}            # posterior probability distribution of row types
+
+        counts_array = np.array(counts)
+
+        # Iterate for each possible column type
+        for k in range(K):
+
+            # Sum of weighted likelihoods (log-domain)
+            p_t.append(
+                (
+                    counts_array
+                    * log_weighted_sum_probs(
+                        pi[k][0],
+                        logP[:, k + LLHOOD_TYPE_START_INDEX],
+                        pi[k][1],
+                        logP[:, MISSING_INDEX - 1],
+                        pi[k][2],
+                        logP[:, ANOMALIES_INDEX - 1],
+                    )
+                ).sum()
+            )
+
+            # Calculate posterior cell probabilities
+
+            # Normalize
+            x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
+                pi[k][0],
+                logP[:, k + LLHOOD_TYPE_START_INDEX],
+                pi[k][1],
+                logP[:, MISSING_INDEX - 1],
+                pi[k][2],
+                logP[:, ANOMALIES_INDEX - 1],
+            )
+
+            p_z_k = np.zeros((I, 3))
+            p_z_k[:, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
+            p_z_k[:, MISSING_INDEX] = np.exp(x2 - log_mx - np.log(sm))
+            p_z_k[:, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
+            p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
+
+        p_t = normalize_log_probs(np.array(p_t))
+
+        return Column(
+            series=df[col_name],
+            counts=counts,
+            p_t={t: p for t, p in zip(self.types, p_t)},
+            p_z=p_z
+        )
 
     def train_model(
         self,
@@ -130,11 +190,11 @@ class Ptype:
     def get_na_values(self):
         return self.PFSMRunner.machines[0].alphabet.copy()
 
-    # fix magic numbers 1, self.model.PI[0]+1e-10
+    # fix magic numbers 0, 1, 2
     def set_anomalous_values(self, anomalous_vals):
 
         probs = self.PFSMRunner.generate_machine_probabilities(anomalous_vals)
-        ratio = self.model.PI[0] / self.model.PI[2] + 0.1
+        ratio = PI[0] / PI[2] + 0.1
         min_probs = {
             v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
         }
