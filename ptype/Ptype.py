@@ -41,7 +41,6 @@ class Ptype:
         :param df:
         """
         df = df.applymap(str)  # really?
-        self.model = Model(self.types, df)
         self.PFSMRunner.normalize_params()
 
         # Optimisation: generate binary mask matrix to check if words are supported by PFSMs
