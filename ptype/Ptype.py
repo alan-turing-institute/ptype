@@ -45,13 +45,13 @@ class Ptype:
         self.PFSMRunner.normalize_params()
 
         # Optimisation: generate binary mask matrix to check if words are supported by PFSMs
-        self.PFSMRunner.update_values(np.unique(self.model.df.values))
+        self.PFSMRunner.update_values(np.unique(df.values))
 
         # Calculate probabilities for each column and run inference.
         cols = {}
         for _, col_name in enumerate(list(df.columns)):
             unique_vs, counts = get_unique_vals(
-                self.model.df[col_name], return_counts=True
+                df[col_name], return_counts=True
             )
             probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
                 unique_vs
