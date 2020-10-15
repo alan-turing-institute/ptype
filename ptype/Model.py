@@ -37,7 +37,6 @@ class Model:
         self.dfs_unique_vals_counts = Model.get_unique_vals_counts(dfs)
         self.current_runner.set_unique_values(self.unique_vals)
         self.K = len(self.current_runner.machines) - 2
-        self.pi = [PI for _ in range(self.K)]
 
     @staticmethod
     def get_unique_vals_counts(dfs):
@@ -113,11 +112,11 @@ class Model:
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        self.pi[k][0],
+                        PI[0],
                         logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        self.pi[k][1],
+                        PI[1],
                         logP[:, MISSING_INDEX - 1],
-                        self.pi[k][2],
+                        PI[2],
                         logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -157,11 +156,11 @@ class Model:
                 (
                     counts_array
                     * log_weighted_sum_probs(
-                        self.pi[k][0],
+                        PI[0],
                         logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        self.pi[k][1],
+                        PI[1],
                         logP[:, MISSING_INDEX - 1],
-                        self.pi[k][2],
+                        PI[2],
                         logP[:, ANOMALIES_INDEX - 1],
                     )
                 ).sum()
@@ -178,14 +177,14 @@ class Model:
                 if runner.machines[2 + t].I[state] != LOG_EPS
             ]
             A = log_weighted_sum_probs(
-                self.pi[t][0],
+                PI[0],
                 logP[:, t + LLHOOD_TYPE_START_INDEX],
-                self.pi[t][1],
+                PI[1],
                 logP[:, MISSING_INDEX - 1],
-                self.pi[t][2],
+                PI[2],
                 logP[:, ANOMALIES_INDEX - 1],
             )
-            temp_gra = np.exp(self.pi[t][0] + logP[:, t + 2] - A)
+            temp_gra = np.exp(PI[0] + logP[:, t + 2] - A)
 
             # gradient for initial state parameters
             temp_g_j = []

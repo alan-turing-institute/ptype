@@ -159,7 +159,7 @@ class Ptype:
                 if training_error[-2] - training_error[-1] < 1e-4:
                     break
 
-        return initial, self.model.current_runner, training_error
+        return initial, self.PFSMRunner, training_error
 
     # fix magic number 0
     def set_na_values(self, na_values):
