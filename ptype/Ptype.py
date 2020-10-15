@@ -151,7 +151,7 @@ class Ptype:
         self.model = Model(self.types, training_params=training_params)
 
         initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
-        training_error = [self.calculate_total_error(dfs, labels)]
+        training_error = [self.model.calculate_total_error(dfs, labels)]
 
         # Iterates over whole data points
         for n in range(_max_iter):
@@ -160,7 +160,7 @@ class Ptype:
             self.model.current_runner = self.PFSMRunner  # why?
 
             # Calculate training and validation error at each iteration
-            training_error.append(self.calculate_total_error(dfs, labels))
+            training_error.append(self.model.calculate_total_error(dfs, labels))
             print(training_error)
 
             if n > 0:
@@ -168,19 +168,6 @@ class Ptype:
                     break
 
         return initial, self.model.current_runner, training_error
-
-    def calculate_total_error(self, dfs, labels):
-        self.model.all_probs = self.model.current_runner.generate_machine_probabilities(
-            self.model.unique_vals
-        )
-
-        error = 0.0
-        for j, (df, df_labels) in enumerate(zip(dfs, labels)):
-            for i, column_name in enumerate(list(df.columns)):
-                temp = self.model.f_col(str(j), column_name, df_labels[i] - 1)
-                error += temp
-
-        return error
 
     # fix magic number 0
     def set_na_values(self, na_values):

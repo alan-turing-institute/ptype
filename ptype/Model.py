@@ -7,13 +7,11 @@ from scipy import optimize
 import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 
-Inf = np.Inf
-
 
 def vecnorm(x, ord=2):
-    if ord == Inf:
+    if ord == np.Inf:
         return np.amax(np.abs(x))
-    elif ord == -Inf:
+    elif ord == -np.Inf:
         return np.amin(np.abs(x))
     else:
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
@@ -46,6 +44,17 @@ class Model:
                          for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
                                                    for col in df.columns}.items()}
                 for i, df in enumerate(dfs)}
+
+    def calculate_total_error(self, dfs, labels):
+        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+
+        error = 0.0
+        for j, (df, df_labels) in enumerate(zip(dfs, labels)):
+            for i, column_name in enumerate(list(df.columns)):
+                temp = self.f_col(str(j), column_name, df_labels[i] - 1)
+                error += temp
+
+        return error
 
     def update_PFSMs(self, runner):
         w_j_z = runner.get_all_parameters_z()
