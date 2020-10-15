@@ -157,7 +157,6 @@ class Ptype:
         for n in range(_max_iter):
             # Trains machines using all of the training data frames
             self.model.update_PFSMs(self.PFSMRunner)
-            self.model.current_runner = self.PFSMRunner  # why?
 
             # Calculate training and validation error at each iteration
             training_error.append(self.model.calculate_total_error(dfs, labels))

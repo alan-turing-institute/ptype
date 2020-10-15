@@ -26,17 +26,16 @@ LLHOOD_TYPE_START_INDEX = 2
 class Model:
 
     def __init__(
-        self, types, training_params=None,
+        self, types, training_params,
     ):
         self.types = types
-        if training_params is not None:
-            self.training_params = training_params
-            self.current_runner = copy(training_params.current_runner)
-            self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
-            self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
-            self.current_runner.set_unique_values(self.unique_vals)
-            self.K = len(self.current_runner.machines) - 2
-            self.pi = [PI for _ in range(self.K)]
+        self.training_params = training_params
+        self.current_runner = copy(training_params.current_runner)
+        self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
+        self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
+        self.current_runner.set_unique_values(self.unique_vals)
+        self.K = len(self.current_runner.machines) - 2
+        self.pi = [PI for _ in range(self.K)]
 
     def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
