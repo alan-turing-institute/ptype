@@ -315,6 +315,24 @@ class Machine(object):
         self.T_z = deepcopy(self.T)
         self.F_z = deepcopy(self.F)
 
+    def set_probabilities_z(self, counter, w_j_z):
+        for state in self.I:
+            if self.I[state] != LOG_EPS:
+                self.I_z[state] = w_j_z[counter]
+                counter += 1
+
+        for a in self.T:
+            for b in self.T[a]:
+                for c in self.T[a][b]:
+                    self.T_z[a][b][c] = w_j_z[counter]
+                    counter += 1
+
+        for state in self.F:
+            if self.F[state] != LOG_EPS:
+                self.F_z[state] = w_j_z[counter]
+                counter += 1
+
+        return counter
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################

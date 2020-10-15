@@ -103,22 +103,7 @@ class PFSMRunner:
     def set_all_probabilities_z(self, w_j_z):
         counter = 0
         for t, _ in enumerate(self.types):
-            machine = self.machines[2 + t]
-            for state in machine.I:
-                if machine.I[state] != LOG_EPS:
-                    machine.I_z[state] = w_j_z[counter]
-                    counter += 1
-
-            for a in machine.T:
-                for b in machine.T[a]:
-                    for c in machine.T[a][b]:
-                        machine.T_z[a][b][c] = w_j_z[counter]
-                        counter += 1
-
-            for state in machine.F:
-                if machine.F[state] != LOG_EPS:
-                    machine.F_z[state] = w_j_z[counter]
-                    counter += 1
+            counter = self.machines[2 + t].set_probabilities_z(counter, w_j_z)
 
     def get_all_parameters_z(self):
         w_j = []
