@@ -25,14 +25,15 @@ LLHOOD_TYPE_START_INDEX = 2
 
 
 class Model:
-
     def __init__(
         self, types, training_params,
     ):
         self.types = types
         self.training_params = training_params
         self.current_runner = copy(training_params.current_runner)
-        self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
+        self.unique_vals = np.concatenate(
+            [np.unique(df.values) for df in training_params.dfs]
+        )
         self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
         self.current_runner.set_unique_values(self.unique_vals)
         self.K = len(self.current_runner.machines) - 2
@@ -40,13 +41,21 @@ class Model:
 
     def get_unique_vals_counts(self, dfs):
         # Finding unique values and their counts
-        return {str(i): {col: [vs, np.array(counts)]
-                         for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
-                                                   for col in df.columns}.items()}
-                for i, df in enumerate(dfs)}
+        return {
+            str(i): {
+                col: [vs, np.array(counts)]
+                for col, (vs, counts) in {
+                    col: np.unique(df[col].tolist(), return_counts=True)
+                    for col in df.columns
+                }.items()
+            }
+            for i, df in enumerate(dfs)
+        }
 
     def calculate_total_error(self, dfs, labels):
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.current_runner.generate_machine_probabilities(
+            self.unique_vals
+        )
 
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
@@ -66,7 +75,9 @@ class Model:
         for t, _ in enumerate(runner.types):
             machine = runner.machines[2 + t]
             for state in machine.F:
-                machine.F_z, machine.T_z = Machine.normalize_a_state(machine.F_z, machine.T_z, state)
+                machine.F_z, machine.T_z = Machine.normalize_a_state(
+                    machine.F_z, machine.T_z, state
+                )
                 machine.F, machine.T = machine.F_z, machine.T_z
                 machine.I_z = Machine.normalize_initial(machine.I_z)
                 machine.I = machine.I_z
@@ -122,9 +133,9 @@ class Model:
             )
         temp = normalize_log_probs(q)[y_i]
         if temp == 0:
-            error = +800.0 / len(counts_array)
+            error = +800.0
         else:
-            error = -np.log(temp) / len(counts_array)
+            error = -np.log(temp)
 
         return error
 
@@ -134,7 +145,9 @@ class Model:
         self.current_runner.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.current_runner.generate_machine_probabilities(
+            self.unique_vals
+        )
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(
@@ -342,12 +355,16 @@ class Model:
         self.current_runner.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.current_runner.generate_machine_probabilities(
+            self.unique_vals
+        )
 
         q_total = None
         counter_ = 0
 
-        for i, (df, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
+        for i, (df, labels) in enumerate(
+            zip(self.training_params.dfs, self.training_params.labels)
+        ):
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
@@ -366,9 +383,7 @@ class Model:
         temp = normalize_log_probs(q)[t]
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
-    def gradient_initial(
-        self, runner, state, t, x, q, temp, counter, y_i
-    ):
+    def gradient_initial(self, runner, state, t, x, q, temp, counter, y_i):
         exp_param = 1 - np.exp(runner.machines[2 + t].I[state])
 
         cs_temp = [
@@ -397,17 +412,17 @@ class Model:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_final(
-        self, runner, final_state, t, x, q, temp, counter, y_i
-    ):
+    def gradient_final(self, runner, final_state, t, x, q, temp, counter, y_i):
         exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
 
-        cs = np.array([
-            runner.machines[2 + t].calculate_gradient_final_state_optimized(
-                str(x_i), final_state
-            )
-            for x_i in x
-        ])
+        cs = np.array(
+            [
+                runner.machines[2 + t].calculate_gradient_final_state_optimized(
+                    str(x_i), final_state
+                )
+                for x_i in x
+            ]
+        )
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
