@@ -42,8 +42,6 @@ class PFSMRunner:
         self.normalize_params()
 
     def generate_machine_probabilities(self, col):
-        """ generates automata probabilities for a given column of data
-        """
         return {
             str(v): [m.calculate_probability(str(v)) for m in self.machines] for v in col
         }
@@ -75,30 +73,8 @@ class PFSMRunner:
             machine.F, machine.T = Model.normalize_final(machine.F_z, machine.T_z)
 
     def initialize_params_uniformly(self):
-        for i, machine in enumerate(self.machines[2:]): # discards missing and anomaly types
-            machine.I = {
-                a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                for a in machine.I
-            }
-            machine.I_z = {
-                a: np.log(0.5) if machine.I[a] != LOG_EPS else LOG_EPS
-                for a in machine.I
-            }
-
-            for a in machine.T:
-                for b in machine.T[a]:
-                    for c in machine.T[a][b]:
-                        machine.T[a][b][c] = np.log(0.5)
-                        machine.T_z[a][b][c] = np.log(0.5)
-
-            machine.F = {
-                a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                for a in machine.F
-            }
-            machine.F_z = {
-                a: np.log(0.5) if machine.F[a] != LOG_EPS else LOG_EPS
-                for a in machine.F
-            }
+        for _, machine in enumerate(self.machines[2:]): # discards missing and anomaly types
+            machine.initialize_params_uniformly()
 
     def set_all_probabilities_z(self, w_j_z):
         counter = 0
@@ -108,10 +84,6 @@ class PFSMRunner:
     def get_all_parameters_z(self):
         w_j = []
         for t, _ in enumerate(self.types):
-            machine = self.machines[2 + t]
-
-            w_j.extend([p for p in machine.I.values() if p != LOG_EPS])
-            w_j.extend([p for a in machine.T_z.values() for b in a.values() for p in b.values()])
-            w_j.extend([p for p in machine.F.values() if p != LOG_EPS])
+            w_j.extend(self.machines[2 + t].get_parameters_z())
 
         return w_j

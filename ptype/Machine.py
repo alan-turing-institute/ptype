@@ -315,6 +315,31 @@ class Machine(object):
         self.T_z = deepcopy(self.T)
         self.F_z = deepcopy(self.F)
 
+    def initialize_params_uniformly(self):
+        self.I = {
+            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
+            for a in self.I
+        }
+        self.I_z = {
+            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
+            for a in self.I
+        }
+
+        for a in self.T:
+            for b in self.T[a]:
+                for c in self.T[a][b]:
+                    self.T[a][b][c] = np.log(0.5)
+                    self.T_z[a][b][c] = np.log(0.5)
+
+        self.F = {
+            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
+            for a in self.F
+        }
+        self.F_z = {
+            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
+            for a in self.F
+        }
+
     def set_probabilities_z(self, counter, w_j_z):
         for state in self.I:
             if self.I[state] != LOG_EPS:
@@ -333,6 +358,11 @@ class Machine(object):
                 counter += 1
 
         return counter
+
+    def get_parameters_z(self):
+        return ([p for p in self.I.values() if p != LOG_EPS] +
+                [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
+                [p for p in self.F.values() if p != LOG_EPS])
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################
