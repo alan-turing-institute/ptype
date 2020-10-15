@@ -119,43 +119,21 @@ class Ptype:
         self,
         dfs,
         labels,
-        _max_iter=20,
-        _test_data=None,
-        _test_labels=None,
-        _uniformly=False,
+        max_iter=20,
+        uniformly=False,
     ):
         """ Train the PFSMs given a set of dataframes and their labels
 
         :param dfs: data frames to train with.
         :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
-        :param _max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
+        :param max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
         :param _test_data:
         :param _test_labels:
-        :param _uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
+        :param uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
         :return:
         """
         trainer = Trainer(self.types, self.machines, dfs, labels)
-
-        if _uniformly:
-            self.machines.initialize_params_uniformly()
-            self.machines.normalize_params()
-
-        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
-        training_error = [trainer.calculate_total_error(dfs, labels)]
-
-        # Iterates over whole data points
-        for n in range(_max_iter):
-            # Trains machines using all of the training data frames
-            trainer.update_PFSMs()
-
-            # Calculate training and validation error at each iteration
-            training_error.append(trainer.calculate_total_error(dfs, labels))
-            print(training_error)
-
-            if n > 0 and training_error[-2] - training_error[-1] < 1e-4:
-                break
-
-        return initial, self.machines, training_error
+        return trainer.train_model(max_iter, uniformly)
 
     # fix magic number 0
     def set_na_values(self, na_values):

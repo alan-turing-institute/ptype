@@ -185,7 +185,7 @@ def training_tests():
 
     ptype = Ptype(_types=types)
     initial, final, training_error = ptype.train_model(
-        df_trainings, labels=y_trainings, _uniformly=False
+        df_trainings, labels=y_trainings, uniformly=False
     )
 
     all_passed = True

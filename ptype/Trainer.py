@@ -1,11 +1,11 @@
+from copy import deepcopy
+from scipy import optimize
+import numpy as np
+from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
 )
-from scipy import optimize
-import numpy as np
-from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
-from ptype.Machine import Machine
 
 
 def vecnorm(x, ord=2):
@@ -44,6 +44,42 @@ class Trainer:
                          for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
                                                    for col in df.columns}.items()}
                 for i, df in enumerate(dfs)}
+
+    def train_model(
+        self,
+        max_iter=20,
+        uniformly=False,
+    ):
+        """ Train the PFSMs given a set of dataframes and their labels
+
+        :param dfs: data frames to train with.
+        :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
+        :param max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
+        :param _test_data:
+        :param _test_labels:
+        :param uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
+        :return:
+        """
+        if uniformly:
+            self.machines.initialize_params_uniformly()
+            self.machines.normalize_params()
+
+        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
+        training_error = [self.calculate_total_error(self.dfs, self.labels)]
+
+        # Iterates over whole data points
+        for n in range(max_iter):
+            # Trains machines using all of the training data frames
+            self.update_PFSMs()
+
+            # Calculate training and validation error at each iteration
+            training_error.append(self.calculate_total_error(self.dfs, self.labels))
+            print(training_error)
+
+            if n > 0 and training_error[-2] - training_error[-1] < 1e-4:
+                break
+
+        return initial, self.machines, training_error
 
     def calculate_total_error(self, dfs, labels):
         self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
