@@ -52,11 +52,11 @@ class Ptype:
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            cols[col_name] = self.run_inference(df, col_name, probabilities, counts)
+            cols[col_name] = self.column(df, col_name, probabilities, counts)
 
         return Schema(df, cols)
 
-    def run_inference(self, df, col_name, logP, counts):
+    def column(self, df, col_name, logP, counts):
         # Constants
         I, J = logP.shape   # num of rows x num of data types
         K = J - 2           # num of possible column data types (excluding missing and catch-all)
@@ -146,7 +146,7 @@ class Ptype:
         # Iterates over whole data points
         for n in range(_max_iter):
             # Trains machines using all of the training data frames
-            trainer.update_PFSMs(self.machines)
+            trainer.update_PFSMs()
 
             # Calculate training and validation error at each iteration
             training_error.append(trainer.calculate_total_error(dfs, labels))

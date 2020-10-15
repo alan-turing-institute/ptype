@@ -378,6 +378,12 @@ class Machine(object):
         self.I = Machine.normalize_initial(self.I_z)
         self.F, self.T = Machine.normalize_final(self.F_z, self.T_z)
 
+    def normalize(self):
+        for state in self.F:
+            self.F_z, self.T_z = Machine.normalize_a_state(self.F_z, self.T_z, state)
+            self.F, self.T = self.F_z, self.T_z
+            self.I_z = Machine.normalize_initial(self.I_z)
+            self.I = self.I_z
 
     @staticmethod
     def normalize_initial(I):

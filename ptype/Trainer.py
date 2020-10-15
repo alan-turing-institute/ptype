@@ -26,16 +26,16 @@ LLHOOD_TYPE_START_INDEX = 2
 class Trainer:
 
     def __init__(
-        self, types, current_runner, dfs, labels
+        self, types, machines, dfs, labels
     ):
         self.types = types
-        self.current_runner = current_runner
+        self.machines = machines
         self.dfs = dfs
         self.labels = labels
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
         self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
-        self.current_runner.set_unique_values(self.unique_vals)
-        self.K = len(self.current_runner.machines) - 2
+        self.machines.set_unique_values(self.unique_vals)
+        self.K = len(self.machines.machines) - 2
 
     @staticmethod
     def get_unique_vals_counts(dfs):
@@ -46,7 +46,7 @@ class Trainer:
                 for i, df in enumerate(dfs)}
 
     def calculate_total_error(self, dfs, labels):
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
@@ -56,20 +56,15 @@ class Trainer:
 
         return error
 
-    def update_PFSMs(self, runner):
-        w_j_z = runner.get_all_parameters_z()
+    def update_PFSMs(self):
+        w_j_z = self.machines.get_all_parameters_z()
         w_j_z, _ = self.conjugate_gradient(w_j_z)
 
-        runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # normalise
-        for t, _ in enumerate(runner.types):
-            machine = runner.machines[2 + t]
-            for state in machine.F:
-                machine.F_z, machine.T_z = Machine.normalize_a_state(machine.F_z, machine.T_z, state)
-                machine.F, machine.T = machine.F_z, machine.T_z
-                machine.I_z = Machine.normalize_initial(machine.I_z)
-                machine.I = machine.I_z
+        for t, _ in enumerate(self.types):
+            self.machines.machines[2 + t].normalize()
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
@@ -131,10 +126,10 @@ class Trainer:
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
         # Set params: init-transition-final
-        self.current_runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(
@@ -339,10 +334,10 @@ class Trainer:
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
         # updates the parameters
-        self.current_runner.set_all_probabilities_z(w_j_z)
+        self.machines.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = self.current_runner.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         q_total = None
         counter_ = 0
@@ -351,12 +346,12 @@ class Trainer:
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
-                        self.current_runner, str(i), column_name, labels[j] - 1
+                        self.machines, str(i), column_name, labels[j] - 1
                     )
                     counter_ += 1
                 else:
                     q_total += self.g_col_marginals(
-                        self.current_runner, str(i), column_name, labels[j] - 1
+                        self.machines, str(i), column_name, labels[j] - 1
                     )
 
         return q_total
