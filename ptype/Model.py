@@ -30,7 +30,7 @@ class Model:
         self, types, current_runner, dfs, labels
     ):
         self.types = types
-        self.current_runner = copy(current_runner)
+        self.current_runner = current_runner
         self.dfs = dfs
         self.labels = labels
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
