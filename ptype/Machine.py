@@ -317,14 +317,8 @@ class Machine(object):
         self.F_z = deepcopy(self.F)
 
     def initialize_params_uniformly(self):
-        self.I = {
-            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
-            for a in self.I
-        }
-        self.I_z = {
-            a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS
-            for a in self.I
-        }
+        self.I = {a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS for a in self.I}
+        self.I_z = {a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS for a in self.I}
 
         for a in self.T:
             for b in self.T[a]:
@@ -332,14 +326,8 @@ class Machine(object):
                     self.T[a][b][c] = np.log(0.5)
                     self.T_z[a][b][c] = np.log(0.5)
 
-        self.F = {
-            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
-            for a in self.F
-        }
-        self.F_z = {
-            a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS
-            for a in self.F
-        }
+        self.F = {a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS for a in self.F}
+        self.F_z = {a: np.log(0.5) if self.F[a] != LOG_EPS else LOG_EPS for a in self.F}
 
     def set_probabilities_z(self, counter, w_j_z):
         for state in self.I:
@@ -361,9 +349,11 @@ class Machine(object):
         return counter
 
     def get_parameters_z(self):
-        return ([p for p in self.I.values() if p != LOG_EPS] +
-                [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
-                [p for p in self.F.values() if p != LOG_EPS])
+        return (
+            [p for p in self.I.values() if p != LOG_EPS]
+            + [p for a in self.T_z.values() for b in a.values() for p in b.values()]
+            + [p for p in self.F.values() if p != LOG_EPS]
+        )
 
     def set_unique_values(self, unique_values):
         self.supported_words = {}
@@ -415,7 +405,7 @@ class Machine(object):
     @staticmethod
     def normalize_a_state(F, T, a):
         # find maximum log probability
-        params = [c for b in T[a].values() for c in b.values()]
+        params = [T[a][b][c] for b in T[a] for c in T[a][b]]
 
         if F[a] != LOG_EPS:
             params.append(F[a])
@@ -424,9 +414,9 @@ class Machine(object):
         sm = sum([np.exp(param - log_mx) for param in params])
 
         # normalize
-        for b in T[a].values():
-            for c in b:
-                b[c] = np.log(np.exp(b[c] - log_mx) / sm)
+        for b in T[a]:
+            for c in T[a][b]:
+                T[a][b][c] = np.log(np.exp(T[a][b][c] - log_mx) / sm)
         if F[a] != LOG_EPS:
             if log_mx == LOG_EPS:
                 F[a] = 0.0
@@ -434,6 +424,7 @@ class Machine(object):
                 F[a] = np.log(np.exp(F[a] - log_mx) / sm)
 
         return F, T
+
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################

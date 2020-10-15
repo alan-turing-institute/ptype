@@ -24,10 +24,7 @@ LLHOOD_TYPE_START_INDEX = 2
 
 
 class Trainer:
-
-    def __init__(
-        self, types, machines, dfs, labels
-    ):
+    def __init__(self, types, machines, dfs, labels):
         self.types = types
         self.machines = machines
         self.dfs = dfs
@@ -40,15 +37,19 @@ class Trainer:
     @staticmethod
     def get_unique_vals_counts(dfs):
         # Finding unique values and their counts
-        return {str(i): {col: [vs, np.array(counts)]
-                         for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
-                                                   for col in df.columns}.items()}
-                for i, df in enumerate(dfs)}
+        return {
+            str(i): {
+                col: [vs, np.array(counts)]
+                for col, (vs, counts) in {
+                    col: np.unique(df[col].tolist(), return_counts=True)
+                    for col in df.columns
+                }.items()
+            }
+            for i, df in enumerate(dfs)
+        }
 
     def train(
-        self,
-        max_iter=20,
-        uniformly=False,
+        self, max_iter=20, uniformly=False,
     ):
         """ Train the PFSMs given a set of dataframes and their labels
 
@@ -64,7 +65,9 @@ class Trainer:
             self.machines.initialize_params_uniformly()
             self.machines.normalize_params()
 
-        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
+        initial = deepcopy(
+            self.machines
+        )  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(self.dfs, self.labels)]
 
         # Iterates over whole data points
@@ -153,9 +156,9 @@ class Trainer:
             )
         temp = normalize_log_probs(q)[y_i]
         if temp == 0:
-            error = +800.0 / len(counts_array)
+            error = +800.0
         else:
-            error = -np.log(temp) / len(counts_array)
+            error = -np.log(temp)
 
         return error
 
@@ -168,9 +171,7 @@ class Trainer:
         self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
 
         error = 0.0
-        for i, (data_frame, labels) in enumerate(
-            zip(self.dfs, self.labels)
-        ):
+        for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
@@ -203,9 +204,7 @@ class Trainer:
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
             possible_states = [
-                state
-                for state in machine.states
-                if machine.I[state] != LOG_EPS
+                state for state in machine.states if machine.I[state] != LOG_EPS
             ]
             A = log_weighted_sum_probs(
                 PI[0],
@@ -268,9 +267,7 @@ class Trainer:
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
                         common_chars = [
-                            x
-                            for x in machine.alphabet
-                            if x in list(str(x_i))
+                            x for x in machine.alphabet if x in list(str(x_i))
                         ]
                         for common_char in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == common_char)[0]
@@ -370,14 +367,10 @@ class Trainer:
         for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
-                    q_total = self.g_col_marginals(
-                        str(i), column_name, labels[j] - 1
-                    )
+                    q_total = self.g_col_marginals(str(i), column_name, labels[j] - 1)
                     counter_ += 1
                 else:
-                    q_total += self.g_col_marginals(
-                        str(i), column_name, labels[j] - 1
-                    )
+                    q_total += self.g_col_marginals(str(i), column_name, labels[j] - 1)
 
         return q_total
 
@@ -386,9 +379,7 @@ class Trainer:
         temp = normalize_log_probs(q)[t]
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
-    def gradient_initial(
-        self, state, t, x, q, temp, counter, y_i
-    ):
+    def gradient_initial(self, state, t, x, q, temp, counter, y_i):
         machine = self.machines.machines[2 + t]
         exp_param = 1 - np.exp(machine.I[state])
 
@@ -417,16 +408,16 @@ class Trainer:
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
-    def gradient_final(
-        self, final_state, t, x, q, temp, counter, y_i
-    ):
+    def gradient_final(self, final_state, t, x, q, temp, counter, y_i):
         machine = self.machines.machines[2 + t]
         exp_param = 1 - np.exp(machine.F[final_state])
 
-        cs = np.array([
-            machine.calculate_gradient_final_state_optimized(str(x_i), final_state)
-            for x_i in x
-        ])
+        cs = np.array(
+            [
+                machine.calculate_gradient_final_state_optimized(str(x_i), final_state)
+                for x_i in x
+            ]
+        )
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
