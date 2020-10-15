@@ -11,12 +11,6 @@ from ptype.utils import (
     normalize_log_probs
 )
 
-class TrainingParams:
-    def __init__(self, current_runner, dfs, labels):
-        self.current_runner = current_runner
-        self.dfs = dfs
-        self.labels = labels
-
 
 class Ptype:
     def __init__(self, _types=None):
@@ -146,9 +140,8 @@ class Ptype:
             self.PFSMRunner.normalize_params()
 
         # Ptype model for training
-        training_params = TrainingParams(self.PFSMRunner, dfs, labels)
         assert self.model is None
-        self.model = Model(self.types, training_params=training_params)
+        self.model = Model(self.types, self.PFSMRunner, dfs, labels)
 
         initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
         training_error = [self.model.calculate_total_error(dfs, labels)]

@@ -27,18 +27,20 @@ LLHOOD_TYPE_START_INDEX = 2
 class Model:
 
     def __init__(
-        self, types, training_params,
+        self, types, current_runner, dfs, labels
     ):
         self.types = types
-        self.training_params = training_params
-        self.current_runner = copy(training_params.current_runner)
-        self.unique_vals = np.concatenate([np.unique(df.values) for df in training_params.dfs])
-        self.dfs_unique_vals_counts = self.get_unique_vals_counts(training_params.dfs)
+        self.current_runner = copy(current_runner)
+        self.dfs = dfs
+        self.labels = labels
+        self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
+        self.dfs_unique_vals_counts = Model.get_unique_vals_counts(dfs)
         self.current_runner.set_unique_values(self.unique_vals)
         self.K = len(self.current_runner.machines) - 2
         self.pi = [PI for _ in range(self.K)]
 
-    def get_unique_vals_counts(self, dfs):
+    @staticmethod
+    def get_unique_vals_counts(dfs):
         # Finding unique values and their counts
         return {str(i): {col: [vs, np.array(counts)]
                          for col, (vs, counts) in {col: np.unique(df[col].tolist(), return_counts=True)
@@ -138,7 +140,7 @@ class Model:
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(
-            zip(self.training_params.dfs, self.training_params.labels)
+            zip(self.dfs, self.labels)
         ):
             for j, column_name in enumerate(list(data_frame.columns)):
                 error += self.f_col(str(i), column_name, labels[j] - 1)
@@ -347,7 +349,7 @@ class Model:
         q_total = None
         counter_ = 0
 
-        for i, (df, labels) in enumerate(zip(self.training_params.dfs, self.training_params.labels)):
+        for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
                     q_total = self.g_col_marginals(
