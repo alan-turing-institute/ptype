@@ -2,7 +2,6 @@ from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
 )
-from copy import copy
 from scipy import optimize
 import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX

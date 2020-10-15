@@ -2,8 +2,8 @@ from copy import deepcopy
 import numpy as np
 
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
+from ptype.Machines import Machines
 from ptype.Model import LLHOOD_TYPE_START_INDEX, Model, PI
-from ptype.PFSMRunner import PFSMRunner
 from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
@@ -25,8 +25,7 @@ class Ptype:
             "date-non-std",
         ]
         self.types = default_types if _types is None else _types
-        self.PFSMRunner = PFSMRunner(self.types)
-        self.model = None
+        self.machines = Machines(self.types)
         self.verbose = False
 
     def schema_fit(self, df):
@@ -35,10 +34,10 @@ class Ptype:
         :param df:
         """
         df = df.applymap(str)  # really?
-        self.PFSMRunner.normalize_params()
+        self.machines.normalize_params()
 
         # Optimisation: generate binary mask matrix to check if words are supported by PFSMs
-        self.PFSMRunner.update_values(np.unique(df.values))
+        self.machines.update_values(np.unique(df.values))
 
         # Calculate probabilities for each column and run inference.
         cols = {}
@@ -46,7 +45,7 @@ class Ptype:
             unique_vs, counts = get_unique_vals(
                 df[col_name], return_counts=True
             )
-            probabilities_dict = self.PFSMRunner.generate_machine_probabilities(
+            probabilities_dict = self.machines.generate_machine_probabilities(
                 unique_vs
             )
             probabilities = np.array(
@@ -136,48 +135,47 @@ class Ptype:
         :return:
         """
         if _uniformly:
-            self.PFSMRunner.initialize_params_uniformly()
-            self.PFSMRunner.normalize_params()
+            self.machines.initialize_params_uniformly()
+            self.machines.normalize_params()
 
         # Ptype model for training
-        assert self.model is None
-        self.model = Model(self.types, self.PFSMRunner, dfs, labels)
+        model = Model(self.types, self.machines, dfs, labels)
 
-        initial = deepcopy(self.PFSMRunner)  # shouldn't need this, but too much mutation going on
-        training_error = [self.model.calculate_total_error(dfs, labels)]
+        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
+        training_error = [model.calculate_total_error(dfs, labels)]
 
         # Iterates over whole data points
         for n in range(_max_iter):
             # Trains machines using all of the training data frames
-            self.model.update_PFSMs(self.PFSMRunner)
+            model.update_PFSMs(self.machines)
 
             # Calculate training and validation error at each iteration
-            training_error.append(self.model.calculate_total_error(dfs, labels))
+            training_error.append(model.calculate_total_error(dfs, labels))
             print(training_error)
 
             if n > 0:
                 if training_error[-2] - training_error[-1] < 1e-4:
                     break
 
-        return initial, self.PFSMRunner, training_error
+        return initial, self.machines, training_error
 
     # fix magic number 0
     def set_na_values(self, na_values):
-        self.PFSMRunner.machines[0].alphabet = na_values
+        self.machines.machines[0].alphabet = na_values
 
     def get_na_values(self):
-        return self.PFSMRunner.machines[0].alphabet.copy()
+        return self.machines.machines[0].alphabet.copy()
 
     # fix magic numbers 0, 1, 2
     def set_anomalous_values(self, anomalous_vals):
 
-        probs = self.PFSMRunner.generate_machine_probabilities(anomalous_vals)
+        probs = self.machines.generate_machine_probabilities(anomalous_vals)
         ratio = PI[0] / PI[2] + 0.1
         min_probs = {
             v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
         }
 
-        self.PFSMRunner.machines[1].set_anomalous_values(anomalous_vals, min_probs)
+        self.machines.machines[1].set_anomalous_values(anomalous_vals, min_probs)
 
     def get_anomalous_values(self):
-        return self.PFSMRunner.machines[1].get_anomalous_values().copy()
+        return self.machines.machines[1].get_anomalous_values().copy()
