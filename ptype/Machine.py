@@ -1,6 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
+from ptype.utils import contains_all
 
 
 def log_sum_probs(log_p1, log_p2):
@@ -363,6 +364,20 @@ class Machine(object):
         return ([p for p in self.I.values() if p != LOG_EPS] +
                 [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
                 [p for p in self.F.values() if p != LOG_EPS])
+
+    def set_unique_values(self, unique_values):
+        self.supported_words = {}
+
+        for unique_value in unique_values:
+            if contains_all(unique_value, self.alphabet):
+                self.supported_words[unique_value] = 1
+            else:
+                self.supported_words[unique_value] = 0
+
+    def normalize_params(self):
+        self.I = Model.normalize_initial(self.I_z)
+        self.F, self.T = Model.normalize_final(self.F_z, self.T_z)
+
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################

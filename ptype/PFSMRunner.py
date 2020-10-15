@@ -1,6 +1,3 @@
-import sys
-import numpy as np
-
 from ptype.Machine import (
     IntegersNewAuto,
     StringsNewAuto,
@@ -18,7 +15,6 @@ from ptype.Machine import (
 )
 from ptype.utils import contains_all
 from ptype.Model import Model
-from ptype.Model import LOG_EPS
 
 MACHINES = {
     "integer": IntegersNewAuto(),
@@ -47,21 +43,12 @@ class PFSMRunner:
         }
 
     def set_unique_values(self, unique_values):
-        for i, machine in enumerate(self.machines):
-
-            machine.supported_words = {}
-
-            for unique_value in unique_values:
-                if contains_all(unique_value, machine.alphabet):
-                    machine.supported_words[unique_value] = 1
-                else:
-                    machine.supported_words[unique_value] = 0
-
-            self.machines[i].supported_words = machine.supported_words
+        for _, machine in enumerate(self.machines):
+            machine.set_unique_values(unique_values)
 
     def remove_unique_values(self,):
-        for i, machine in enumerate(self.machines):
-            self.machines[i].supported_words = {}
+        for _, machine in enumerate(self.machines):
+            machine.supported_words = {}
 
     def update_values(self, unique_values):
         self.remove_unique_values()
