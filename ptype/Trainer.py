@@ -222,7 +222,6 @@ class Trainer:
             for state in possible_states:
                 temp_g_j.append(
                     self.gradient_initial(
-                        self.machines,
                         state,
                         t,
                         temp_x[x_i_indices],
@@ -292,7 +291,6 @@ class Trainer:
                                                 + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            self.machines,
                                             marginals,
                                             machine.states[q],
                                             common_char,
@@ -324,7 +322,6 @@ class Trainer:
                                                 + str(machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
-                                            self.machines,
                                             marginals,
                                             machine.states[q],
                                             alpha,
@@ -344,7 +341,6 @@ class Trainer:
                 if machine.F[state] != LOG_EPS:
                     g_j.append(
                         self.gradient_final(
-                            self.machines,
                             state,
                             t,
                             temp_x[x_i_indices],
@@ -391,14 +387,13 @@ class Trainer:
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
     def gradient_initial(
-        self, runner, state, t, x, q, temp, counter, y_i
+        self, state, t, x, q, temp, counter, y_i
     ):
-        exp_param = 1 - np.exp(runner.machines[2 + t].I[state])
+        machine = self.machines.machines[2 + t]
+        exp_param = 1 - np.exp(machine.I[state])
 
         cs_temp = [
-            runner.machines[2 + t].calculate_gradient_initial_state_optimized(
-                str(x_i), state
-            )
+            machine.calculate_gradient_initial_state_optimized(str(x_i), state)
             for x_i in x
         ]
         cs = np.array(cs_temp)
@@ -407,29 +402,29 @@ class Trainer:
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_transition_marginals(
-        self, runner, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
+        self, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
+        machine = self.machines.machines[2 + t]
         temp_mult = (
             temp_gra
-            * runner.machines[2 + t].calculate_gradient_abc_new_optimized_marginals(
+            * machine.calculate_gradient_abc_new_optimized_marginals(
                 marginals[str(x)], str(x), a, b, c
             )
             * counts_array
         )
-        exp_param = 1 - np.exp(runner.machines[2 + t].T[a][b][c])
+        exp_param = 1 - np.exp(machine.T[a][b][c])
         gradient = exp_param * temp_mult
 
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_final(
-        self, runner, final_state, t, x, q, temp, counter, y_i
+        self, final_state, t, x, q, temp, counter, y_i
     ):
-        exp_param = 1 - np.exp(runner.machines[2 + t].F[final_state])
+        machine = self.machines.machines[2 + t]
+        exp_param = 1 - np.exp(machine.F[final_state])
 
         cs = np.array([
-            runner.machines[2 + t].calculate_gradient_final_state_optimized(
-                str(x_i), final_state
-            )
+            machine.calculate_gradient_final_state_optimized(str(x_i), final_state)
             for x_i in x
         ])
         gradient = sum(temp * counter * cs * exp_param)
