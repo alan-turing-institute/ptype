@@ -94,7 +94,7 @@ class Trainer:
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
-                error += self.f_col(j, column_name, df_labels[i] - 1)
+                error += self.f_col(self.all_probs, j, column_name, df_labels[i] - 1)
 
         return error
 
@@ -139,9 +139,9 @@ class Trainer:
 
         return w, j
 
-    def f_col(self, i_, column_name, y_i):
+    def f_col(self, all_probs, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
-        logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
+        logP = np.array([all_probs[str(x_i)] for x_i in temp_x])
         q = []
         for k in range(len(self.machines.forType)):
             q.append(
@@ -176,7 +176,7 @@ class Trainer:
         error = 0.0
         for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
-                error += self.f_col(i, column_name, labels[j] - 1)
+                error += self.f_col(self.all_probs, i, column_name, labels[j] - 1)
         return error
 
     def do_some_stuff(self, marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i):
@@ -352,11 +352,10 @@ class Trainer:
         machine = self.machines.machines[2 + t]
         exp_param = 1 - np.exp(machine.I[state])
 
-        cs_temp = [
+        cs = np.array([
             machine.gradient_initial_state(str(x_i), state)
             for x_i in x
-        ]
-        cs = np.array(cs_temp)
+        ])
 
         gradient = (temp * counter * cs * exp_param).sum()
         return self.scale_wrt_type(gradient, q, t, y_i)
@@ -381,12 +380,10 @@ class Trainer:
         machine = self.machines.machines[2 + t]
         exp_param = 1 - np.exp(machine.F[final_state])
 
-        cs = np.array(
-            [
-                machine.gradient_final_state(str(x_i), final_state)
-                for x_i in x
-            ]
-        )
+        cs = np.array([
+            machine.gradient_final_state(str(x_i), final_state)
+            for x_i in x
+        ])
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
