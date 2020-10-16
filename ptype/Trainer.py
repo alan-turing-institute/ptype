@@ -43,7 +43,7 @@ class Trainer:
     def get_unique_vals_counts(dfs):
         # Finding unique values and their counts
         return {
-            str(i): {
+            i: {
                 col: [vs, np.array(counts)]
                 for col, (vs, counts) in {
                     col: np.unique(df[col].tolist(), return_counts=True)
@@ -95,7 +95,7 @@ class Trainer:
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
-                temp = self.f_col(str(j), column_name, df_labels[i] - 1)
+                temp = self.f_col(j, column_name, df_labels[i] - 1)
                 error += temp
 
         return error
@@ -178,7 +178,7 @@ class Trainer:
         error = 0.0
         for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
-                error += self.f_col(str(i), column_name, labels[j] - 1)
+                error += self.f_col(i, column_name, labels[j] - 1)
         return error
 
     def g_col_marginals(self, i, col_name, y_i):
@@ -363,10 +363,10 @@ class Trainer:
         for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if counter_ == 0:
-                    q_total = self.g_col_marginals(str(i), column_name, labels[j] - 1)
+                    q_total = self.g_col_marginals(i, column_name, labels[j] - 1)
                     counter_ += 1
                 else:
-                    q_total += self.g_col_marginals(str(i), column_name, labels[j] - 1)
+                    q_total += self.g_col_marginals(i, column_name, labels[j] - 1)
 
         return q_total
 
