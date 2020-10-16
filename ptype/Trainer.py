@@ -4,8 +4,8 @@ import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.Machine import PI
 from ptype.utils import (
-    normalize_log_probs,
     log_weighted_sum_probs,
+    normalize_log_probs,
 )
 
 
@@ -151,16 +151,14 @@ class Trainer:
                     logP[:, ANOMALIES_INDEX - 1],
                 )
             ).sum()
-            for k, type in enumerate(self.machines.forType.values())
+            for k in range(len(self.machines.forType))
         ]
 
         temp = normalize_log_probs(q)[y_i]
         if temp == 0:
-            error = +800.0
+            return 800.0
         else:
-            error = -np.log(temp)
-
-        return error
+            return -np.log(temp)
 
     def f_cols(self, w_j_z):
         # f: the objective function to minimize. (it is equal to - \sum_{all columns} log p(t=k|X) where k is the correct column type.)
