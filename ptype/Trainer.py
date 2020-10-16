@@ -37,7 +37,6 @@ class Trainer:
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
         self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
         self.machines.set_unique_values(self.unique_vals)
-        self.K = len(self.machines.forType)
 
     @staticmethod
     def get_unique_vals_counts(dfs):
@@ -144,7 +143,7 @@ class Trainer:
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
         logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
         q = []
-        for k in range(self.K):
+        for k in range(len(self.machines.forType)):
             q.append(
                 (
                     counts_array
@@ -186,7 +185,7 @@ class Trainer:
 
         # calculates posterior values of types
         r = []
-        for k in range(self.K):
+        for k in range(len(self.machines.forType)):
             r.append(
                 (
                     counts_array
