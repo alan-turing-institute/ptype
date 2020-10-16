@@ -2,6 +2,7 @@ from copy import deepcopy
 from scipy import optimize
 import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
+from ptype.Machine import PI
 from ptype.utils import (
     normalize_log_probs,
     log_weighted_sum_probs,
@@ -18,7 +19,6 @@ def vecnorm(x, ord=2):
 
 
 LOG_EPS = -1e150
-PI = [0.98, 0.01, 0.01]
 
 LLHOOD_TYPE_START_INDEX = 2
 
@@ -32,7 +32,7 @@ class Trainer:
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
         self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
         self.machines.set_unique_values(self.unique_vals)
-        self.K = len(self.machines.machines) - 2
+        self.K = len(self.machines.forType)
 
     @staticmethod
     def get_unique_vals_counts(dfs):
@@ -62,7 +62,7 @@ class Trainer:
         :return:
         """
         if uniformly:
-            self.machines.initialize_params_uniformly()
+            self.machines.initialize_uniformly()
             self.machines.normalize_params()
 
         initial = deepcopy(
@@ -85,7 +85,7 @@ class Trainer:
         return initial, self.machines, training_error
 
     def calculate_total_error(self, dfs, labels):
-        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
@@ -102,8 +102,8 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # normalise
-        for t, _ in enumerate(self.types):
-            self.machines.machines[2 + t].normalize()
+        for machine in self.machines.forType.values():
+            machine.normalize()
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
@@ -168,7 +168,7 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
@@ -359,7 +359,7 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = self.machines.generate_machine_probabilities(self.unique_vals)
+        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         q_total = None
         counter_ = 0
@@ -384,7 +384,7 @@ class Trainer:
         exp_param = 1 - np.exp(machine.I[state])
 
         cs_temp = [
-            machine.calculate_gradient_initial_state_optimized(str(x_i), state)
+            machine.gradient_initial_state(str(x_i), state)
             for x_i in x
         ]
         cs = np.array(cs_temp)
@@ -398,7 +398,7 @@ class Trainer:
         machine = self.machines.machines[2 + t]
         temp_mult = (
             temp_gra
-            * machine.calculate_gradient_abc_new_optimized_marginals(
+            * machine.gradient_abc_new_optimized_marginals(
                 marginals[str(x)], str(x), a, b, c
             )
             * counts_array
@@ -414,7 +414,7 @@ class Trainer:
 
         cs = np.array(
             [
-                machine.calculate_gradient_final_state_optimized(str(x_i), final_state)
+                machine.gradient_final_state(str(x_i), final_state)
                 for x_i in x
             ]
         )

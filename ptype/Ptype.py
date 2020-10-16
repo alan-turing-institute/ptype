@@ -1,8 +1,9 @@
 import numpy as np
 
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
+from ptype.Machine import PI
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX, PI
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX
 from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
@@ -44,7 +45,7 @@ class Ptype:
             unique_vs, counts = get_unique_vals(
                 df[col_name], return_counts=True
             )
-            probabilities_dict = self.machines.generate_machine_probabilities(
+            probabilities_dict = self.machines.machine_probabilities(
                 unique_vs
             )
             probabilities = np.array(
@@ -113,24 +114,3 @@ class Ptype:
             p_t={t: p for t, p in zip(self.types, p_t)},
             p_z=p_z
         )
-
-    # fix magic number 0
-    def set_na_values(self, na_values):
-        self.machines.machines[0].alphabet = na_values
-
-    def get_na_values(self):
-        return self.machines.machines[0].alphabet.copy()
-
-    # fix magic numbers 0, 1, 2
-    def set_anomalous_values(self, anomalous_vals):
-
-        probs = self.machines.generate_machine_probabilities(anomalous_vals)
-        ratio = PI[0] / PI[2] + 0.1
-        min_probs = {
-            v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
-        }
-
-        self.machines.machines[1].set_anomalous_values(anomalous_vals, min_probs)
-
-    def get_anomalous_values(self):
-        return self.machines.machines[1].get_anomalous_values().copy()
