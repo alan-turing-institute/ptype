@@ -137,8 +137,8 @@ class Trainer:
 
         return w, j
 
-    def f_col(self, all_probs, i_, column_name, y_i):
-        [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
+    def f_col(self, all_probs, i, column_name, y_i):
+        [temp_x, counts_array] = self.dfs_unique_vals_counts[i][column_name]
         logP = np.array([all_probs[x_i] for x_i in temp_x])
         q = []
         for k in range(len(self.machines.forType)):
