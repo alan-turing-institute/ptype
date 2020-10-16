@@ -171,12 +171,12 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # Generate probabilities
-        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
+        all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         error = 0.0
         for i, (data_frame, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(data_frame.columns)):
-                error += self.f_col(self.all_probs, i, column_name, labels[j] - 1)
+                error += self.f_col(all_probs, i, column_name, labels[j] - 1)
         return error
 
     def do_some_stuff(self, marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i):
@@ -207,21 +207,19 @@ class Trainer:
         logP = np.array([all_probs[str(x)] for x in xs])
 
         # calculates posterior values of types
-        r = []
-        for k in range(len(self.machines.forType)):
-            r.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        PI[0],
-                        logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        PI[1],
-                        logP[:, MISSING_INDEX - 1],
-                        PI[2],
-                        logP[:, ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
+        r = [
+            (
+                counts_array * log_weighted_sum_probs(
+                    PI[0],
+                    logP[:, k + LLHOOD_TYPE_START_INDEX],
+                    PI[1],
+                    logP[:, MISSING_INDEX - 1],
+                    PI[2],
+                    logP[:, ANOMALIES_INDEX - 1],
+                )
+            ).sum()
+            for k in range(len(self.machines.forType))
+        ]
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
@@ -289,9 +287,7 @@ class Trainer:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        common_chars = [
-                            x for x in machine.alphabet if x in list(str(x_i))
-                        ]
+                        common_chars = [x for x in machine.alphabet if x in list(str(x_i))]
                         for alpha in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == alpha)[0]
                             for l in common_char_ls:
