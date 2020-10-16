@@ -179,6 +179,29 @@ class Trainer:
                 error += self.f_col(i, column_name, labels[j] - 1)
         return error
 
+    def do_some_stuff(self, marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i):
+        indices_nonzero = np.where(marginals[str(x_i)][l] != 0.0)
+        if len(indices_nonzero[0]) != 0:
+            q_s = indices_nonzero[0]
+            q_primes = indices_nonzero[1]
+            for q, q_prime in zip(q_s, q_primes):
+                temp_g_j[
+                    state_indices[
+                        wurble(machine.states[q], alpha, machine.states[q_prime])
+                    ]
+                ] += self.gradient_transition_marginals(
+                    marginals,
+                    machine.states[q],
+                    alpha,
+                    machine.states[q_prime],
+                    t,
+                    r,
+                    str(x_i),
+                    y_i,
+                    temp_gra_i,
+                    counts_array_i,
+                )
+
     def g_col_marginals(self, i, col_name, y_i):
         [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
         logP = np.array([self.all_probs[str(x)] for x in xs])
@@ -269,59 +292,15 @@ class Trainer:
                         common_chars = [
                             x for x in machine.alphabet if x in list(str(x_i))
                         ]
-                        for common_char in common_chars:
-                            common_char_ls = np.where(list(str(x_i)) == common_char)[0]
+                        for alpha in common_chars:
+                            common_char_ls = np.where(list(str(x_i)) == alpha)[0]
                             for l in common_char_ls:
-                                indices_nonzero = np.where(
-                                    marginals[str(x_i)][l] != 0.0
-                                )
-                                if len(indices_nonzero[0]) != 0:
-                                    q_s = indices_nonzero[0]
-                                    q_primes = indices_nonzero[1]
-                                    for q, q_prime in zip(q_s, q_primes):
-                                        temp_g_j[
-                                            state_indices[
-                                                wurble(machine.states[q], common_char, machine.states[q_prime])
-                                            ]
-                                        ] += self.gradient_transition_marginals(
-                                            marginals,
-                                            machine.states[q],
-                                            common_char,
-                                            machine.states[q_prime],
-                                            t,
-                                            r,
-                                            str(x_i),
-                                            y_i,
-                                            temp_gra_i,
-                                            counts_array_i,
-                                        )
+                                self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
 
                     else:
                         for l, alpha in enumerate(str(x_i)):
                             if alpha in machine.alphabet:
-                                indices_nonzero = np.where(
-                                    marginals[str(x_i)][l] != 0.0
-                                )
-                                if len(indices_nonzero[0]) != 0:
-                                    q_s = indices_nonzero[0]
-                                    q_primes = indices_nonzero[1]
-                                    for q, q_prime in zip(q_s, q_primes):
-                                        temp_g_j[
-                                            state_indices[
-                                                wurble(machine.states[q], alpha, machine.states[q_prime])
-                                            ]
-                                        ] += self.gradient_transition_marginals(
-                                            marginals,
-                                            machine.states[q],
-                                            alpha,
-                                            machine.states[q_prime],
-                                            t,
-                                            r,
-                                            str(x_i),
-                                            y_i,
-                                            temp_gra_i,
-                                            counts_array_i,
-                                        )
+                                self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
             # print('transition done')
             g_j = g_j + temp_g_j
 
