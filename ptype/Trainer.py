@@ -17,17 +17,18 @@ def vecnorm(x, ord=2):
     else:
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
 
+def likelihoods(PI, logP, k):
+    return log_weighted_sum_probs(
+        PI[0],
+        logP[:, k + LLHOOD_TYPE_START_INDEX],
+        PI[1],
+        logP[:, MISSING_INDEX - 1],
+        PI[2],
+        logP[:, ANOMALIES_INDEX - 1],
+    )
+
 def sum_weighted_likelihoods(counts_array, logP, k):
-    return (
-        counts_array * log_weighted_sum_probs(
-            PI[0],
-            logP[:, k + LLHOOD_TYPE_START_INDEX],
-            PI[1],
-            logP[:, MISSING_INDEX - 1],
-            PI[2],
-            logP[:, ANOMALIES_INDEX - 1],
-        )
-    ).sum()
+    return (counts_array * likelihoods(PI, logP, k)).sum()
 
 # todo: rename
 def wurble(a, b, c):
@@ -176,7 +177,7 @@ class Trainer:
         return error
 
     def do_some_stuff(self, marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i):
-        indices_nonzero = np.where(marginals[str(x_i)][l] != 0.0)
+        indices_nonzero = np.where(marginals[x_i][l] != 0.0)
         if len(indices_nonzero[0]) != 0:
             q_s = indices_nonzero[0]
             q_primes = indices_nonzero[1]
@@ -204,16 +205,7 @@ class Trainer:
 
         # calculates posterior values of types
         r = [
-            (
-                counts_array * log_weighted_sum_probs(
-                    PI[0],
-                    logP[:, k + LLHOOD_TYPE_START_INDEX],
-                    PI[1],
-                    logP[:, MISSING_INDEX - 1],
-                    PI[2],
-                    logP[:, ANOMALIES_INDEX - 1],
-                )
-            ).sum()
+            sum_weighted_likelihoods(counts_array, logP, k)
             for k in range(len(self.machines.forType))
         ]
 
@@ -224,14 +216,7 @@ class Trainer:
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
             possible_states = [q for q in machine.states if machine.I[q] != LOG_EPS]
-            A = log_weighted_sum_probs(
-                PI[0],
-                logP[:, t + LLHOOD_TYPE_START_INDEX],
-                PI[1],
-                logP[:, MISSING_INDEX - 1],
-                PI[2],
-                logP[:, ANOMALIES_INDEX - 1],
-            )
+            A = likelihoods(PI, logP, t)
             temp_gra = np.exp(PI[0] + logP[:, t + 2] - A)
 
             # gradient for initial state parameters
@@ -252,14 +237,14 @@ class Trainer:
             # gradient for transition parameters
             if t == 1:
                 marginals = {
-                    str(x_i): np.ones((len(x_i), 1, 1))
+                    x_i: np.ones((len(x_i), 1, 1))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), 1, 1))
                     for x_i, p_x_i in zip(xs, logP)
                 }
             else:
                 marginals = {
-                    str(x_i): machine.run_forward_backward(str(x_i))
+                    x_i: machine.run_forward_backward(str(x_i))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), len(x_i)))
                     for x_i, p_x_i in zip(xs, logP)
@@ -355,7 +340,7 @@ class Trainer:
         temp_mult = (
             temp_gra
             * machine.gradient_abc_new_optimized_marginals(
-                marginals[str(x)], str(x), a, b, c
+                marginals[x], str(x), a, b, c
             )
             * counts_array
         )
