@@ -597,9 +597,7 @@ class StringsNewAuto(Machine):
     def calculate_gradient_abc_new_optimized(self, word, q, alpha, q_prime):
         return word.count(alpha)
 
-    def gradient_abc_new_optimized_marginals(
-        self, marginals, word, q, alpha, q_prime
-    ):
+    def gradient_abc_new_optimized_marginals(self, marginals, word, q, alpha, q_prime):
         return word.count(alpha)
 
     def gradient_final_state(self, x_i, final_state):

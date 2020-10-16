@@ -18,6 +18,11 @@ def vecnorm(x, ord=2):
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
 
 
+# todo: rename
+def wurble(a, b, c):
+    return str(a) + "*" + str(b) + "*" + str(c)
+
+
 LOG_EPS = -1e150
 
 LLHOOD_TYPE_START_INDEX = 2
@@ -217,19 +222,18 @@ class Trainer:
             temp_gra = np.exp(PI[0] + logP[:, t + 2] - A)
 
             # gradient for initial state parameters
-            temp_g_j = []
-            for state in possible_states:
-                temp_g_j.append(
-                    self.gradient_initial(
-                        state,
-                        t,
-                        xs[x_i_indices],
-                        r,
-                        temp_gra[x_i_indices],
-                        counts_array[x_i_indices],
-                        y_i,
-                    )
+            temp_g_j = [
+                self.gradient_initial(
+                    state,
+                    t,
+                    xs[x_i_indices],
+                    r,
+                    temp_gra[x_i_indices],
+                    counts_array[x_i_indices],
+                    y_i,
                 )
+                for state in possible_states
+            ]
             g_j = g_j + temp_g_j
 
             # gradient for transition parameters
@@ -253,7 +257,7 @@ class Trainer:
             for a in machine.T:
                 for b in machine.T[a]:
                     for c in machine.T[a][b]:
-                        state_indices[str(a) + "*" + str(b) + "*" + str(c)] = counter
+                        state_indices[wurble(a, b, c)] = counter
                         temp_g_j.append(0)
                         counter += 1
 
@@ -281,11 +285,7 @@ class Trainer:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(machine.states[q])
-                                                + "*"
-                                                + str(common_char)
-                                                + "*"
-                                                + str(machine.states[q_prime])
+                                                wurble(machine.states[q], common_char, machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
                                             marginals,
@@ -312,11 +312,7 @@ class Trainer:
                                     for q, q_prime in zip(q_s, q_primes):
                                         temp_g_j[
                                             state_indices[
-                                                str(machine.states[q])
-                                                + "*"
-                                                + str(alpha)
-                                                + "*"
-                                                + str(machine.states[q_prime])
+                                                wurble(machine.states[q], alpha, machine.states[q_prime])
                                             ]
                                         ] += self.gradient_transition_marginals(
                                             marginals,
