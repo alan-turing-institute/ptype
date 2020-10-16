@@ -140,21 +140,21 @@ class Trainer:
     def f_col(self, all_probs, i, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i][column_name]
         logP = np.array([all_probs[x_i] for x_i in temp_x])
-        q = []
-        for k in range(len(self.machines.forType)):
-            q.append(
-                (
+        q = [
+            (
                     counts_array
                     * log_weighted_sum_probs(
-                        PI[0],
-                        logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        PI[1],
-                        logP[:, MISSING_INDEX - 1],
-                        PI[2],
-                        logP[:, ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
+                PI[0],
+                logP[:, k + LLHOOD_TYPE_START_INDEX],
+                PI[1],
+                logP[:, MISSING_INDEX - 1],
+                PI[2],
+                logP[:, ANOMALIES_INDEX - 1],
             )
+            ).sum()
+            for k in range(len(self.machines.forType))
+        ]
+
         temp = normalize_log_probs(q)[y_i]
         if temp == 0:
             error = +800.0
