@@ -206,9 +206,7 @@ class Trainer:
             machine = self.machines.forType[ty]
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
-            possible_states = [
-                state for state in machine.states if machine.I[state] != LOG_EPS
-            ]
+            possible_states = [q for q in machine.states if machine.I[q] != LOG_EPS]
             A = log_weighted_sum_probs(
                 PI[0],
                 logP[:, t + LLHOOD_TYPE_START_INDEX],
@@ -222,7 +220,7 @@ class Trainer:
             # gradient for initial state parameters
             temp_g_j = [
                 self.gradient_initial(
-                    state,
+                    q,
                     t,
                     xs[x_i_indices],
                     r,
@@ -230,7 +228,7 @@ class Trainer:
                     counts_array[x_i_indices],
                     y_i,
                 )
-                for state in possible_states
+                for q in possible_states
             ]
             g_j = g_j + temp_g_j
 
