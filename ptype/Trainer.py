@@ -176,9 +176,9 @@ class Trainer:
                 error += self.f_col(str(i), column_name, labels[j] - 1)
         return error
 
-    def g_col_marginals(self, i_, column_name, y_i):
-        [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
-        logP = np.array([self.all_probs[str(x_i)] for x_i in temp_x])
+    def g_col_marginals(self, i, col_name, y_i):
+        [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
+        logP = np.array([self.all_probs[str(x)] for x in xs])
 
         # calculates posterior values of types
         r = []
@@ -199,8 +199,8 @@ class Trainer:
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
-        for t in range(len(self.types)):
-            machine = self.machines.machines[2 + t]
+        for t, ty in enumerate(self.types):
+            machine = self.machines.forType[ty]
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
             possible_states = [
@@ -223,7 +223,7 @@ class Trainer:
                     self.gradient_initial(
                         state,
                         t,
-                        temp_x[x_i_indices],
+                        xs[x_i_indices],
                         r,
                         temp_gra[x_i_indices],
                         counts_array[x_i_indices],
@@ -238,14 +238,14 @@ class Trainer:
                     str(x_i): np.ones((len(x_i), 1, 1))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), 1, 1))
-                    for x_i, p_x_i in zip(temp_x, logP)
+                    for x_i, p_x_i in zip(xs, logP)
                 }
             else:
                 marginals = {
                     str(x_i): machine.run_forward_backward(str(x_i))
                     if p_x_i[t + 2] != LOG_EPS
                     else np.zeros((len(x_i), len(x_i)))
-                    for x_i, p_x_i in zip(temp_x, logP)
+                    for x_i, p_x_i in zip(xs, logP)
                 }
             state_indices = {}
             counter = 0
@@ -259,7 +259,7 @@ class Trainer:
 
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
                 zip(
-                    temp_x[x_i_indices],
+                    xs[x_i_indices],
                     temp_gra[x_i_indices],
                     counts_array[x_i_indices],
                 )
@@ -340,7 +340,7 @@ class Trainer:
                         self.gradient_final(
                             state,
                             t,
-                            temp_x[x_i_indices],
+                            xs[x_i_indices],
                             r,
                             temp_gra[x_i_indices],
                             counts_array[x_i_indices],

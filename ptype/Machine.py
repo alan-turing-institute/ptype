@@ -109,9 +109,7 @@ class Machine(object):
                     T_new[b] = np.ones((len(self.states), len(self.states))) * LOG_EPS
 
                 for c in self.T[a][b]:
-                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][
-                        c
-                    ]
+                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][c]
 
         self.T_new = T_new
 
