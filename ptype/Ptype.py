@@ -3,13 +3,9 @@ import numpy as np
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machine import PI
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, likelihoods_normalize, sum_weighted_likelihoods
 from ptype.Schema import Schema
-from ptype.utils import (
-    log_weighted_sum_probs,
-    log_weighted_sum_normalize_probs,
-    normalize_log_probs
-)
+from ptype.utils import normalize_log_probs
 
 
 class Ptype:
@@ -61,9 +57,6 @@ class Ptype:
         I, J = logP.shape   # num of rows x num of data types
         K = J - 2           # num of possible column data types (excluding missing and catch-all)
 
-        # Initializations
-        pi = [PI for k in range(K)]  # mixture weights of row types
-
         # Inference
         p_t = []            # posterior probability distribution of column types
         p_z = {}            # posterior probability distribution of row types
@@ -72,33 +65,8 @@ class Ptype:
 
         # Iterate for each possible column type
         for k in range(K):
-
-            # Sum of weighted likelihoods (log-domain)
-            p_t.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        pi[k][0],
-                        logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        pi[k][1],
-                        logP[:, MISSING_INDEX - 1],
-                        pi[k][2],
-                        logP[:, ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-
-            # Calculate posterior cell probabilities
-
-            # Normalize
-            x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                pi[k][0],
-                logP[:, k + LLHOOD_TYPE_START_INDEX],
-                pi[k][1],
-                logP[:, MISSING_INDEX - 1],
-                pi[k][2],
-                logP[:, ANOMALIES_INDEX - 1],
-            )
+            p_t.append(sum_weighted_likelihoods(counts_array, logP, k))
+            x1, x2, x3, log_mx, sm = likelihoods_normalize(PI, logP, k)
 
             p_z_k = np.zeros((I, 3))
             p_z_k[:, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
@@ -106,7 +74,7 @@ class Ptype:
             p_z_k[:, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
             p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
 
-        p_t = normalize_log_probs(np.array(p_t))
+        p_t = normalize_log_probs(p_t)
 
         return Column(
             series=df[col_name],

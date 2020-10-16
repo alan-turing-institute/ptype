@@ -1,13 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
-from ptype.utils import contains_all
-
-
-def log_sum_probs(log_p1, log_p2):
-    log_mx = np.max([log_p1, log_p2])
-
-    return log_mx + np.log(np.exp(log_p1 - log_mx) + np.exp(log_p2 - log_mx))
+from ptype.utils import contains_all, log_sum_probs
 
 
 LOG_EPS = -1e150
@@ -109,9 +103,7 @@ class Machine(object):
                     T_new[b] = np.ones((len(self.states), len(self.states))) * LOG_EPS
 
                 for c in self.T[a][b]:
-                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][
-                        c
-                    ]
+                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][c]
 
         self.T_new = T_new
 
@@ -596,12 +588,7 @@ class StringsNewAuto(Machine):
         self.create_T_new()
         self.copy_to_z()
 
-    def calculate_gradient_abc_new_optimized(self, word, q, alpha, q_prime):
-        return word.count(alpha)
-
-    def gradient_abc_new_optimized_marginals(
-        self, marginals, word, q, alpha, q_prime
-    ):
+    def gradient_abc_new_optimized_marginals(self, marginals, word, q, alpha, q_prime):
         return word.count(alpha)
 
     def gradient_final_state(self, x_i, final_state):

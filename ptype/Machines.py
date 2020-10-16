@@ -46,7 +46,7 @@ class Machines:
 
     def machine_probabilities(self, col):
         return {
-            str(v): [m.probability(str(v)) for m in self.machines] for v in col
+            v: [m.probability(str(v)) for m in self.machines] for v in col
         }
 
     def set_unique_values(self, unique_values):
@@ -88,7 +88,6 @@ class Machines:
     def get_na_values(self):
         return self.missing.alphabet.copy()
 
-    # fix magic numbers 0, 1, 2
     def set_anomalous_values(self, anomalous_vals):
 
         probs = self.machine_probabilities(anomalous_vals)

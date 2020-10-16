@@ -107,10 +107,9 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     df = read_dataset(dataset_name)
     labels = annotations[dataset_name]
 
-    # remove unused types
     indices = []
     for i, label in enumerate(labels):
-        if label not in ["all identical", "gender"]:
+        if label not in ["all identical", "gender"]:  # crazy hack for what?
             indices.append(i)
     labels = [labels[index] for index in indices]
     df = df[df.columns[np.array(indices)]]
@@ -118,11 +117,9 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     # find the integer labels for the types
     y = []
     for label in labels:
-        temp = [key + 1 for key, value in enumerate(types) if value == label]
+        temp = [i + 1 for i, t in enumerate(types) if t == label]
         if len(temp) != 0:
             y.append(temp[0])
-        else:
-            print(label, temp)
 
     return df, y
 
@@ -178,14 +175,14 @@ def check_expected(actual, filename):
 
 
 def training_tests():
-    df_trainings, y_trainings = [], []
+    dfs, ys = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
-        df_training, y_training = get_inputs(dataset_name)
-        df_trainings.append(df_training)
-        y_trainings.append(y_training)
+        df, y = get_inputs(dataset_name)
+        dfs.append(df)
+        ys.append(y)
 
     ptype = Ptype(_types=types)
-    trainer = Trainer(ptype.types, ptype.machines, df_trainings, y_trainings)
+    trainer = Trainer(ptype.machines, dfs, ys)
     initial, final, training_error = trainer.train(20, False)
 
     all_passed = True
