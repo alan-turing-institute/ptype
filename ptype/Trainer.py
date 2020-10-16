@@ -4,7 +4,7 @@ import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.Machine import PI
 from ptype.utils import (
-    log_weighted_sum_probs,
+    log_weighted_sum_normalize_probs,
     normalize_log_probs,
 )
 
@@ -17,8 +17,14 @@ def vecnorm(x, ord=2):
     else:
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
 
+
 def likelihoods(PI, logP, k):
-    return log_weighted_sum_probs(
+    _, _, _, log_mx, sm = likelihoods_normalize(PI, logP, k)
+    return log_mx + np.log(sm)
+
+
+def likelihoods_normalize(PI, logP, k):
+    return log_weighted_sum_normalize_probs(
         PI[0],
         logP[:, k + LLHOOD_TYPE_START_INDEX],
         PI[1],
@@ -27,8 +33,10 @@ def likelihoods(PI, logP, k):
         logP[:, ANOMALIES_INDEX - 1],
     )
 
+
 def sum_weighted_likelihoods(counts_array, logP, k):
     return (counts_array * likelihoods(PI, logP, k)).sum()
+
 
 # todo: rename
 def wurble(a, b, c):

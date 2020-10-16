@@ -3,12 +3,9 @@ import numpy as np
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machine import PI
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX, sum_weighted_likelihoods
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, likelihoods_normalize, sum_weighted_likelihoods
 from ptype.Schema import Schema
-from ptype.utils import (
-    log_weighted_sum_normalize_probs,
-    normalize_log_probs
-)
+from ptype.utils import normalize_log_probs
 
 
 class Ptype:
@@ -69,16 +66,7 @@ class Ptype:
         # Iterate for each possible column type
         for k in range(K):
             p_t.append(sum_weighted_likelihoods(counts_array, logP, k))
-
-            # Normalize
-            x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                PI[0],
-                logP[:, k + LLHOOD_TYPE_START_INDEX],
-                PI[1],
-                logP[:, MISSING_INDEX - 1],
-                PI[2],
-                logP[:, ANOMALIES_INDEX - 1],
-            )
+            x1, x2, x3, log_mx, sm = likelihoods_normalize(PI, logP, k)
 
             p_z_k = np.zeros((I, 3))
             p_z_k[:, TYPE_INDEX] = np.exp(x1 - log_mx - np.log(sm))
