@@ -35,11 +35,15 @@ MACHINES = {
 class Machines:
     def __init__(self, types):
         self.types = types
-        self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
-#        self.forType = {t: MACHINES[t] for t in types}
-#        self.anomaly = AnomalyNew()
-#        self.missing = MissingsNew()
+#        self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
+        self.forType = {t: MACHINES[t] for t in types}
+        self.anomaly = AnomalyNew()
+        self.missing = MissingsNew()
         self.normalize_params()
+
+    @property
+    def machines(self):
+        return [self.missing, self.anomaly] + [self.forType[t] for t in self.forType]
 
     def machine_probabilities(self, col):
         return {
