@@ -69,9 +69,7 @@ class Trainer:
             self.machines.initialize_uniformly()
             self.machines.normalize_params()
 
-        initial = deepcopy(
-            self.machines
-        )  # shouldn't need this, but too much mutation going on
+        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(self.dfs, self.labels)]
 
         # Iterates over whole data points
@@ -141,7 +139,7 @@ class Trainer:
 
     def f_col(self, all_probs, i_, column_name, y_i):
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i_][column_name]
-        logP = np.array([all_probs[str(x_i)] for x_i in temp_x])
+        logP = np.array([all_probs[x_i] for x_i in temp_x])
         q = []
         for k in range(len(self.machines.forType)):
             q.append(
@@ -204,7 +202,7 @@ class Trainer:
 
     def g_col_marginals(self, all_probs, i, col_name, y_i):
         [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
-        logP = np.array([all_probs[str(x)] for x in xs])
+        logP = np.array([all_probs[x] for x in xs])
 
         # calculates posterior values of types
         r = [
@@ -279,11 +277,7 @@ class Trainer:
                         counter += 1
 
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
-                zip(
-                    xs[x_i_indices],
-                    temp_gra[x_i_indices],
-                    counts_array[x_i_indices],
-                )
+                zip(xs[x_i_indices], temp_gra[x_i_indices], counts_array[x_i_indices])
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:

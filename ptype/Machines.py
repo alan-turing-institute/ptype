@@ -46,7 +46,7 @@ class Machines:
 
     def machine_probabilities(self, col):
         return {
-            str(v): [m.probability(str(v)) for m in self.machines] for v in col
+            v: [m.probability(str(v)) for m in self.machines] for v in col
         }
 
     def set_unique_values(self, unique_values):
