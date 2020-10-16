@@ -95,8 +95,7 @@ class Trainer:
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
-                temp = self.f_col(j, column_name, df_labels[i] - 1)
-                error += temp
+                error += self.f_col(j, column_name, df_labels[i] - 1)
 
         return error
 
