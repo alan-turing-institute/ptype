@@ -202,9 +202,9 @@ class Trainer:
                     counts_array_i,
                 )
 
-    def g_col_marginals(self, i, col_name, y_i):
+    def g_col_marginals(self, all_probs, i, col_name, y_i):
         [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
-        logP = np.array([self.all_probs[str(x)] for x in xs])
+        logP = np.array([all_probs[str(x)] for x in xs])
 
         # calculates posterior values of types
         r = []
@@ -333,15 +333,13 @@ class Trainer:
         self.all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         q_total = None
-        counter_ = 0
 
         for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
-                if counter_ == 0:
-                    q_total = self.g_col_marginals(i, column_name, labels[j] - 1)
-                    counter_ += 1
+                if q_total is None:
+                    q_total = self.g_col_marginals(self.all_probs, i, column_name, labels[j] - 1)
                 else:
-                    q_total += self.g_col_marginals(i, column_name, labels[j] - 1)
+                    q_total += self.g_col_marginals(self.all_probs, i, column_name, labels[j] - 1)
 
         return q_total
 
