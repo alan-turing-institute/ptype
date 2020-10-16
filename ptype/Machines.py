@@ -1,17 +1,20 @@
+import numpy as np
+
 from ptype.Machine import (
-    IntegersNewAuto,
-    StringsNewAuto,
     AnomalyNew,
-    FloatsNewAuto,
-    MissingsNew,
     BooleansNew,
-    Genders,
-    ISO_8601NewAuto,
     Date_EUNewAuto,
-    Nonstd_DateNewAuto,
-    SubTypeNonstdDateNewAuto,
-    IPAddress,
     EmailAddress,
+    FloatsNewAuto,
+    Genders,
+    IntegersNewAuto,
+    IPAddress,
+    ISO_8601NewAuto,
+    MissingsNew,
+    Nonstd_DateNewAuto,
+    PI,
+    StringsNewAuto,
+    SubTypeNonstdDateNewAuto,
 )
 
 MACHINES = {
@@ -33,11 +36,14 @@ class Machines:
     def __init__(self, types):
         self.types = types
         self.machines = [MissingsNew(), AnomalyNew()] + [MACHINES[t] for t in types]
+#        self.forType = {t: MACHINES[t] for t in types}
+#        self.anomaly = AnomalyNew()
+#        self.missing = MissingsNew()
         self.normalize_params()
 
-    def generate_machine_probabilities(self, col):
+    def machine_probabilities(self, col):
         return {
-            str(v): [m.calculate_probability(str(v)) for m in self.machines] for v in col
+            str(v): [m.probability(str(v)) for m in self.machines] for v in col
         }
 
     def set_unique_values(self, unique_values):
@@ -56,18 +62,39 @@ class Machines:
         for _, machine in enumerate(self.machines[2:]):
             machine.normalize_params()
 
-    def initialize_params_uniformly(self):
+    def initialize_uniformly(self):
         for _, machine in enumerate(self.machines[2:]): # discards missing and anomaly types
-            machine.initialize_params_uniformly()
+            machine.initialize_uniformly()
 
     def set_all_probabilities_z(self, w_j_z):
         counter = 0
-        for t, _ in enumerate(self.types):
-            counter = self.machines[2 + t].set_probabilities_z(counter, w_j_z)
+        for i, _ in enumerate(self.types):
+            counter = self.machines[2 + i].set_probabilities_z(counter, w_j_z)
 
     def get_all_parameters_z(self):
         w_j = []
-        for t, _ in enumerate(self.types):
-            w_j.extend(self.machines[2 + t].get_parameters_z())
+        for i, _ in enumerate(self.types):
+            w_j.extend(self.machines[2 + i].get_parameters_z())
 
         return w_j
+
+    # fix magic number 0
+    def set_na_values(self, na_values):
+        self.machines[0].alphabet = na_values
+
+    def get_na_values(self):
+        return self.machines[0].alphabet.copy()
+
+    # fix magic numbers 0, 1, 2
+    def set_anomalous_values(self, anomalous_vals):
+
+        probs = self.machine_probabilities(anomalous_vals)
+        ratio = PI[0] / PI[2] + 0.1
+        min_probs = {
+            v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
+        }
+
+        self.machines[1].set_anomalous_values(anomalous_vals, min_probs)
+
+    def get_anomalous_values(self):
+        return self.machines[1].get_anomalous_values().copy()

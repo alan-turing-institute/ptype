@@ -11,6 +11,7 @@ def log_sum_probs(log_p1, log_p2):
 
 
 LOG_EPS = -1e150
+PI = [0.98, 0.01, 0.01]
 PRINT = False
 
 
@@ -20,7 +21,7 @@ class Machine(object):
         self.T = {}
         self.alphabet = []
 
-    def create_pfsm_from_fsm(self, reg_exp):
+    def pfsm_from_fsm(self, reg_exp):
         fsm_obj = parse(reg_exp).to_fsm()
 
         self.alphabet = sorted(
@@ -161,7 +162,7 @@ class Machine(object):
                         )
         return ignore, candidate_path_prob, candidate_path_parameter_count
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         if not self.supported_words[word]:
             return LOG_EPS
         else:
@@ -264,7 +265,7 @@ class Machine(object):
 
         return smoothing_probs
 
-    def calculate_gradient_abc_new_optimized_marginals(
+    def gradient_abc_new_optimized_marginals(
         self, marginals, word, q, alpha, q_prime
     ):
         # Find initial states with non-zero probabilities
@@ -279,13 +280,13 @@ class Machine(object):
                 ]
             )
 
-    def calculate_gradient_initial_state_optimized(self, x_i, initial_state):
+    def gradient_initial_state(self, x_i, initial_state):
         if len(x_i) == 0:
             return 0
         else:
             return int(x_i[0] in self.T[initial_state])
 
-    def calculate_gradient_final_state_optimized(self, x_i, final_state):
+    def gradient_final_state(self, x_i, final_state):
         # Find initial states with non-zero probabilities
         if len(x_i) == 0:
             return 0
@@ -316,7 +317,7 @@ class Machine(object):
         self.T_z = deepcopy(self.T)
         self.F_z = deepcopy(self.F)
 
-    def initialize_params_uniformly(self):
+    def initialize_uniformly(self):
         self.I = {a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS for a in self.I}
         self.I_z = {a: np.log(0.5) if self.I[a] != LOG_EPS else LOG_EPS for a in self.I}
 
@@ -467,7 +468,7 @@ class MissingsNew(Machine):
             " ",
         ]
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         LEN_1_PROB = 1e-7
         if word in self.alphabet:
             return (
@@ -504,7 +505,7 @@ class AnomalyNew(Machine):
     def get_anomalous_values(self):
         return self.anomalous_values
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         # to-do: should we change the probabilities for the other words
         # by substracting the probabilities spent on anomalous_values
         # if len(self.anomalous_values) == 0:
@@ -535,7 +536,7 @@ class IntegersNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.create_pfsm_from_fsm("[\-+]?[0-9]+")
+        self.pfsm_from_fsm("[\-+]?[0-9]+")
         self.create_T_new()
         self.copy_to_z()
 
@@ -544,7 +545,7 @@ class EmailAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+(?:\.[a-z0-9!#$%&'*+/=?\^_'{|}~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?"
         )
         self.create_T_new()
@@ -555,7 +556,7 @@ class IPAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
         )
         self.create_T_new()
@@ -566,7 +567,7 @@ class UKPostcodeAddress(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "(?:[A-Za-z]\d ?\d[A-Za-z]{2})|(?:[A-Za-z][A-Za-z\d]\d ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d{2} ?\d[A-Za-z]{2})|(?:[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]{2})|(?:[A-Za-z]{2}\d[A-Za-z] ?\d[A-Za-z]{2})"
         )
         self.create_T_new()
@@ -577,7 +578,7 @@ class UKPhoneNumbers(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}"
         )
         self.create_T_new()
@@ -591,19 +592,19 @@ class StringsNewAuto(Machine):
         self.STOP_P = 1e-15
         self.DIGIT_WEIGHT = 0.001
         self.EMPTY_WEIGHT = 1e-11
-        self.create_pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
+        self.pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
         self.create_T_new()
         self.copy_to_z()
 
     def calculate_gradient_abc_new_optimized(self, word, q, alpha, q_prime):
         return word.count(alpha)
 
-    def calculate_gradient_abc_new_optimized_marginals(
+    def gradient_abc_new_optimized_marginals(
         self, marginals, word, q, alpha, q_prime
     ):
         return word.count(alpha)
 
-    def calculate_gradient_final_state_optimized(self, x_i, final_state):
+    def gradient_final_state(self, x_i, final_state):
         if len(x_i) == 0:
             return 0
         else:
@@ -613,28 +614,28 @@ class StringsNewAuto(Machine):
                         return 1
             return 0
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         if self.supported_words[word] and len(word) > 15:
             return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word)
         else:
-            return super().calculate_probability(word)
+            return super().probability(word)
 
 
 class FloatsNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "[\-+]?(((\d+(\.\d*)?)|\.\d+)([eE][\-+]?[0-9]+)?)|(\d{1,3}(,[0-9]{3})+(\.\d*)?)"
         )
         self.create_T_new()
         self.copy_to_z()
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         if word == ".":
             return LOG_EPS
         else:
-            return super().calculate_probability(word)
+            return super().probability(word)
 
 
 ############# boolean #################
@@ -763,7 +764,7 @@ class ISO_8601NewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-2
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "(((0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]))|(([0-9]|1[0-9]|2[0-3]):([0-5][0-9])))|((19|20)[0-9]{2})|([0-9]{4}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))?(T)?((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)?"
         )
         self.create_T_new()
@@ -795,18 +796,18 @@ class ISO_8601NewAuto(Machine):
                 final_state,
             )
 
-    def calculate_probability(self, word):
+    def probability(self, word):
         if len(word) < 4:
             return LOG_EPS
         else:
-            return super().calculate_probability(word)
+            return super().probability(word)
 
 
 class Date_EUNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "((0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|[12]\d|3[01])[\-/. ]([12]\d{3}|\d{2}))|(0[1-9]|[12]\d|3[01])((0[1-9]|1[0-2])([12]\d{3}|\d{2})|[\-/. ]0?([1-9]|1[0-2])[\-/. ]([12]\d{3}|\d{2}))|(([1-9]|1[0-2])[\-/. ]0?([1-9]|[12]\d|3[01])|([1-9]|[12]\d|3[01])[\-/. ]0?([1-9]|1[0-2]))[\-/. ]([12]\d{3}|\d{2}))"
         )
         self.create_T_new()
@@ -817,7 +818,7 @@ class Nonstd_DateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "((1[0-2]|0?[1-9])([\-/. ])?(3[01]|0?[1-9]|[12][0-9])([\-/. ])?([0-2]{2}[0-9]{2}) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([\-/. ])?([AP]M)?)|([0-9]{2}([\-/. ])(1[0-2]|0?[1-9])([\-/. ])(3[01]|0?[1-9]|[12][0-9]))|([0-2]{2}[0-9]{2} - [0-2]{2}[0-9]{2})|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9]))|((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)|([0-2]{2}[0-9]{2}(-)?(1[0-2]|0[1-9])(-)?(3[01]|0[1-9]|[12][0-9])) ((2[0-3]|[01][0-9])(:)?([0-5][0-9])(:)?([0-5][0-9])(\\.[0-9]+)?(Z)?)"
         )
         self.create_T_new()
@@ -828,7 +829,7 @@ class SubTypeNonstdDateNewAuto(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.create_pfsm_from_fsm(
+        self.pfsm_from_fsm(
             "(January|February|March|April|May|June|July|August|September|October|November|December|Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)|((Mon|Tu|Tue|Tues|Wed|Th|Thu|Thur|Fri|Sat|Sun).? (2[0-3]|[01][0-9]):([0-5][0-9]) E[DS]T)"
         )
         self.create_T_new()
