@@ -129,7 +129,6 @@ def log_weighted_sum_normalize_probs(pi_1, log_p1, pi_2, log_p2, pi_3, log_p3):
         + (log_p3 != LOG_EPS) * np.exp(x_3 - log_mx)
     )
     return x_1, x_2, x_3, log_mx, sm
-    # return np.exp(x_1-log_mx), np.exp(x_2-log_mx), np.exp(x_3-log_mx), sm
 
 
 def normalize_log_probs(probs):

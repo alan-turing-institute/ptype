@@ -3,10 +3,9 @@ import numpy as np
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machine import PI
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX
+from ptype.Trainer import LLHOOD_TYPE_START_INDEX, sum_weighted_likelihoods
 from ptype.Schema import Schema
 from ptype.utils import (
-    log_weighted_sum_probs,
     log_weighted_sum_normalize_probs,
     normalize_log_probs
 )
@@ -61,9 +60,6 @@ class Ptype:
         I, J = logP.shape   # num of rows x num of data types
         K = J - 2           # num of possible column data types (excluding missing and catch-all)
 
-        # Initializations
-        pi = [PI for k in range(K)]  # mixture weights of row types
-
         # Inference
         p_t = []            # posterior probability distribution of column types
         p_z = {}            # posterior probability distribution of row types
@@ -72,31 +68,15 @@ class Ptype:
 
         # Iterate for each possible column type
         for k in range(K):
-
-            # Sum of weighted likelihoods (log-domain)
-            p_t.append(
-                (
-                    counts_array
-                    * log_weighted_sum_probs(
-                        pi[k][0],
-                        logP[:, k + LLHOOD_TYPE_START_INDEX],
-                        pi[k][1],
-                        logP[:, MISSING_INDEX - 1],
-                        pi[k][2],
-                        logP[:, ANOMALIES_INDEX - 1],
-                    )
-                ).sum()
-            )
-
-            # Calculate posterior cell probabilities
+            p_t.append(sum_weighted_likelihoods(counts_array, logP, k))
 
             # Normalize
             x1, x2, x3, log_mx, sm = log_weighted_sum_normalize_probs(
-                pi[k][0],
+                PI[0],
                 logP[:, k + LLHOOD_TYPE_START_INDEX],
-                pi[k][1],
+                PI[1],
                 logP[:, MISSING_INDEX - 1],
-                pi[k][2],
+                PI[2],
                 logP[:, ANOMALIES_INDEX - 1],
             )
 

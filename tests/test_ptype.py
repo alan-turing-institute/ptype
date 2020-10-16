@@ -182,7 +182,7 @@ def training_tests():
         ys.append(y)
 
     ptype = Ptype(_types=types)
-    trainer = Trainer(ptype.types, ptype.machines, dfs, ys)
+    trainer = Trainer(ptype.machines, dfs, ys)
     initial, final, training_error = trainer.train(20, False)
 
     all_passed = True

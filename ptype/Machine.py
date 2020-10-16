@@ -1,13 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
-from ptype.utils import contains_all
-
-
-def log_sum_probs(log_p1, log_p2):
-    log_mx = np.max([log_p1, log_p2])
-
-    return log_mx + np.log(np.exp(log_p1 - log_mx) + np.exp(log_p2 - log_mx))
+from ptype.utils import contains_all, log_sum_probs
 
 
 LOG_EPS = -1e150

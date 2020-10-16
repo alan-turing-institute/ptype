@@ -17,6 +17,17 @@ def vecnorm(x, ord=2):
     else:
         return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
 
+def sum_weighted_likelihoods(counts_array, logP, k):
+    return (
+        counts_array * log_weighted_sum_probs(
+            PI[0],
+            logP[:, k + LLHOOD_TYPE_START_INDEX],
+            PI[1],
+            logP[:, MISSING_INDEX - 1],
+            PI[2],
+            logP[:, ANOMALIES_INDEX - 1],
+        )
+    ).sum()
 
 # todo: rename
 def wurble(a, b, c):
@@ -29,8 +40,7 @@ LLHOOD_TYPE_START_INDEX = 2
 
 
 class Trainer:
-    def __init__(self, types, machines, dfs, labels):
-        self.types = types
+    def __init__(self, machines, dfs, labels):
         self.machines = machines
         self.dfs = dfs
         self.labels = labels
@@ -141,16 +151,7 @@ class Trainer:
         [temp_x, counts_array] = self.dfs_unique_vals_counts[i][column_name]
         logP = np.array([all_probs[x_i] for x_i in temp_x])
         q = [
-            (
-                counts_array * log_weighted_sum_probs(
-                    PI[0],
-                    logP[:, k + LLHOOD_TYPE_START_INDEX],
-                    PI[1],
-                    logP[:, MISSING_INDEX - 1],
-                    PI[2],
-                    logP[:, ANOMALIES_INDEX - 1],
-                )
-            ).sum()
+            sum_weighted_likelihoods(counts_array, logP, k)
             for k in range(len(self.machines.forType))
         ]
 
@@ -218,7 +219,7 @@ class Trainer:
 
         # calculates the gradients for initial, transition, and final probabilities. (note that it is only for non-zero probabilities at the moment.)
         g_j = []
-        for t, ty in enumerate(self.types):
+        for t, ty in enumerate(self.machines.types):
             machine = self.machines.forType[ty]
             x_i_indices = np.where(logP[:, t + 2] != LOG_EPS)[0]
 
