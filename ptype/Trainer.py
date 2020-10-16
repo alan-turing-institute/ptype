@@ -330,16 +330,16 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # generates probabilities
-        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
+        all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         q_total = None
 
         for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if q_total is None:
-                    q_total = self.g_col_marginals(self.all_probs, i, column_name, labels[j] - 1)
+                    q_total = self.g_col_marginals(all_probs, i, column_name, labels[j] - 1)
                 else:
-                    q_total += self.g_col_marginals(self.all_probs, i, column_name, labels[j] - 1)
+                    q_total += self.g_col_marginals(all_probs, i, column_name, labels[j] - 1)
 
         return q_total
 
