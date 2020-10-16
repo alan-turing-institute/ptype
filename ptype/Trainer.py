@@ -89,12 +89,12 @@ class Trainer:
         return initial, self.machines, training_error
 
     def calculate_total_error(self, dfs, labels):
-        self.all_probs = self.machines.machine_probabilities(self.unique_vals)
+        all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         error = 0.0
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
-                error += self.f_col(self.all_probs, j, column_name, df_labels[i] - 1)
+                error += self.f_col(all_probs, j, column_name, df_labels[i] - 1)
 
         return error
 
