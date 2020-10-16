@@ -594,9 +594,6 @@ class StringsNewAuto(Machine):
         self.create_T_new()
         self.copy_to_z()
 
-    def calculate_gradient_abc_new_optimized(self, word, q, alpha, q_prime):
-        return word.count(alpha)
-
     def gradient_abc_new_optimized_marginals(self, marginals, word, q, alpha, q_prime):
         return word.count(alpha)
 
