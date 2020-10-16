@@ -142,17 +142,16 @@ class Trainer:
         logP = np.array([all_probs[x_i] for x_i in temp_x])
         q = [
             (
-                    counts_array
-                    * log_weighted_sum_probs(
-                PI[0],
-                logP[:, k + LLHOOD_TYPE_START_INDEX],
-                PI[1],
-                logP[:, MISSING_INDEX - 1],
-                PI[2],
-                logP[:, ANOMALIES_INDEX - 1],
-            )
+                counts_array * log_weighted_sum_probs(
+                    PI[0],
+                    logP[:, k + LLHOOD_TYPE_START_INDEX],
+                    PI[1],
+                    logP[:, MISSING_INDEX - 1],
+                    PI[2],
+                    logP[:, ANOMALIES_INDEX - 1],
+                )
             ).sum()
-            for k in range(len(self.machines.forType))
+            for k, type in enumerate(self.machines.forType.values())
         ]
 
         temp = normalize_log_probs(q)[y_i]

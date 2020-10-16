@@ -8,7 +8,7 @@ from ptype.Schema import Schema
 from ptype.utils import (
     log_weighted_sum_probs,
     log_weighted_sum_normalize_probs,
-    normalize_log_probs
+    normalize_log_probs2
 )
 
 
@@ -106,7 +106,7 @@ class Ptype:
             p_z_k[:, ANOMALIES_INDEX] = np.exp(x3 - log_mx - np.log(sm))
             p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
 
-        p_t = normalize_log_probs(np.array(p_t))
+        p_t = normalize_log_probs2(p_t)
 
         return Column(
             series=df[col_name],
