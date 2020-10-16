@@ -32,7 +32,7 @@ class Trainer:
         self.unique_vals = np.concatenate([np.unique(df.values) for df in dfs])
         self.dfs_unique_vals_counts = Trainer.get_unique_vals_counts(dfs)
         self.machines.set_unique_values(self.unique_vals)
-        self.K = len(self.machines.machines) - 2
+        self.K = len(self.machines.forType)
 
     @staticmethod
     def get_unique_vals_counts(dfs):
@@ -102,8 +102,8 @@ class Trainer:
         self.machines.set_all_probabilities_z(w_j_z)
 
         # normalise
-        for t, _ in enumerate(self.types):
-            self.machines.machines[2 + t].normalize()
+        for machine in self.machines.forType.values():
+            machine.normalize()
 
     def conjugate_gradient(self, w, J=10, gtol=1e-5):
         d, g = [], []
