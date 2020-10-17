@@ -25,12 +25,10 @@ class Machine(object):
         states = list(fsm_obj.states)
         self.add_states(states)
 
-        initials = [
-            fsm_obj.initial,
-        ]
+        initials = [fsm_obj.initial]
         I = [
-            np.log(1 / len(initials)) if state in initials else LOG_EPS
-            for state in self.states
+            np.log(1 / len(initials)) if q in initials else LOG_EPS
+            for q in self.states
         ]
         self.set_I(I)
 
@@ -41,37 +39,34 @@ class Machine(object):
         self.set_F(F)
 
         transitions = fsm_obj.map
-        for state_i in transitions:
-            trans = transitions[state_i]
+        for q_i in transitions:
+            trans = transitions[q_i]
 
             for symbol in list(trans):
                 if str(symbol) == "anything_else":
                     del trans[symbol]
-            transitions[state_i] = trans
 
-        for state_i in transitions:
-            trans = transitions[state_i]
             state_js = np.array(list(trans.values()))
             if len(state_js) == 0:
-                self.F[state_i] = 0.0
+                self.F[q_i] = 0.0
             else:
                 symbols_js = np.array(list(trans.keys()))
-                if self.F[state_i] != LOG_EPS:
+                if self.F[q_i] != LOG_EPS:
                     probs = np.array(
                         [
-                            (1.0 - np.exp(self.F[state_i])) / len(symbols_js)
-                            for i in range(len(symbols_js))
+                            (1.0 - np.exp(self.F[q_i])) / len(symbols_js)
+                            for _ in symbols_js
                         ]
                     )
                 else:
                     probs = np.array(
-                        [1.0 / len(symbols_js) for i in range(len(symbols_js))]
+                        [1.0 / len(symbols_js) for _ in symbols_js]
                     )
 
                 for state_j in np.unique(state_js):
                     idx = np.where(state_js == state_j)[0]
                     symbols = list(symbols_js[idx])
-                    self.add_transitions(state_i, state_j, symbols, list(probs[idx]))
+                    self.add_transitions(q_i, state_j, symbols, list(probs[idx]))
 
     def add_states(self, state_names):
         for state_name in state_names:
