@@ -4,6 +4,7 @@ import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.Machine import PI
 from ptype.utils import (
+    LOG_EPS,
     log_weighted_sum_normalize_probs,
     normalize_log_probs,
 )
@@ -42,8 +43,6 @@ def sum_weighted_likelihoods(counts_array, logP, k):
 def wurble(a, b, c):
     return str(a) + "*" + str(b) + "*" + str(c)
 
-
-LOG_EPS = -1e150
 
 LLHOOD_TYPE_START_INDEX = 2
 

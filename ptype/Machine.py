@@ -1,10 +1,9 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
-from ptype.utils import contains_all, log_sum_probs, normalise_safe
+from ptype.utils import LOG_EPS, contains_all, log_sum_probs, normalise_safe
 
 
-LOG_EPS = -1e150
 PI = [0.98, 0.01, 0.01]
 PRINT = False
 
