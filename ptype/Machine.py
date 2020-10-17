@@ -188,21 +188,17 @@ class Machine(object):
         return beta_messages
 
     def run_forward_backward(self, x):
-        self.alpha_messages = self.forward_recursion(x)
-        self.beta_messages = self.backward_recursion(x)
-        return [self.calculate_derivative_temp(l, x) for l in range(len(x))]
+        alpha_messages = self.forward_recursion(x)
+        beta_messages = self.backward_recursion(x)
+        return [self.calculate_derivative_temp(alpha_messages, beta_messages, l, x) for l in range(len(x))]
 
-    def calculate_derivative_temp(self, l, x):
+    def calculate_derivative_temp(self, alpha_messages, beta_messages, l, x):
         # l is in 0...L
 
         if x[l] not in self.T_new:
-            smoothing_probs = np.zeros(
-                (len(self.alpha_messages[0]), len(self.alpha_messages[0]))
-            )
+            smoothing_probs = np.zeros((len(alpha_messages[0]), len(alpha_messages[0])))
         else:
-            smoothing_probs = np.outer(
-                self.alpha_messages[l], self.beta_messages[l]
-            ) * np.exp(self.T_new[x[l]])
+            smoothing_probs = np.outer(alpha_messages[l], beta_messages[l]) * np.exp(self.T_new[x[l]])
 
         if np.max(smoothing_probs) != 0.0:
             smoothing_probs = smoothing_probs / smoothing_probs.sum()
