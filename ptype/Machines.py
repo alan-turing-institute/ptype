@@ -31,9 +31,7 @@ class Machines:
         return [self.missing, self.anomalous] + [self.forType[t] for t in self.forType]
 
     def machine_probabilities(self, col):
-        return {
-            v: [m.probability(str(v)) for m in self.machines] for v in col
-        }
+        return {v: [m.probability(str(v)) for m in self.machines] for v in col}
 
     def set_unique_values(self, unique_values):
         for machine in self.machines:
