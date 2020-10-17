@@ -281,7 +281,6 @@ class Trainer:
                         for l, alpha in enumerate(str(x_i)):
                             if alpha in machine.alphabet:
                                 self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
-            # print('transition done')
             g_j = g_j + temp_g_j
 
             # gradient for final-state parameters
@@ -298,7 +297,6 @@ class Trainer:
                             y_i,
                         )
                     )
-            # print('final done')
 
         return -np.array(g_j) / counts_array.sum()
 
@@ -306,10 +304,7 @@ class Trainer:
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
-        # updates the parameters
         self.machines.set_all_probabilities_z(w_j_z)
-
-        # generates probabilities
         all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         q_total = None
@@ -329,7 +324,7 @@ class Trainer:
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
     def gradient_initial(self, state, t, x, q, temp, counter, y_i):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.I[state])
 
         cs = np.array([
@@ -343,12 +338,10 @@ class Trainer:
     def gradient_transition_marginals(
         self, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         temp_mult = (
             temp_gra
-            * machine.gradient_abc_new_optimized_marginals(
-                marginals[x], str(x), a, b, c
-            )
+            * machine.gradient_abc_new_optimized_marginals(marginals[x], str(x), a, b, c)
             * counts_array
         )
         exp_param = 1 - np.exp(machine.T[a][b][c])
@@ -357,7 +350,7 @@ class Trainer:
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_final(self, final_state, t, x, q, temp, counter, y_i):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.F[final_state])
 
         cs = np.array([
