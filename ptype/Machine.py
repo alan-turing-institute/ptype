@@ -18,18 +18,10 @@ class Machine(object):
     def pfsm_from_fsm(self, reg_exp):
         fsm_obj = parse(reg_exp).to_fsm()
 
-        self.alphabet = sorted(
-            [str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"]
-        )
-
-        states = list(fsm_obj.states)
-        self.add_states(states)
-
-        initials = [fsm_obj.initial]
-        self.set_I([np.log(1 / len(initials)) if q in initials else LOG_EPS for q in self.states])
-
-        finals = list(fsm_obj.finals)
-        self.set_F([np.log(self.STOP_P) if q in finals else LOG_EPS for q in self.states])
+        self.alphabet = sorted([str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"])
+        self.add_states(list(fsm_obj.states))
+        self.set_I([np.log(1) if q == fsm_obj.initial else LOG_EPS for q in self.states])
+        self.set_F([np.log(self.STOP_P) if q in list(fsm_obj.finals) else LOG_EPS for q in self.states])
 
         transitions = fsm_obj.map
         for q_i in transitions:
