@@ -15,6 +15,13 @@ def evaluate_model_type(annotations, predictions):
         .replace("date-non-std", "date")
         for prediction in predictions
     ]
+    annotations = [
+        annotation.replace("date-eu", "date")
+            .replace("date-iso-8601", "date")
+            .replace("date-non-std-subtype", "date")
+            .replace("date-non-std", "date")
+        for annotation in annotations
+    ]
 
     # find columns whose types are not supported by ptype
     ignored_columns = np.where(

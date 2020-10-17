@@ -107,19 +107,13 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
     df = read_dataset(dataset_name)
     labels = annotations[dataset_name]
 
-    indices = []
-    for i, label in enumerate(labels):
-        if label not in ["all identical", "gender"]:  # crazy hack for what?
-            indices.append(i)
-    labels = [labels[index] for index in indices]
+    # discard labels other than initialized 'types'
+    indices = [i for i, label in enumerate(labels) if label in types]
     df = df[df.columns[np.array(indices)]]
+    labels = [labels[index] for index in indices]
 
     # find the integer labels for the types
-    y = []
-    for label in labels:
-        temp = [i + 1 for i, t in enumerate(types) if t == label]
-        if len(temp) != 0:
-            y.append(temp[0])
+    y = [types.index(label) + 1 for label in labels]
 
     return df, y
 

@@ -1,5 +1,5 @@
 ,ptype
-overall-accuracy,0.95
+overall-accuracy,0.96
 boolean,0.92
 date,0.5
 float,0.92
