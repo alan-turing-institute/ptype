@@ -160,8 +160,7 @@ class Machine(object):
         :param x:
         :return: alpha_messages: alpha_messages[l] stores the message from l to l+1 where l in {0,...,L}
         """
-        alpha_messages = []
-        alpha_messages.append(np.exp(np.array(list(self.I.values()))))
+        alpha_messages = [np.exp(np.array(list(self.I.values())))]
         for l, alpha in enumerate(x[:-1]):
             if alpha not in self.T_new:
                 alpha_messages.append(np.zeros(len(alpha_messages[l])))
@@ -180,11 +179,9 @@ class Machine(object):
         beta_messages = [np.exp(np.array(list(self.F.values())))]
         for l, alpha in enumerate(reversed(x[1:])):
             if alpha not in self.T_new:
-                beta_messages = [np.zeros(len(beta_messages[0]))] + beta_messages
+                beta_messages.append(np.zeros(len(beta_messages[0])))
             else:
-                beta_messages = [
-                    np.dot(np.exp(self.T_new[alpha]), beta_messages[0])
-                ] + beta_messages
+                beta_messages.append(np.dot(np.exp(self.T_new[alpha]), beta_messages[0]))
                 if np.max(beta_messages[0]) != 0.0:
                     beta_messages[0] = beta_messages[0] / beta_messages[0].sum()
 
@@ -193,11 +190,7 @@ class Machine(object):
     def run_forward_backward(self, x):
         self.alpha_messages = self.forward_recursion(x)
         self.beta_messages = self.backward_recursion(x)
-        joint_probs = []
-        for l in range(len(x)):
-            joint_probs.append(self.calculate_derivative_temp(l, x))
-
-        return joint_probs
+        return [self.calculate_derivative_temp(l, x) for l in range(len(x))]
 
     def calculate_derivative_temp(self, l, x):
         # l is in 0...L
