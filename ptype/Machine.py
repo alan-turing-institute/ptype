@@ -1,7 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from greenery.lego import parse
-from ptype.utils import contains_all, log_sum_probs
+from ptype.utils import contains_all, log_sum_probs, normalise_safe
 
 
 LOG_EPS = -1e150
@@ -166,8 +166,7 @@ class Machine(object):
                 alpha_messages.append(np.zeros(len(alpha_messages[l])))
             else:
                 alpha_messages.append(np.dot(alpha_messages[l], np.exp(self.T_new[alpha])))
-                if np.max(alpha_messages[-1]) != 0.0:
-                    alpha_messages[-1] = alpha_messages[-1] / alpha_messages[-1].sum()
+                alpha_messages[-1] = normalise_safe(alpha_messages[-1])
 
         return alpha_messages
 
@@ -182,8 +181,7 @@ class Machine(object):
                 beta_messages.append(np.zeros(len(beta_messages[0])))
             else:
                 beta_messages.append(np.dot(np.exp(self.T_new[alpha]), beta_messages[0]))
-                if np.max(beta_messages[0]) != 0.0:
-                    beta_messages[0] = beta_messages[0] / beta_messages[0].sum()
+                beta_messages[0] = normalise_safe(beta_messages[0])
 
         return beta_messages
 
@@ -200,10 +198,7 @@ class Machine(object):
         else:
             smoothing_probs = np.outer(alpha_messages[l], beta_messages[l]) * np.exp(self.T_new[x[l]])
 
-        if np.max(smoothing_probs) != 0.0:
-            smoothing_probs = smoothing_probs / smoothing_probs.sum()
-
-        return smoothing_probs
+        return normalise_safe(smoothing_probs)
 
     def gradient_abc_new_optimized_marginals(
         self, marginals, word, q, alpha, q_prime
