@@ -23,24 +23,23 @@ class Machine(object):
         self.set_I([np.log(1) if q == fsm_obj.initial else LOG_EPS for q in self.states])
         self.set_F([np.log(self.STOP_P) if q in list(fsm_obj.finals) else LOG_EPS for q in self.states])
 
-        transitions = fsm_obj.map
-        for q_i in transitions:
-            trans = transitions[q_i]
+        for q_i in fsm_obj.map:
+            transition = fsm_obj.map[q_i]
 
-            for symbol in list(trans):
+            for symbol in list(transition):
                 if str(symbol) == "anything_else":
-                    del trans[symbol]
+                    del transition[symbol]
 
-            state_js = np.array(list(trans.values()))
-            if len(state_js) == 0:
+            q_js = np.array(list(transition.values()))
+            if len(q_js) == 0:
                 self.F[q_i] = 0.0
             else:
-                symbols_js = np.array(list(trans.keys()))
+                symbols_js = np.array(list(transition.keys()))
                 dividend = 1.0 if self.F[q_i] == LOG_EPS else 1.0 - np.exp(self.F[q_i])
                 probs = np.array([dividend / len(symbols_js) for _ in symbols_js])
 
-                for q_j in np.unique(state_js):
-                    idx = np.where(state_js == q_j)[0]
+                for q_j in np.unique(q_js):
+                    idx = np.where(q_js == q_j)[0]
                     self.add_transitions(q_i, q_j, list(symbols_js[idx]), list(probs[idx]))
 
     def add_states(self, qs):
@@ -128,9 +127,6 @@ class Machine(object):
         if not self.supported_words[word]:
             return LOG_EPS
         else:
-            # reset probability to 0
-            word_prob = LOG_EPS
-
             # Find initial states with non-zero probabilities
             possible_init_states = []
             for state in self.states:
@@ -144,13 +140,10 @@ class Machine(object):
                 print("possible_init_states_names", possible_init_states)
 
             # Traverse each initial state which might lead to the given word
+            word_prob = LOG_EPS
             for init_state in possible_init_states:
-                current_state = init_state
-                if PRINT:
-                    print("\tcurrent_state_name", current_state)
-
                 _, candidate_path_prob, _ = self.find_possible_targets(
-                    False, 0, 0, current_state, word, 0, self.I[current_state], None
+                    False, 0, 0, init_state, word, 0, self.I[init_state], None
                 )
 
                 # add probability of each successful path that leads to the given word
@@ -171,13 +164,9 @@ class Machine(object):
         alpha_messages.append(np.exp(np.array(list(self.I.values()))))
         for l, alpha in enumerate(x[:-1]):
             if alpha not in self.T_new:
-                alpha_messages.append(
-                    np.zeros(len(alpha_messages[l]))
-                )  # np.dot(alpha_messages[l], np.zeros(len(alpha_messages[l]))))
+                alpha_messages.append(np.zeros(len(alpha_messages[l])))
             else:
-                alpha_messages.append(
-                    np.dot(alpha_messages[l], np.exp(self.T_new[alpha]))
-                )
+                alpha_messages.append(np.dot(alpha_messages[l], np.exp(self.T_new[alpha])))
                 if np.max(alpha_messages[-1]) != 0.0:
                     alpha_messages[-1] = alpha_messages[-1] / alpha_messages[-1].sum()
 
