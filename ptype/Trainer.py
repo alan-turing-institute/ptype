@@ -207,12 +207,12 @@ class Trainer:
                 )
 
     def g_col_marginals(self, all_probs, i, col_name, y_i):
-        [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
+        [xs, counts] = self.dfs_unique_vals_counts[i][col_name]
         logP = np.array([all_probs[x] for x in xs])
 
         # calculates posterior values of types
         r = [
-            sum_weighted_likelihoods(counts_array, logP, k)
+            sum_weighted_likelihoods(counts, logP, k)
             for k in range(len(self.machines.forType))
         ]
 
@@ -234,7 +234,7 @@ class Trainer:
                     xs[x_i_indices],
                     r,
                     temp_gra[x_i_indices],
-                    counts_array[x_i_indices],
+                    counts[x_i_indices],
                     y_i,
                 )
                 for q in possible_states
@@ -267,7 +267,7 @@ class Trainer:
                         counter += 1
 
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
-                zip(xs[x_i_indices], temp_gra[x_i_indices], counts_array[x_i_indices])
+                zip(xs[x_i_indices], temp_gra[x_i_indices], counts[x_i_indices])
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
@@ -293,12 +293,12 @@ class Trainer:
                             xs[x_i_indices],
                             r,
                             temp_gra[x_i_indices],
-                            counts_array[x_i_indices],
+                            counts[x_i_indices],
                             y_i,
                         )
                     )
 
-        return -np.array(g_j) / counts_array.sum()
+        return -np.array(g_j) / counts.sum()
 
     def g_cols(self, w_j_z):
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
