@@ -1,34 +1,20 @@
 import numpy as np
 
-from ptype.Machine import (
-    AnomalyNew,
-    BooleansNew,
-    Date_EUNewAuto,
-    EmailAddress,
-    FloatsNewAuto,
-    Genders,
-    IntegersNewAuto,
-    IPAddress,
-    ISO_8601NewAuto,
-    MissingsNew,
-    Nonstd_DateNewAuto,
-    PI,
-    StringsNewAuto,
-    SubTypeNonstdDateNewAuto,
-)
+import ptype.Machine as Machine
+from ptype.Machine import PI
 
 MACHINES = {
-    "integer": IntegersNewAuto(),
-    "string": StringsNewAuto(),
-    "float": FloatsNewAuto(),
-    "boolean": BooleansNew(),
-    "gender": Genders(),
-    "date-iso-8601": ISO_8601NewAuto(),
-    "date-eu": Date_EUNewAuto(),
-    "date-non-std-subtype": SubTypeNonstdDateNewAuto(),
-    "date-non-std": Nonstd_DateNewAuto(),
-    "IPAddress": IPAddress(),
-    "EmailAddress": EmailAddress(),
+    "integer": Machine.Integers(),
+    "string": Machine.Strings(),
+    "float": Machine.Floats(),
+    "boolean": Machine.Booleans(),
+    "gender": Machine.Genders(),
+    "date-iso-8601": Machine.DateISO_8601(),
+    "date-eu": Machine.Date_EU(),
+    "date-non-std-subtype": Machine.SubTypeNonstdDate(),
+    "date-non-std": Machine.Nonstd_Date(),
+    "IPAddress": Machine.IPAddress(),
+    "EmailAddress": Machine.EmailAddress(),
 }
 
 
@@ -36,8 +22,8 @@ class Machines:
     def __init__(self, types):
         self.types = types
         self.forType = {t: MACHINES[t] for t in types}
-        self.anomalous = AnomalyNew()
-        self.missing = MissingsNew()
+        self.anomalous = Machine.Anomaly()
+        self.missing = Machine.Missing()
         self.normalize_params()
 
     @property

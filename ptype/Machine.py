@@ -364,7 +364,7 @@ class Machine(object):
 
 ################################# MACHINES ##################################
 ############# MISSINGS #################
-class MissingsNew(Machine):
+class Missing(Machine):
     def __init__(self):
         super().__init__()
         self.alphabet = [
@@ -415,7 +415,7 @@ class MissingsNew(Machine):
             return LOG_EPS
 
 
-class AnomalyNew(Machine):
+class Anomaly(Machine):
     def __init__(self):
         super().__init__()
         self.alphabet = [chr(i) for i in range(1114112)]
@@ -467,7 +467,7 @@ class AnomalyNew(Machine):
 
 
 ############# INTEGERS #################
-class IntegersNewAuto(Machine):
+class Integers(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
@@ -521,7 +521,7 @@ class UKPhoneNumbers(Machine):
 
 
 ############# STRINGS #################
-class StringsNewAuto(Machine):
+class Strings(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-15
@@ -551,7 +551,7 @@ class StringsNewAuto(Machine):
             return super().probability(word)
 
 
-class FloatsNewAuto(Machine):
+class Floats(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 4 * 1e-5
@@ -569,7 +569,7 @@ class FloatsNewAuto(Machine):
 
 
 ############# boolean #################
-class BooleansNew(Machine):
+class Booleans(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
@@ -690,7 +690,7 @@ class Genders(Machine):
 
 
 ############# DATE ISO-8601 #################
-class ISO_8601NewAuto(Machine):
+class DateISO_8601(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-2
@@ -733,7 +733,7 @@ class ISO_8601NewAuto(Machine):
             return super().probability(word)
 
 
-class Date_EUNewAuto(Machine):
+class Date_EU(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
@@ -744,7 +744,7 @@ class Date_EUNewAuto(Machine):
         self.copy_to_z()
 
 
-class Nonstd_DateNewAuto(Machine):
+class Nonstd_Date(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
@@ -755,7 +755,7 @@ class Nonstd_DateNewAuto(Machine):
         self.copy_to_z()
 
 
-class SubTypeNonstdDateNewAuto(Machine):
+class SubTypeNonstdDate(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
