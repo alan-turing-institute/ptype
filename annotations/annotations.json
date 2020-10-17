@@ -140,7 +140,7 @@
     "string"
   ],
   "survey": [
-    "date",
+    "date-non-std",
     "integer",
     "gender",
     "string",
