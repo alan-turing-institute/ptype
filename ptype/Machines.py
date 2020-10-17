@@ -59,13 +59,8 @@ class Machines:
             counter = machine.set_probabilities_z(counter, w_j_z)
 
     def get_all_parameters_z(self):
-        w_j = []
-        for machine in self.forType.values():
-            w_j.extend(machine.get_parameters_z())
+        return [p for machine in self.forType.values() for p in machine.get_parameters_z()]
 
-        return w_j
-
-    # fix magic number 0
     def set_na_values(self, na_values):
         self.missing.alphabet = na_values
 
@@ -73,14 +68,14 @@ class Machines:
         return self.missing.alphabet.copy()
 
     def set_anomalous_values(self, anomalous_vals):
-
         probs = self.machine_probabilities(anomalous_vals)
         ratio = PI[0] / PI[2] + 0.1
-        min_probs = {
-            v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
-        }
+        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals}
 
-        self.anomalous.set_anomalous_values(anomalous_vals, min_probs)
+        anomaly = self.anomalous
+        anomaly.anomalous_values = anomalous_vals
+        anomaly.anomalous_values_probs = min_probs
 
     def get_anomalous_values(self):
-        return self.anomalous.get_anomalous_values().copy()
+        anomaly = self.anomalous
+        return anomaly.anomalous_values.copy()

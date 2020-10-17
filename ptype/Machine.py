@@ -24,11 +24,7 @@ class Machine(object):
         self.set_F([np.log(self.STOP_P) if q in list(fsm_obj.finals) else LOG_EPS for q in self.states])
 
         for q_i in fsm_obj.map:
-            transition = fsm_obj.map[q_i]
-
-            for symbol in list(transition):
-                if str(symbol) == "anything_else":
-                    del transition[symbol]
+            transition = {symbol: v for symbol, v in fsm_obj.map[q_i].items() if str(symbol) != "anything_else"}
 
             q_js = np.array(list(transition.values()))
             if len(q_js) == 0:
@@ -200,9 +196,7 @@ class Machine(object):
 
         return normalise_safe(smoothing_probs)
 
-    def gradient_abc_new_optimized_marginals(
-        self, marginals, word, q, alpha, q_prime
-    ):
+    def gradient_abc_new_optimized_marginals(self, marginals, word, q, alpha, q_prime):
         # Find initial states with non-zero probabilities
         if len(word) == 0:
             return 0
@@ -286,9 +280,9 @@ class Machine(object):
 
     def get_parameters_z(self):
         return (
-            [p for p in self.I.values() if p != LOG_EPS]
-            + [p for a in self.T_z.values() for b in a.values() for p in b.values()]
-            + [p for p in self.F.values() if p != LOG_EPS]
+            [p for p in self.I.values() if p != LOG_EPS] +
+            [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
+            [p for p in self.F.values() if p != LOG_EPS]
         )
 
     def set_unique_values(self, unique_values):
@@ -433,13 +427,6 @@ class Anomaly(Machine):
             ]
         )
 
-    def set_anomalous_values(self, anomalous_values, probs):
-        self.anomalous_values = anomalous_values
-        self.anomalous_values_probs = probs
-
-    def get_anomalous_values(self):
-        return self.anomalous_values
-
     def probability(self, word):
         # to-do: should we change the probabilities for the other words
         # by substracting the probabilities spent on anomalous_values
@@ -455,13 +442,10 @@ class Anomaly(Machine):
                 return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
                     self.STOP_P
                 )
-            elif word in self.get_anomalous_values():
+            elif word in self.anomalous_values:
                 return self.anomalous_values_probs[word]
             else:
-
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(
-                    word
-                ) + np.log(self.STOP_P)
+                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word) + np.log(self.STOP_P)
         else:
             return LOG_EPS
 
