@@ -26,17 +26,10 @@ class Machine(object):
         self.add_states(states)
 
         initials = [fsm_obj.initial]
-        I = [
-            np.log(1 / len(initials)) if q in initials else LOG_EPS
-            for q in self.states
-        ]
-        self.set_I(I)
+        self.set_I([np.log(1 / len(initials)) if q in initials else LOG_EPS for q in self.states])
 
         finals = list(fsm_obj.finals)
-        F = [
-            np.log(self.STOP_P) if state in finals else LOG_EPS for state in self.states
-        ]
-        self.set_F(F)
+        self.set_F([np.log(self.STOP_P) if q in finals else LOG_EPS for q in self.states])
 
         transitions = fsm_obj.map
         for q_i in transitions:
