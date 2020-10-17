@@ -1,34 +1,20 @@
 import numpy as np
 
-from ptype.Machine import (
-    AnomalyNew,
-    BooleansNew,
-    Date_EUNewAuto,
-    EmailAddress,
-    FloatsNewAuto,
-    Genders,
-    IntegersNewAuto,
-    IPAddress,
-    ISO_8601NewAuto,
-    MissingsNew,
-    Nonstd_DateNewAuto,
-    PI,
-    StringsNewAuto,
-    SubTypeNonstdDateNewAuto,
-)
+import ptype.Machine as Machine
+from ptype.Machine import PI
 
 MACHINES = {
-    "integer": IntegersNewAuto(),
-    "string": StringsNewAuto(),
-    "float": FloatsNewAuto(),
-    "boolean": BooleansNew(),
-    "gender": Genders(),
-    "date-iso-8601": ISO_8601NewAuto(),
-    "date-eu": Date_EUNewAuto(),
-    "date-non-std-subtype": SubTypeNonstdDateNewAuto(),
-    "date-non-std": Nonstd_DateNewAuto(),
-    "IPAddress": IPAddress(),
-    "EmailAddress": EmailAddress(),
+    "integer": Machine.Integers(),
+    "string": Machine.Strings(),
+    "float": Machine.Floats(),
+    "boolean": Machine.Booleans(),
+    "gender": Machine.Genders(),
+    "date-iso-8601": Machine.DateISO_8601(),
+    "date-eu": Machine.Date_EU(),
+    "date-non-std-subtype": Machine.SubTypeNonstdDate(),
+    "date-non-std": Machine.Nonstd_Date(),
+    "IPAddress": Machine.IPAddress(),
+    "EmailAddress": Machine.EmailAddress(),
 }
 
 
@@ -36,8 +22,8 @@ class Machines:
     def __init__(self, types):
         self.types = types
         self.forType = {t: MACHINES[t] for t in types}
-        self.anomalous = AnomalyNew()
-        self.missing = MissingsNew()
+        self.anomalous = Machine.Anomaly()
+        self.missing = Machine.Missing()
         self.normalize_params()
 
     @property
@@ -45,9 +31,7 @@ class Machines:
         return [self.missing, self.anomalous] + [self.forType[t] for t in self.forType]
 
     def machine_probabilities(self, col):
-        return {
-            v: [m.probability(str(v)) for m in self.machines] for v in col
-        }
+        return {v: [m.probability(str(v)) for m in self.machines] for v in col}
 
     def set_unique_values(self, unique_values):
         for machine in self.machines:
@@ -75,13 +59,8 @@ class Machines:
             counter = machine.set_probabilities_z(counter, w_j_z)
 
     def get_all_parameters_z(self):
-        w_j = []
-        for machine in self.forType.values():
-            w_j.extend(machine.get_parameters_z())
+        return [p for machine in self.forType.values() for p in machine.get_parameters_z()]
 
-        return w_j
-
-    # fix magic number 0
     def set_na_values(self, na_values):
         self.missing.alphabet = na_values
 
@@ -89,14 +68,12 @@ class Machines:
         return self.missing.alphabet.copy()
 
     def set_anomalous_values(self, anomalous_vals):
-
         probs = self.machine_probabilities(anomalous_vals)
         ratio = PI[0] / PI[2] + 0.1
-        min_probs = {
-            v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals
-        }
+        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals}
 
-        self.anomalous.set_anomalous_values(anomalous_vals, min_probs)
+        self.anomalous.anomalous_values = anomalous_vals
+        self.anomalous.anomalous_values_probs = min_probs
 
     def get_anomalous_values(self):
-        return self.anomalous.get_anomalous_values().copy()
+        return self.anomalous.anomalous_values.copy()

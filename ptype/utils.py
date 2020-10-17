@@ -75,6 +75,10 @@ def contains_all(_str, _list):
 
 
 ###################### STABLE CALCULATION METHODS #######################
+def normalise_safe(xs):
+    return xs if np.max(xs) == 0.0 else xs / xs.sum()
+
+
 def log_sum_probs(log_p1, log_p2):
     log_mx = np.max([log_p1, log_p2])
 

@@ -148,12 +148,7 @@ def core_tests():
 def notebook_tests():
     import os
 
-    if (
-        os.system(
-            "pytest --nbval notebooks/*.ipynb --sanitize-with script/nbval_sanitize.cfg"
-        )
-        != 0
-    ):
+    if (os.system("pytest --nbval notebooks/*.ipynb --sanitize-with script/nbval_sanitize.cfg") != 0):
         raise Exception("Notebook test(s) failed.")
 
 

@@ -4,6 +4,7 @@ import numpy as np
 from ptype.Column import MISSING_INDEX, ANOMALIES_INDEX
 from ptype.Machine import PI
 from ptype.utils import (
+    LOG_EPS,
     log_weighted_sum_normalize_probs,
     normalize_log_probs,
 )
@@ -42,8 +43,6 @@ def sum_weighted_likelihoods(counts_array, logP, k):
 def wurble(a, b, c):
     return str(a) + "*" + str(b) + "*" + str(c)
 
-
-LOG_EPS = -1e150
 
 LLHOOD_TYPE_START_INDEX = 2
 
@@ -116,12 +115,9 @@ class Trainer:
         return error
 
     def update_PFSMs(self):
-        w_j_z = self.machines.get_all_parameters_z()
-        w_j_z, _ = self.conjugate_gradient(w_j_z)
-
+        w_j_z, _ = self.conjugate_gradient(self.machines.get_all_parameters_z())
         self.machines.set_all_probabilities_z(w_j_z)
 
-        # normalise
         for machine in self.machines.forType.values():
             machine.normalize()
 
@@ -191,9 +187,7 @@ class Trainer:
             q_primes = indices_nonzero[1]
             for q, q_prime in zip(q_s, q_primes):
                 temp_g_j[
-                    state_indices[
-                        wurble(machine.states[q], alpha, machine.states[q_prime])
-                    ]
+                    state_indices[wurble(machine.states[q], alpha, machine.states[q_prime])]
                 ] += self.gradient_transition_marginals(
                     marginals,
                     machine.states[q],
@@ -208,12 +202,12 @@ class Trainer:
                 )
 
     def g_col_marginals(self, all_probs, i, col_name, y_i):
-        [xs, counts_array] = self.dfs_unique_vals_counts[i][col_name]
+        [xs, counts] = self.dfs_unique_vals_counts[i][col_name]
         logP = np.array([all_probs[x] for x in xs])
 
         # calculates posterior values of types
         r = [
-            sum_weighted_likelihoods(counts_array, logP, k)
+            sum_weighted_likelihoods(counts, logP, k)
             for k in range(len(self.machines.forType))
         ]
 
@@ -235,7 +229,7 @@ class Trainer:
                     xs[x_i_indices],
                     r,
                     temp_gra[x_i_indices],
-                    counts_array[x_i_indices],
+                    counts[x_i_indices],
                     y_i,
                 )
                 for q in possible_states
@@ -268,7 +262,7 @@ class Trainer:
                         counter += 1
 
             for x_i_index, (x_i, temp_gra_i, counts_array_i) in enumerate(
-                zip(xs[x_i_indices], temp_gra[x_i_indices], counts_array[x_i_indices])
+                zip(xs[x_i_indices], temp_gra[x_i_indices], counts[x_i_indices])
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
@@ -282,7 +276,6 @@ class Trainer:
                         for l, alpha in enumerate(str(x_i)):
                             if alpha in machine.alphabet:
                                 self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
-            # print('transition done')
             g_j = g_j + temp_g_j
 
             # gradient for final-state parameters
@@ -295,22 +288,18 @@ class Trainer:
                             xs[x_i_indices],
                             r,
                             temp_gra[x_i_indices],
-                            counts_array[x_i_indices],
+                            counts[x_i_indices],
                             y_i,
                         )
                     )
-            # print('final done')
 
-        return -np.array(g_j) / counts_array.sum()
+        return -np.array(g_j) / counts.sum()
 
     def g_cols(self, w_j_z):
         # calculates the gradient vector, i.e. df/dw (=df/dz * dz/dw) where f is the object function to minimize.
         # it returns -g_j because of minimizing instead of maximizing. see the objective function.
 
-        # updates the parameters
         self.machines.set_all_probabilities_z(w_j_z)
-
-        # generates probabilities
         all_probs = self.machines.machine_probabilities(self.unique_vals)
 
         q_total = None
@@ -330,7 +319,7 @@ class Trainer:
         return gradient * (1 - temp) if t == y_i else -1 * gradient * temp
 
     def gradient_initial(self, state, t, x, q, temp, counter, y_i):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.I[state])
 
         cs = np.array([
@@ -344,12 +333,10 @@ class Trainer:
     def gradient_transition_marginals(
         self, marginals, a, b, c, t, q, x, y_i, temp_gra, counts_array
     ):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         temp_mult = (
             temp_gra
-            * machine.gradient_abc_new_optimized_marginals(
-                marginals[x], str(x), a, b, c
-            )
+            * machine.gradient_abc_new_optimized_marginals(marginals[x], str(x), a, b, c)
             * counts_array
         )
         exp_param = 1 - np.exp(machine.T[a][b][c])
@@ -358,7 +345,7 @@ class Trainer:
         return self.scale_wrt_type(gradient, q, t, y_i)
 
     def gradient_final(self, final_state, t, x, q, temp, counter, y_i):
-        machine = self.machines.machines[2 + t]
+        machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.F[final_state])
 
         cs = np.array([
