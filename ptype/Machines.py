@@ -72,10 +72,8 @@ class Machines:
         ratio = PI[0] / PI[2] + 0.1
         min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals}
 
-        anomaly = self.anomalous
-        anomaly.anomalous_values = anomalous_vals
-        anomaly.anomalous_values_probs = min_probs
+        self.anomalous.anomalous_values = anomalous_vals
+        self.anomalous.anomalous_values_probs = min_probs
 
     def get_anomalous_values(self):
-        anomaly = self.anomalous
-        return anomaly.anomalous_values.copy()
+        return self.anomalous.anomalous_values.copy()

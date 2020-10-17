@@ -115,12 +115,9 @@ class Trainer:
         return error
 
     def update_PFSMs(self):
-        w_j_z = self.machines.get_all_parameters_z()
-        w_j_z, _ = self.conjugate_gradient(w_j_z)
-
+        w_j_z, _ = self.conjugate_gradient(self.machines.get_all_parameters_z())
         self.machines.set_all_probabilities_z(w_j_z)
 
-        # normalise
         for machine in self.machines.forType.values():
             machine.normalize()
 
@@ -190,9 +187,7 @@ class Trainer:
             q_primes = indices_nonzero[1]
             for q, q_prime in zip(q_s, q_primes):
                 temp_g_j[
-                    state_indices[
-                        wurble(machine.states[q], alpha, machine.states[q_prime])
-                    ]
+                    state_indices[wurble(machine.states[q], alpha, machine.states[q_prime])]
                 ] += self.gradient_transition_marginals(
                     marginals,
                     machine.states[q],
