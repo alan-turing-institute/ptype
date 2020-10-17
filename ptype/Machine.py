@@ -43,11 +43,11 @@ class Machine(object):
                     idx = np.where(state_js == q_j)[0]
                     self.add_transitions(q_i, q_j, list(symbols_js[idx]), list(probs[idx]))
 
-    def add_states(self, state_names):
-        for state_name in state_names:
-            if state_name not in self.states:
-                self.states.append(state_name)
-                self.T[state_name] = {}
+    def add_states(self, qs):
+        for q in qs:
+            if q not in self.states:
+                self.states.append(q)
+                self.T[q] = {}
 
     def add_transitions(self, i, j, obs, probs):
         for obs, prob in zip(obs, probs):
