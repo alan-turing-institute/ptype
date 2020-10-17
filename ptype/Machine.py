@@ -51,22 +51,12 @@ class Machine(object):
                 self.F[q_i] = 0.0
             else:
                 symbols_js = np.array(list(trans.keys()))
-                if self.F[q_i] != LOG_EPS:
-                    probs = np.array(
-                        [
-                            (1.0 - np.exp(self.F[q_i])) / len(symbols_js)
-                            for _ in symbols_js
-                        ]
-                    )
-                else:
-                    probs = np.array(
-                        [1.0 / len(symbols_js) for _ in symbols_js]
-                    )
+                dividend = 1.0 if self.F[q_i] == LOG_EPS else 1.0 - np.exp(self.F[q_i])
+                probs = np.array([dividend / len(symbols_js) for _ in symbols_js])
 
-                for state_j in np.unique(state_js):
-                    idx = np.where(state_js == state_j)[0]
-                    symbols = list(symbols_js[idx])
-                    self.add_transitions(q_i, state_j, symbols, list(probs[idx]))
+                for q_j in np.unique(state_js):
+                    idx = np.where(state_js == q_j)[0]
+                    self.add_transitions(q_i, q_j, list(symbols_js[idx]), list(probs[idx]))
 
     def add_states(self, state_names):
         for state_name in state_names:
