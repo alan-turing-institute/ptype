@@ -183,16 +183,16 @@ def training_tests():
 
 
 def other_test():
-    df = pd.read_csv('../data/rodents.csv', encoding="ISO-8859-1", dtype='str', keep_default_na=False)
+    df = pd.read_csv('data/rodents.csv', encoding="ISO-8859-1", dtype='str', keep_default_na=False)
     Ptype().schema_fit(df).transform(df)
 
 
 def main():
     np.random.seed(0)
-#    core_tests()
-#    training_tests()
-#    notebook_tests()
     other_test()
+    core_tests()
+    training_tests()
+    notebook_tests()
 
 
 if __name__ == "__main__":

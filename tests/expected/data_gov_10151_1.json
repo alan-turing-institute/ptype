@@ -1,6 +1,6 @@
 ﻿{
   "ARC_City": "string",
-  "ARC_State": "all identical",
+  "ARC_State": "integer",
   "ARC_Street": "string",
   "ARC_ZIP": "integer",
   "Addr_type": "string",

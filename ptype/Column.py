@@ -55,24 +55,15 @@ class Column:
         return repr(self.__dict__)
 
     def inferred_type(self):
-        # Unpleasant special case when posterior vector has entries which are equal
-        if len(set(self.p_t.values())) == 1:
-            return "all identical"
-        else:
-            return max(self.p_t, key=self.p_t.get)
+        return max(self.p_t, key=self.p_t.get)
 
     def initialise_missing_anomalies(self):
-        if self.type != "all identical":
-            row_posteriors = self.p_z[self.type]
-            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+        row_posteriors = self.p_z[self.type]
+        max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-            self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
-            self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
-            self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
-        else:
-            self.normal_indices = []
-            self.missing_indices = []
-            self.anomalous_indices = []
+        self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+        self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
+        self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
 
     def has_missing(self):
         return self.get_missing_values() != []
