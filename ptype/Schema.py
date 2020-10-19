@@ -41,9 +41,10 @@ class Schema:
         )
 
     def as_normal(self):
-        return lambda series: series.map(
-            lambda v: v if v in self.cols[series.name].get_normal_values() else pd.NA
-        )
+        def as_normal(col):
+            vs = self.cols[col.name].get_normal_values()  # expensive to recompute inside loop
+            return col.map(lambda v: v if v in vs else pd.NA)
+        return as_normal
 
     def transform(self, df):
         """Transforms a dataframe according to the schema.
