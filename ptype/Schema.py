@@ -42,7 +42,6 @@ class Schema:
 
     def as_normal(self):
         def as_normal(col):
-            print(col.name)
             vs = self.cols[col.name].get_normal_values()  # expensive to recompute inside loop
             return col.map(lambda v: v if v in vs else pd.NA)
         return as_normal
