@@ -398,11 +398,12 @@ class Missing(Machine):
 
     def probability(self, word):
         LEN_1_PROB = 1e-7
+        num_len_1 = len([a for a in self.alphabet if len(a) != 1])
         if word in self.alphabet:
             return (
                 np.log(LEN_1_PROB)
                 if len(word) == 1
-                else np.log((1.0 - LEN_1_PROB) / (len(self.alphabet) - 7))
+                else np.log((1.0 - LEN_1_PROB * num_len_1) / (len(self.alphabet) - num_len_1))
             )
         else:
             return LOG_EPS

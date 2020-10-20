@@ -30,13 +30,7 @@ class Feature(Enum):
 
 
 class Column:
-    def __init__(
-        self,
-        series,
-        counts,
-        p_t,
-        p_z,
-    ):
+    def __init__(self, series, counts, p_t, p_z):
         self.series = series
         self.p_t = p_t
         self.p_t_canonical = {}
