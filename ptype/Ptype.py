@@ -3,7 +3,7 @@ import numpy as np
 from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
 from ptype.Machine import PI
 from ptype.Machines import Machines
-from ptype.Trainer import LLHOOD_TYPE_START_INDEX, likelihoods_normalize, sum_weighted_likelihoods
+from ptype.Trainer import likelihoods_normalize, sum_weighted_likelihoods
 from ptype.Schema import Schema
 from ptype.utils import normalize_log_probs
 
