@@ -60,20 +60,3 @@ class Machines:
 
     def get_all_parameters_z(self):
         return [p for machine in self.forType.values() for p in machine.get_parameters_z()]
-
-    def set_na_values(self, na_values):
-        self.missing.alphabet = na_values
-
-    def get_na_values(self):
-        return self.missing.alphabet.copy()
-
-    def set_anomalous_values(self, anomalous_vals):
-        probs = self.machine_probabilities(anomalous_vals)
-        ratio = PI[0] / PI[2] + 0.1
-        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals}
-
-        self.anomalous.anomalous_values = anomalous_vals
-        self.anomalous.anomalous_values_probs = min_probs
-
-    def get_anomalous_values(self):
-        return self.anomalous.anomalous_values.copy()
