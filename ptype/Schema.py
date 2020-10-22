@@ -10,18 +10,28 @@ class Schema:
         self.df = df
         self.cols = cols
 
+    @staticmethod
+    def missing_empty_to_placeholder(str):
+        return str if str != "" else "ε"
+
+    @staticmethod
+    def show_missing_values(col):
+        return list(map(Schema.missing_empty_to_placeholder, col.get_missing_values()))
+
     def show(self):
         df = self.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_missing_values() for _, col in self.cols.items()]
+        df.loc[2] = [Schema.show_missing_values(col) for _, col in self.cols.items()]
         df.loc[3] = [col.get_anomalous_values() for _, col in self.cols.items()]
+        df.loc[4] = ["ε" if col.type == "string" else "" for _, col in self.cols.items()]
         return df.rename(
             index={
                 0: "type",
                 1: "normal values",
                 2: "missing values",
                 3: "anomalous values",
+                4: "(empty string marker)"
             }
         )
 
