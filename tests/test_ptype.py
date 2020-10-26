@@ -26,6 +26,7 @@ datasets = {
     "auto": ("utf-8", None),
     "data_gov_3397_1": ("utf-8", "infer"),
     "data_gov_10151_1": ("utf-8", "infer"),
+    "housing_price": ("utf-8", "infer"),
     "inspection_outcomes": ("utf-8", "infer"),
     "mass_6": ("ISO-8859-1", "infer"),
     "survey": ("utf-8", "infer"),
@@ -173,7 +174,7 @@ def check_expected(actual, filename):
 
 def training_tests():
     dfs, ys = [], []
-    for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
+    for dataset_name in ["accident2016", "auto", "data_gov_3397_1", "data_gov_10151_1"]:
         df, y = get_inputs(dataset_name)
         dfs.append(df)
         ys.append(y)

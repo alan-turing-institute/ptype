@@ -70,9 +70,7 @@ class Trainer:
             for i, df in enumerate(dfs)
         }
 
-    def train(
-        self, max_iter=20, uniformly=False,
-    ):
+    def train(self, max_iter=20, uniformly=False, threshold=1e-10):
         """ Train the PFSMs given a set of dataframes and their labels
 
         :param dfs: data frames to train with.
@@ -87,7 +85,9 @@ class Trainer:
             self.machines.initialize_uniformly()
             self.machines.normalize_params()
 
-        initial = deepcopy(self.machines)  # shouldn't need this, but too much mutation going on
+        initial = deepcopy(
+            self.machines
+        )  # shouldn't need this, but too much mutation going on
         training_error = [self.calculate_total_error(self.dfs, self.labels)]
 
         # Iterates over whole data points
@@ -99,7 +99,7 @@ class Trainer:
             training_error.append(self.calculate_total_error(self.dfs, self.labels))
             print(training_error)
 
-            if n > 0 and training_error[-2] - training_error[-1] < 1e-4:
+            if n > 0 and training_error[-2] - training_error[-1] < threshold:
                 break
 
         return initial, self.machines, training_error
@@ -111,6 +111,9 @@ class Trainer:
         for j, (df, df_labels) in enumerate(zip(dfs, labels)):
             for i, column_name in enumerate(list(df.columns)):
                 error += self.f_col(all_probs, j, column_name, df_labels[i] - 1)
+                # print(
+                #     column_name, self.f_col(all_probs, j, column_name, df_labels[i] - 1)
+                # )
 
         return error
 
@@ -180,14 +183,30 @@ class Trainer:
                 error += self.f_col(all_probs, i, column_name, labels[j] - 1)
         return error
 
-    def do_some_stuff(self, marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i):
+    def do_some_stuff(
+        self,
+        marginals,
+        x_i,
+        l,
+        temp_g_j,
+        state_indices,
+        machine,
+        alpha,
+        t,
+        r,
+        y_i,
+        temp_gra_i,
+        counts_array_i,
+    ):
         indices_nonzero = np.where(marginals[x_i][l] != 0.0)
         if len(indices_nonzero[0]) != 0:
             q_s = indices_nonzero[0]
             q_primes = indices_nonzero[1]
             for q, q_prime in zip(q_s, q_primes):
                 temp_g_j[
-                    state_indices[wurble(machine.states[q], alpha, machine.states[q_prime])]
+                    state_indices[
+                        wurble(machine.states[q], alpha, machine.states[q_prime])
+                    ]
                 ] += self.gradient_transition_marginals(
                     marginals,
                     machine.states[q],
@@ -266,16 +285,44 @@ class Trainer:
             ):
                 if logP[x_i_index, t + 2] != LOG_EPS:
                     if t == 1:
-                        common_chars = [x for x in machine.alphabet if x in list(str(x_i))]
+                        common_chars = [
+                            x for x in machine.alphabet if x in list(str(x_i))
+                        ]
                         for alpha in common_chars:
                             common_char_ls = np.where(list(str(x_i)) == alpha)[0]
                             for l in common_char_ls:
-                                self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
+                                self.do_some_stuff(
+                                    marginals,
+                                    x_i,
+                                    l,
+                                    temp_g_j,
+                                    state_indices,
+                                    machine,
+                                    alpha,
+                                    t,
+                                    r,
+                                    y_i,
+                                    temp_gra_i,
+                                    counts_array_i,
+                                )
 
                     else:
                         for l, alpha in enumerate(str(x_i)):
                             if alpha in machine.alphabet:
-                                self.do_some_stuff(marginals, x_i, l, temp_g_j, state_indices, machine, alpha, t, r, y_i, temp_gra_i, counts_array_i)
+                                self.do_some_stuff(
+                                    marginals,
+                                    x_i,
+                                    l,
+                                    temp_g_j,
+                                    state_indices,
+                                    machine,
+                                    alpha,
+                                    t,
+                                    r,
+                                    y_i,
+                                    temp_gra_i,
+                                    counts_array_i,
+                                )
             g_j = g_j + temp_g_j
 
             # gradient for final-state parameters
@@ -307,9 +354,13 @@ class Trainer:
         for i, (df, labels) in enumerate(zip(self.dfs, self.labels)):
             for j, column_name in enumerate(list(df.columns)):
                 if q_total is None:
-                    q_total = self.g_col_marginals(all_probs, i, column_name, labels[j] - 1)
+                    q_total = self.g_col_marginals(
+                        all_probs, i, column_name, labels[j] - 1
+                    )
                 else:
-                    q_total += self.g_col_marginals(all_probs, i, column_name, labels[j] - 1)
+                    q_total += self.g_col_marginals(
+                        all_probs, i, column_name, labels[j] - 1
+                    )
 
         return q_total
 
@@ -322,10 +373,7 @@ class Trainer:
         machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.I[state])
 
-        cs = np.array([
-            machine.gradient_initial_state(str(x_i), state)
-            for x_i in x
-        ])
+        cs = np.array([machine.gradient_initial_state(str(x_i), state) for x_i in x])
 
         gradient = (temp * counter * cs * exp_param).sum()
         return self.scale_wrt_type(gradient, q, t, y_i)
@@ -336,7 +384,9 @@ class Trainer:
         machine = self.machines.forType[self.machines.types[t]]
         temp_mult = (
             temp_gra
-            * machine.gradient_abc_new_optimized_marginals(marginals[x], str(x), a, b, c)
+            * machine.gradient_abc_new_optimized_marginals(
+                marginals[x], str(x), a, b, c
+            )
             * counts_array
         )
         exp_param = 1 - np.exp(machine.T[a][b][c])
@@ -348,10 +398,9 @@ class Trainer:
         machine = self.machines.forType[self.machines.types[t]]
         exp_param = 1 - np.exp(machine.F[final_state])
 
-        cs = np.array([
-            machine.gradient_final_state(str(x_i), final_state)
-            for x_i in x
-        ])
+        cs = np.array(
+            [machine.gradient_final_state(str(x_i), final_state) for x_i in x]
+        )
         gradient = sum(temp * counter * cs * exp_param)
 
         return self.scale_wrt_type(gradient, q, t, y_i)
