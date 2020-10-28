@@ -1,11 +1,17 @@
 import numpy as np
 
-from ptype.Column import ANOMALIES_INDEX, MISSING_INDEX, TYPE_INDEX, Column, get_unique_vals
+from ptype.Column import (
+    ANOMALIES_INDEX,
+    MISSING_INDEX,
+    TYPE_INDEX,
+    Column,
+    get_unique_vals,
+)
 from ptype.Machine import PI
 from ptype.Machines import Machines
 from ptype.Trainer import likelihoods_normalize, sum_weighted_likelihoods
 from ptype.Schema import Schema
-from ptype.utils import normalize_log_probs
+from ptype.utils import normalize_log_probs, LOG_EPS
 
 
 class Ptype:
@@ -38,12 +44,8 @@ class Ptype:
         # Calculate probabilities for each column and run inference.
         cols = {}
         for _, col_name in enumerate(list(df.columns)):
-            unique_vs, counts = get_unique_vals(
-                df[col_name], return_counts=True
-            )
-            probabilities_dict = self.machines.machine_probabilities(
-                unique_vs
-            )
+            unique_vs, counts = get_unique_vals(df[col_name], return_counts=True)
+            probabilities_dict = self.machines.machine_probabilities(unique_vs)
             probabilities = np.array(
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
@@ -54,12 +56,12 @@ class Ptype:
 
     def column(self, df, col_name, logP, counts):
         # Constants
-        I, J = logP.shape   # num of rows x num of data types
-        K = J - 2           # num of possible column data types (excluding missing and catch-all)
+        I, J = logP.shape  # num of rows x num of data types
+        K = J - 2  # num of possible column data types (excluding missing and catch-all)
 
         # Inference
-        p_t = []            # posterior probability distribution of column types
-        p_z = {}            # posterior probability distribution of row types
+        p_t = []  # posterior probability distribution of column types
+        p_z = {}  # posterior probability distribution of row types
 
         counts_array = np.array(counts)
 
@@ -80,7 +82,7 @@ class Ptype:
             series=df[col_name],
             counts=counts,
             p_t={t: p for t, p in zip(self.types, p_t)},
-            p_z=p_z
+            p_z=p_z,
         )
 
     def get_na_values(self):
@@ -89,13 +91,21 @@ class Ptype:
     def set_na_values(self, na_values):
         self.machines.missing.alphabet = na_values
 
-    def get_anomalous_values(self):
-        return self.machines.anomalous.anomalous_values.copy()
+    def get_an_values(self):
+        return self.machines.anomalous.an_values.copy()
 
-    def set_anomalous_values(self, anomalous_vals):
-        probs = self.machines.machine_probabilities(anomalous_vals)
+    def set_an_values(self, an_values):
+        probs = self.machines.machine_probabilities(an_values)
         ratio = PI[0] / PI[2] + 0.1
-        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in anomalous_vals}
+        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}
 
-        self.machines.anomalous.anomalous_values = anomalous_vals
-        self.machines.anomalous.anomalous_values_probs = min_probs
+        self.machines.anomalous.an_values = an_values
+        self.machines.anomalous.an_values_probs = min_probs
+
+    def get_string_alphabet(self):
+        string_index = 2 + self.types.index("string")
+        return self.machines.machines[string_index].alphabet
+
+    def set_string_alphabet(self, alphabet):
+        string_index = 2 + self.types.index("string")
+        self.machines.machines[string_index].set_alphabet(alphabet)

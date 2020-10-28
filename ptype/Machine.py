@@ -17,13 +17,26 @@ class Machine(object):
     def pfsm_from_fsm(self, reg_exp):
         fsm_obj = parse(reg_exp).to_fsm()
 
-        self.alphabet = sorted([str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"])
+        self.alphabet = sorted(
+            [str(i) for i in list(fsm_obj.alphabet) if str(i) != "anything_else"]
+        )
         self.add_states(list(fsm_obj.states))
-        self.set_I([np.log(1) if q == fsm_obj.initial else LOG_EPS for q in self.states])
-        self.set_F([np.log(self.STOP_P) if q in list(fsm_obj.finals) else LOG_EPS for q in self.states])
+        self.set_I(
+            [np.log(1) if q == fsm_obj.initial else LOG_EPS for q in self.states]
+        )
+        self.set_F(
+            [
+                np.log(self.STOP_P) if q in list(fsm_obj.finals) else LOG_EPS
+                for q in self.states
+            ]
+        )
 
         for q_i in fsm_obj.map:
-            transition = {symbol: v for symbol, v in fsm_obj.map[q_i].items() if str(symbol) != "anything_else"}
+            transition = {
+                symbol: v
+                for symbol, v in fsm_obj.map[q_i].items()
+                if str(symbol) != "anything_else"
+            }
 
             q_js = np.array(list(transition.values()))
             if len(q_js) == 0:
@@ -35,7 +48,9 @@ class Machine(object):
 
                 for q_j in np.unique(q_js):
                     idx = np.where(q_js == q_j)[0]
-                    self.add_transitions(q_i, q_j, list(symbols_js[idx]), list(probs[idx]))
+                    self.add_transitions(
+                        q_i, q_j, list(symbols_js[idx]), list(probs[idx])
+                    )
 
     def add_states(self, qs):
         for q in qs:
@@ -67,7 +82,9 @@ class Machine(object):
                     T_new[b] = np.ones((len(self.states), len(self.states))) * LOG_EPS
 
                 for c in self.T[a][b]:
-                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][c]
+                    T_new[b][self.states.index(a), self.states.index(c)] = self.T[a][b][
+                        c
+                    ]
 
         self.T_new = T_new
 
@@ -160,7 +177,9 @@ class Machine(object):
             if alpha not in self.T_new:
                 alpha_messages.append(np.zeros(len(alpha_messages[l])))
             else:
-                alpha_messages.append(np.dot(alpha_messages[l], np.exp(self.T_new[alpha])))
+                alpha_messages.append(
+                    np.dot(alpha_messages[l], np.exp(self.T_new[alpha]))
+                )
                 alpha_messages[-1] = normalise_safe(alpha_messages[-1])
 
         return alpha_messages
@@ -175,7 +194,9 @@ class Machine(object):
             if alpha not in self.T_new:
                 beta_messages.append(np.zeros(len(beta_messages[0])))
             else:
-                beta_messages.append(np.dot(np.exp(self.T_new[alpha]), beta_messages[0]))
+                beta_messages.append(
+                    np.dot(np.exp(self.T_new[alpha]), beta_messages[0])
+                )
                 beta_messages[0] = normalise_safe(beta_messages[0])
 
         return beta_messages
@@ -183,7 +204,10 @@ class Machine(object):
     def run_forward_backward(self, x):
         alpha_messages = self.forward_recursion(x)
         beta_messages = self.backward_recursion(x)
-        return [self.calculate_derivative_temp(alpha_messages, beta_messages, l, x) for l in range(len(x))]
+        return [
+            self.calculate_derivative_temp(alpha_messages, beta_messages, l, x)
+            for l in range(len(x))
+        ]
 
     def calculate_derivative_temp(self, alpha_messages, beta_messages, l, x):
         # l is in 0...L
@@ -191,7 +215,9 @@ class Machine(object):
         if x[l] not in self.T_new:
             smoothing_probs = np.zeros((len(alpha_messages[0]), len(alpha_messages[0])))
         else:
-            smoothing_probs = np.outer(alpha_messages[l], beta_messages[l]) * np.exp(self.T_new[x[l]])
+            smoothing_probs = np.outer(alpha_messages[l], beta_messages[l]) * np.exp(
+                self.T_new[x[l]]
+            )
 
         return normalise_safe(smoothing_probs)
 
@@ -279,9 +305,9 @@ class Machine(object):
 
     def get_parameters_z(self):
         return (
-            [p for p in self.I.values() if p != LOG_EPS] +
-            [p for a in self.T_z.values() for b in a.values() for p in b.values()] +
-            [p for p in self.F.values() if p != LOG_EPS]
+            [p for p in self.I.values() if p != LOG_EPS]
+            + [p for a in self.T_z.values() for b in a.values() for p in b.values()]
+            + [p for p in self.F.values() if p != LOG_EPS]
         )
 
     def set_unique_values(self, unique_values):
@@ -403,7 +429,9 @@ class Missing(Machine):
             return (
                 np.log(LEN_1_PROB)
                 if len(word) == 1
-                else np.log((1.0 - LEN_1_PROB * num_len_1) / (len(self.alphabet) - num_len_1))
+                else np.log(
+                    (1.0 - LEN_1_PROB * num_len_1) / (len(self.alphabet) - num_len_1)
+                )
             )
         else:
             return LOG_EPS
@@ -414,8 +442,8 @@ class Anomaly(Machine):
         super().__init__()
         self.alphabet = [chr(i) for i in range(1114112)]
         self.STOP_P = 1e-14
-        self.anomalous_values = []
-        self.anomalous_values_probs = {}
+        self.an_values = []
+        self.an_values_probs = {}
         self.add_states(["q_unknown", "q_unknown_3"])
         self.set_I(
             [np.log(1.0) if state == "q_unknown" else LOG_EPS for state in self.states]
@@ -442,10 +470,12 @@ class Anomaly(Machine):
                 return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
                     self.STOP_P
                 )
-            elif word in self.anomalous_values:
-                return self.anomalous_values_probs[word]
+            elif word in self.an_values:
+                return self.an_values_probs[word]
             else:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word) + np.log(self.STOP_P)
+                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(
+                    word
+                ) + np.log(self.STOP_P)
         else:
             return LOG_EPS
 
@@ -497,9 +527,7 @@ class UKPhoneNumbers(Machine):
     def __init__(self):
         super().__init__()
         self.STOP_P = 1e-4
-        self.pfsm_from_fsm(
-            "((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}"
-        )
+        self.pfsm_from_fsm("((\+44(\s\(0\)\s |\s0\s |\s)?) | 0)?7\d{3}(\s)?\d{6}")
         self.create_T_new()
         self.copy_to_z()
 
@@ -511,7 +539,10 @@ class Strings(Machine):
         self.STOP_P = 1e-15
         self.DIGIT_WEIGHT = 0.001
         self.EMPTY_WEIGHT = 1e-11
-        self.pfsm_from_fsm("[a-zA-Z0-9 .,\-_%:;]+")
+        self.initialize()
+
+    def initialize(self, reg_exp="[a-zA-Z0-9 .,\-_%:;]+"):
+        self.pfsm_from_fsm(reg_exp)
         self.create_T_new()
         self.copy_to_z()
 
@@ -533,6 +564,10 @@ class Strings(Machine):
             return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(word)
         else:
             return super().probability(word)
+
+    def set_alphabet(self, alphabet):
+        reg_exp = "[" + "".join(alphabet) + "]+"
+        self.initialize(reg_exp)
 
 
 class Floats(Machine):
