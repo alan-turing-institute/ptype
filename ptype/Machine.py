@@ -443,7 +443,7 @@ class Anomaly(Machine):
         self.alphabet = [chr(i) for i in range(1114112)]
         self.STOP_P = 1e-14
         self.an_values = []
-        self.an_values_probs = {}
+        self.an_probs = {}
         self.add_states(["q_unknown", "q_unknown_3"])
         self.set_I(
             [np.log(1.0) if state == "q_unknown" else LOG_EPS for state in self.states]
@@ -456,28 +456,27 @@ class Anomaly(Machine):
         )
 
     def probability(self, word):
-        # to-do: should we change the probabilities for the other words
-        # by substracting the probabilities spent on anomalous_values
-        # if len(self.anomalous_values) == 0:
-        #     total_anomalous_vals_probs = 0.0
-        # else:
-        #     total_anomalous_vals_probs = np.exp(
-        #         self.anomalous_values_probs.values()
-        #     ).sum()
+        L = len(word)
 
-        if self.supported_words[word] and len(word) != 0:
-            if len(word) > 100:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * 100 + np.log(
-                    self.STOP_P
-                )
-            elif word in self.an_values:
-                return self.an_values_probs[word]
+        if len(self.an_values) == 0:
+            total_an_probs = 0.0
+        else:
+            total_an_probs = np.exp(self.an_probs.values()).sum()
+        remaining_prob = 1.0 - self.STOP_P - total_an_probs
+        char_prob = remaining_prob / len(self.alphabet)
+        if self.supported_words[word] and L != 0:
+            if word in self.an_values:
+                return self.an_probs[word]
+            elif L > 100:
+                return np.log(char_prob) * 100 + np.log(self.STOP_P)
             else:
-                return np.log((1.0 - self.STOP_P) / len(self.alphabet)) * len(
-                    word
-                ) + np.log(self.STOP_P)
+                return np.log(char_prob) * L + np.log(self.STOP_P)
         else:
             return LOG_EPS
+
+    def set_an(self, an_values, an_probs):
+        self.machines.anomalous.an_values = an_values
+        self.machines.anomalous.an_probs = an_probs
 
 
 ############# INTEGERS #################

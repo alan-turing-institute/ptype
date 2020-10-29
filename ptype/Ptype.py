@@ -96,11 +96,12 @@ class Ptype:
 
     def set_an_values(self, an_values):
         probs = self.machines.machine_probabilities(an_values)
-        ratio = PI[0] / PI[2] + 0.1
-        min_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}
 
-        self.machines.anomalous.an_values = an_values
-        self.machines.anomalous.an_values_probs = min_probs
+        # magic numbers!
+        ratio = PI[0] / PI[2] + 0.1
+        new_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}
+
+        self.machines.anomalous.set_na(an_values, new_probs)
 
     def get_string_alphabet(self):
         string_index = 2 + self.types.index("string")
