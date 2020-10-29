@@ -461,7 +461,7 @@ class Anomaly(Machine):
         if len(self.an_values) == 0:
             total_an_probs = 0.0
         else:
-            total_an_probs = np.exp(self.an_probs.values()).sum()
+            total_an_probs = np.exp(list(self.an_probs.values())).sum()
         remaining_prob = 1.0 - self.STOP_P - total_an_probs
         char_prob = remaining_prob / len(self.alphabet)
         if self.supported_words[word] and L != 0:
@@ -475,8 +475,8 @@ class Anomaly(Machine):
             return LOG_EPS
 
     def set_an(self, an_values, an_probs):
-        self.machines.anomalous.an_values = an_values
-        self.machines.anomalous.an_probs = an_probs
+        self.an_values = an_values
+        self.an_probs = an_probs
 
 
 ############# INTEGERS #################

@@ -101,7 +101,7 @@ class Ptype:
         ratio = PI[0] / PI[2] + 0.1
         new_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}
 
-        self.machines.anomalous.set_na(an_values, new_probs)
+        self.machines.anomalous.set_an(an_values, new_probs)
 
     def get_string_alphabet(self):
         string_index = 2 + self.types.index("string")
