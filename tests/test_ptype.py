@@ -26,14 +26,15 @@ datasets = {
     "auto": ("utf-8", None),
     "data_gov_3397_1": ("utf-8", "infer"),
     "data_gov_10151_1": ("utf-8", "infer"),
+    "housing_price": ("utf-8", "infer"),
     "inspection_outcomes": ("utf-8", "infer"),
     "mass_6": ("ISO-8859-1", "infer"),
     "survey": ("utf-8", "infer"),
 }
 
 
-def get_predictions(dataset_name):
-    df = read_dataset(dataset_name)
+def get_predictions(dataset_name, data_folder):
+    df = read_dataset(dataset_name, data_folder)
 
     ptype = Ptype(_types=types)
     schema = ptype.schema_fit(df)
@@ -85,8 +86,8 @@ def check_predictions(type_predictions, expected_folder, dataset_name):
         raise Exception(f"{expected_file + '.json'} comparison failed.")
 
 
-def read_dataset(dataset_name):
-    filename = "data/" + dataset_name + ".csv"
+def read_dataset(dataset_name, data_folder):
+    filename = data_folder + dataset_name + ".csv"
     if dataset_name in datasets:
         encoding, header = datasets[dataset_name]
         return pd.read_csv(
@@ -102,9 +103,11 @@ def read_dataset(dataset_name):
         raise Exception(f"{filename} not known.")
 
 
-def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
+def get_inputs(
+    dataset_name, annotations_file="annotations/annotations.json", data_folder="data/"
+):
     annotations = json.load(open(annotations_file))
-    df = read_dataset(dataset_name)
+    df = read_dataset(dataset_name, data_folder)
     labels = annotations[dataset_name]
 
     # discard labels other than initialized 'types'
@@ -120,12 +123,13 @@ def get_inputs(dataset_name, annotations_file="annotations/annotations.json"):
 
 def core_tests():
     expected_folder = "tests/expected"
+    data_folder = "data/"
     annotations = json.load(open("annotations/annotations.json"))
 
     type_predictions = {}
     for dataset_name in datasets:
         col_predictions, col_arff_types, missing_anomalous = get_predictions(
-            dataset_name
+            dataset_name, data_folder
         )
 
         check_predictions(col_predictions, expected_folder, dataset_name)
@@ -142,7 +146,12 @@ def core_tests():
 def notebook_tests():
     import os
 
-    if (os.system("pytest --nbval notebooks/*.ipynb --sanitize-with script/nbval_sanitize.cfg") != 0):
+    if (
+        os.system(
+            "pytest --nbval notebooks/*.ipynb --sanitize-with script/nbval_sanitize.cfg"
+        )
+        != 0
+    ):
         raise Exception("Notebook test(s) failed.")
 
 
@@ -165,7 +174,7 @@ def check_expected(actual, filename):
 
 def training_tests():
     dfs, ys = [], []
-    for dataset_name in ["accident2016", "auto", "data_gov_3397_1"]:
+    for dataset_name in ["accident2016", "auto", "data_gov_3397_1", "data_gov_10151_1"]:
         df, y = get_inputs(dataset_name)
         dfs.append(df)
         ys.append(y)
@@ -183,7 +192,9 @@ def training_tests():
 
 
 def other_test():
-    df = pd.read_csv('data/rodents.csv', encoding="ISO-8859-1", dtype='str', keep_default_na=False)
+    df = pd.read_csv(
+        "data/rodents.csv", encoding="ISO-8859-1", dtype="str", keep_default_na=False
+    )
     Ptype().schema_fit(df).transform(df)
 
 
