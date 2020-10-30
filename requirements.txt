@@ -1,4 +1,4 @@
-joblib==0.17.0
+joblib>=0.17.0
 jsonpickle==1.4.1
 clevercsv==0.6.4
 greenery==3.2
