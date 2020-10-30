@@ -1,6 +1,6 @@
 joblib>=0.17.0
-jsonpickle==1.4.1
-clevercsv==0.6.4
+jsonpickle>=1.4.1
+clevercsv>=0.6.4
 greenery==3.2
 matplotlib==3.3.2
 nbval==0.9.6
