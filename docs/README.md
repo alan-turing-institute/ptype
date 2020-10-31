@@ -1,4 +1,3 @@
-![gibble bibble](https://readthedocs.org/projects/ptype/badge/)
 ![build-publish on release](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release)
 ![build on develop](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb)
