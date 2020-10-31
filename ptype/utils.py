@@ -1,5 +1,4 @@
 from datetime import timedelta
-from sklearn.metrics import auc
 
 import functools
 import numpy.ma as ma
@@ -316,85 +315,6 @@ def _blob(x, y, area, colour):
 #         plt.savefig(path, dpi=1000, bbox_inches="tight")
 #
 #     # plt.show()
-
-
-def plot_roc(
-    fpr,
-    tpr,
-    _type,
-    _method="",
-    _path="experiments/0_predictions/roc.eps",
-    _save=False,
-    _show=True,
-):
-    roc_auc = auc(fpr, tpr)
-    plt.figure()
-    plt.plot(
-        fpr,
-        tpr,
-        color="darkorange",
-        label="ROC curve " + _method + "(area = %0.2f)" % roc_auc,
-    )
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("ROC for " + _type)
-    plt.legend(loc="lower right")
-    if _show:
-        plt.show()
-    if _save:
-        plt.savefig(_path, dpi=1000)
-
-
-def plot_roc_multiple(
-    Xs, _type, _path="experiments/0_predictions/roc.eps", _save=False, _show=True
-):
-    plt.figure()
-    for method in list(Xs.keys()):
-        fpr = Xs[method][_type]["fpr"]
-        tpr = Xs[method][_type]["tpr"]
-        roc_auc = auc(fpr, tpr)
-
-        plt.plot(fpr, tpr, label="ROC curve " + method + " (area = %0.2f)" % roc_auc)
-
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("ROC for " + _type)
-    plt.legend(loc="lower right")
-    if _show:
-        plt.show()
-    if _save:
-        plt.savefig(_path, dpi=1000)
-
-
-def plot_roc_multiple_dots(
-    Xs, _type, _path="experiments/0_predictions/roc.eps", _save=False, _show=True
-):
-    plt.figure()
-    tprs = []
-    fprs = []
-    groups = []
-    for method in list(Xs.keys()):
-        tprs.append(Xs[method][_type][0])
-        fprs.append(Xs[method][_type][1])
-        groups.append(method)
-
-    df = pd.DataFrame({"x": fprs, "y": tprs, "group": groups})
-
-    sns.regplot(data=df, x="x", y="y", fit_reg=False, marker="+", color="skyblue")
-
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("ROC for " + _type)
-    if _show:
-        plt.show()
-    if _save:
-        plt.savefig(_path, dpi=1000)
 
 
 ###############################################################
