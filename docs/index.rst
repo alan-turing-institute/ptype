@@ -1,16 +1,15 @@
-.. include:: ./_readme.rst
+.. ptype documentation master file, created by
+   sphinx-quickstart on Sat Oct 31 16:23:19 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to ptype's documentation!
+=================================
 
 .. toctree::
    :maxdepth: 2
+   :caption: Contents:
 
-   _readme
-
-.. toctree::
-   :caption: Further Documentation
-   :maxdepth: 2
-
-   _changelog
-   source/modules
 
 
 Indices and tables
