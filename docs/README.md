@@ -1,5 +1,6 @@
-![build-publish on release](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release)
-![build on develop](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop)
+[![docs](https://readthedocs.org/projects/ptype/badge/)](https://ptype.readthedocs.io/en/stable/)
+[![build-publish on release](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release)](https://github.com/alan-turing-institute/ptype-dmkd/tree/release)
+[![build on develop](https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop)](https://github.com/alan-turing-institute/ptype-dmkd/tree/develop)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb)
 
 # Introduction
