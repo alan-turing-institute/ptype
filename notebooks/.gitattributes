@@ -1,1 +1,3 @@
-*.ipynb filter=strip-notebook-output
+# This cleans the notebook outputs whenever the repository is queried,
+# but actually this doesn't really make sense in conjunction with nbval.
+# *.ipynb filter=strip-notebook-output

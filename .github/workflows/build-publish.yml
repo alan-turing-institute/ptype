@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1 # needed for twine
       with:
-        python-version: '3.8'
+        python-version: '3.8.6'
     - name: Build, test and publish to PyPI
       run: |
         script/do-build-publish.sh $(which python) ${{ secrets.pypi_password }} pypi
