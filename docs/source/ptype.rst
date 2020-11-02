@@ -12,6 +12,8 @@ ptype.Column module
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: ptype.Column.Column
+
 ptype.Machine module
 --------------------
 
@@ -56,15 +58,6 @@ ptype.utils module
 ------------------
 
 .. automodule:: ptype.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: ptype
    :members:
    :undoc-members:
    :show-inheritance:
