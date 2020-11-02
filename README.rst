@@ -34,10 +34,11 @@ If you use this package, please cite ptype with the following BibTeX entry:
 ====================
 Install requirements
 ====================
-::
+:: code:: bash
+
     pip install -r requirements.txt
 
 Usage
 =====
 
-See demo notebooks in `notebooks` folder.
+See demo notebooks in ``notebooks`` folder.
