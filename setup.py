@@ -5,12 +5,12 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
    name='ptype',
-   version='0.1.15',
+   version='0.2.0',
    description='Probabilistic type inference',
    long_description=long_description,
    long_description_content_type="text/markdown",
-   author='Taha Ceritli, Christopher K. I. Williams, James Geddes',
-   author_email='t.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk',
+   author='Taha Ceritli, Christopher K. I. Williams, James Geddes, Roly Perera',
+   author_email='t.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk, rperera@turing.ac.uk',
    url='https://github.com/alan-turing-institute/ptype-dmkd',
    packages=setuptools.find_packages(),
    classifiers=[
