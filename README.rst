@@ -20,6 +20,7 @@ ptype_ is a probabilistic type inference model for tabular data, which aims to r
 If you use this package, please cite ptype with the following BibTeX entry:
 
 ::
+
     @article{ceritli2020ptype,
       title={ptype: probabilistic type inference},
       author={Ceritli, Taha and Williams, Christopher KI and Geddes, James},
@@ -38,6 +39,7 @@ Install requirements
 
     pip install -r requirements.txt
 
+=====
 Usage
 =====
 
