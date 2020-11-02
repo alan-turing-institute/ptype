@@ -11,6 +11,8 @@ ptype: probabilistic type inference
    :maxdepth: 2
    :caption: Contents:
 
+   source/modules
+
    README
 
 Indices and tables
