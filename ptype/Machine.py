@@ -382,7 +382,6 @@ class Machine(object):
 
 
 ################################# MACHINES ##################################
-############# MISSINGS #################
 class Missing(Machine):
     def __init__(self):
         super().__init__()
@@ -479,7 +478,6 @@ class Anomaly(Machine):
         self.an_probs = an_probs
 
 
-############# INTEGERS #################
 class Integers(Machine):
     def __init__(self):
         super().__init__()
@@ -531,7 +529,6 @@ class UKPhoneNumbers(Machine):
         self.copy_to_z()
 
 
-############# STRINGS #################
 class Strings(Machine):
     def __init__(self):
         super().__init__()
@@ -586,7 +583,6 @@ class Floats(Machine):
             return super().probability(word)
 
 
-############# boolean #################
 class Booleans(Machine):
     def __init__(self):
         super().__init__()
@@ -657,7 +653,6 @@ class Booleans(Machine):
         self.create_T_new()
 
 
-############# GENDERS #################
 class Genders(Machine):
     def __init__(self):
         super().__init__()
@@ -707,7 +702,6 @@ class Genders(Machine):
         self.create_T_new()
 
 
-############# DATE ISO-8601 #################
 class DateISO_8601(Machine):
     def __init__(self):
         super().__init__()
