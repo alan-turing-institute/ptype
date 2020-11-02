@@ -1,9 +1,6 @@
 ptype package
 =============
 
-Submodules
-----------
-
 ptype.Column module
 -------------------
 
