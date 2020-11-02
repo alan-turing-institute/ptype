@@ -19,6 +19,7 @@
            <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
+    </p>
 
 ============
 Introduction
