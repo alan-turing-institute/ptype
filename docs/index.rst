@@ -12,7 +12,6 @@ ptype: probabilistic type inference
    :caption: Contents:
 
    source/modules
-
    README
 
 Indices and tables
