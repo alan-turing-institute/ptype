@@ -16,7 +16,7 @@
            <a href="https://pepy.tech/project/ptype">
                    <img src="https://pepy.tech/badge/ptype" alt="Downloads">
            </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fintro-to-ptype.ipynb">
+           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
     </p>
@@ -59,7 +59,7 @@ If you use this package, please cite ptype with the following BibTeX entry:
 Install requirements
 ====================
 
-:: code:: bash
+.. code:: bash
 
     pip install -r requirements.txt
 
@@ -67,4 +67,6 @@ Install requirements
 Usage
 =====
 
-See demo notebooks in ``notebooks`` folder.
+See demo notebooks in ``notebooks`` folder. View them online via Binder_.
+
+.. _Binder: https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks
