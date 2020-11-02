@@ -1,17 +1,17 @@
-.. include:: ./_readme.rst
+===================================
+ptype: probabilistic type inference
+===================================
 
 .. toctree::
    :maxdepth: 2
 
-   _readme
+   README
 
 .. toctree::
-   :caption: Further Documentation
+   :caption: Further documentation
    :maxdepth: 2
 
-   _changelog
    source/modules
-
 
 Indices and tables
 ==================
