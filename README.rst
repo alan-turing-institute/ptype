@@ -16,7 +16,7 @@
            <a href="https://pepy.tech/project/ptype">
                    <img src="https://pepy.tech/badge/ptype" alt="Downloads">
            </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fintro-to-ptype.ipynb">
+           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
     </p>
