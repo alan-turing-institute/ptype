@@ -8,7 +8,7 @@ Introduction
 
 Type inference refers to the task of inferring the data type (e.g., Boolean, date, integer and string) of a given column of data, which becomes challenging in the presence of missing data and anomalies.
 
-.. figure:: /notes/motivation.png
+.. figure:: ../notes/motivation.png
     :width: 400
 
     Normal, missing and anomalous values are denoted by green, yellow and red, respectively in the right hand figure.
