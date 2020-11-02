@@ -67,4 +67,6 @@ Install requirements
 Usage
 =====
 
-See demo notebooks in ``notebooks`` folder.
+See demo notebooks in ``notebooks`` folder. View them online via Binder_.
+
+.. _Binder: https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks
