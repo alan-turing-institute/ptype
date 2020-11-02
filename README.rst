@@ -1,30 +1,24 @@
 .. raw:: html
 
    <p align="center">
-           <img width="60%" src="https://raw.githubusercontent.com/alan-turing-institute/CleverCSV/eea72549195e37bd4347d87fd82bc98be2f1383d/.logo.png">
-           <br>
-           <a href="https://travis-ci.org/alan-turing-institute/CleverCSV">
-                   <img src="https://travis-ci.org/alan-turing-institute/CleverCSV.svg?branch=master" alt="Travis Build Status">
+           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild-publish+branch%3Arelease">
+                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
            </a>
-           <a href="https://pypi.org/project/clevercsv/">
-                   <img src="https://badge.fury.io/py/clevercsv.svg" alt="PyPI version">
+           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild+branch%3Adevelop">
+                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop" alt="build on develop">
            </a>
-           <a href="https://clevercsv.readthedocs.io/en/latest/?badge=latest">
-                   <img src="https://readthedocs.org/projects/clevercsv/badge/?version=latest" alt="Documentation Status">
+           <a href="https://badge.fury.io/py/ptype">
+                   <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
            </a>
-           <a href="https://pepy.tech/project/clevercsv">
-                   <img src="https://pepy.tech/badge/clevercsv" alt="Downloads">
+           <a href="https://ptype.readthedocs.io/en/latest/?badge=latest">
+                   <img src="https://readthedocs.org/projects/ptype/badge/?version=latest" alt="Documentation Status">
            </a>
-           <a href="https://gitter.im/alan-turing-institute/CleverCSV">
-                 <img src="https://badges.gitter.im/alan-turing-institute/CleverCSV.svg" alt="chat on gitter">
+           <a href="https://pepy.tech/project/ptype">
+                   <img src="https://pepy.tech/badge/ptype" alt="Downloads">
            </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/CleverCSVDemo/master?filepath=CSV_dialect_detection_with_CleverCSV.ipynb">
+           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks%2Fdemo.ipynb">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
-           <a href="https://rdcu.be/bLVur">
-                   <img src="https://img.shields.io/badge/DOI-10.1007%2Fs10618--019--00646--y-blue">
-           </a>
-   </p>
 
 ============
 Introduction
