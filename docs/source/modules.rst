@@ -1,5 +1,6 @@
-ptype
-=====
+=======================
+ptype API documentation
+=======================
 
 .. toctree::
    :maxdepth: 4
