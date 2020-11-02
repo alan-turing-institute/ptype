@@ -3,15 +3,16 @@ ptype: probabilistic type inference
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   README
+    README
 
 .. toctree::
-   :caption: Further documentation
-   :maxdepth: 2
+    :caption: Further documentation
+    :maxdepth: 2
 
-   source/modules
+    CHANGELOG
+    source/modules
 
 Indices and tables
 ==================
