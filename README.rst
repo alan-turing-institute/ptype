@@ -59,9 +59,9 @@ If you use this package, please cite ptype with the following BibTeX entry:
 Install requirements
 ====================
 
-:: code:: bash
+.. code:: bash
 
-    pip install -r requirements.txt
+    ``pip install -r requirements.txt``
 
 =====
 Usage
