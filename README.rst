@@ -10,7 +10,7 @@
            <a href="https://badge.fury.io/py/ptype">
                    <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
            </a>
-           <a href="https://ptype.readthedocs.io/en/latest/?badge=latest">
+           <a href="https://ptype.readthedocs.io/en/docs/index.html">
                    <img src="https://readthedocs.org/projects/ptype/badge/?version=latest" alt="Documentation Status">
            </a>
            <a href="https://pepy.tech/project/ptype">
