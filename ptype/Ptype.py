@@ -5,7 +5,7 @@ from ptype.Column import (
     MISSING_INDEX,
     TYPE_INDEX,
     Column,
-    get_unique_vals,
+    _get_unique_vals,
 )
 from ptype.Machine import PI
 from ptype.Machines import Machines
@@ -44,7 +44,7 @@ class Ptype:
         # Calculate probabilities for each column and run inference.
         cols = {}
         for _, col_name in enumerate(list(df.columns)):
-            unique_vs, counts = get_unique_vals(df[col_name], return_counts=True)
+            unique_vs, counts = _get_unique_vals(df[col_name], return_counts=True)
             probabilities_dict = self.machines.machine_probabilities(unique_vs)
             probabilities = np.array(
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]

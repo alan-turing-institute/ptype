@@ -10,19 +10,19 @@ MISSING_INDEX = 1
 ANOMALIES_INDEX = 2
 
 
-def get_unique_vals(col, return_counts=False):
+def _get_unique_vals(col, return_counts=False):
     """List of the unique values found in a column."""
     return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
 
 
 # Use same names and values as the constants in Model.py. Could consolidate.
-class Status(Enum):
+class _Status(Enum):
     TYPE = 1
     MISSING = 2
     ANOMALOUS = 3
 
 
-class Feature(Enum):
+class _Feature(Enum):
     U_RATIO = 5
     U_RATIO_CLEAN = 6
     U = 7
@@ -36,11 +36,11 @@ class Column:
         self.p_t_canonical = {}
         self.p_z = p_z
         self.type = self.inferred_type()
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
+        self.unique_vals, self.unique_vals_counts = _get_unique_vals(self.series, return_counts=True)
         self._initialise_missing_anomalies()
         features = self._get_features(counts)
-        self.arff_type = column2ARFF.get_arff(features)[0]
-        self.arff_posterior = column2ARFF.get_arff(features)[1]
+        self.arff_type = _column2ARFF.get_arff(features)[0]
+        self.arff_posterior = _column2ARFF.get_arff(features)[1]
         self.categorical_values = (
             self.get_normal_values() if self.arff_type == "nominal" else None
         )
@@ -87,8 +87,8 @@ class Column:
     def reclassify(self, new_t):
         """Assign a different type to the column, and adjust the interpretation of missing/anomalous values
         accordingly.
-        Args:
-            new_t: the new type, which must be one of the types known to ptype.
+
+        :param new_t: the new type, which must be one of the types known to ptype.
         """
         if new_t not in self.p_z:
             raise Exception(f"Type {new_t} is unknown.")
@@ -123,14 +123,14 @@ class Column:
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
 
-class Column2ARFF:
+class _Column2ARFF:
     def __init__(self, model_folder="models"):
         self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
         self.clf = joblib.load(model_folder + "LR.sav")
 
     def get_arff(self, features):
-        features[[Feature.U.value, Feature.U_CLEAN.value]] = self.normalizer.transform(
-            features[[Feature.U.value, Feature.U_CLEAN.value]].reshape(1, -1)
+        features[[_Feature.U.value, _Feature.U_CLEAN.value]] = self.normalizer.transform(
+            features[[_Feature.U.value, _Feature.U_CLEAN.value]].reshape(1, -1)
         )[0]
         arff_type = self.clf.predict(features.reshape(1, -1))[0]
 
@@ -143,4 +143,4 @@ class Column2ARFF:
         return arff_type, arff_type_posterior
 
 
-column2ARFF = Column2ARFF(project_root() + "/../models/")
+_column2ARFF = _Column2ARFF(project_root() + "/../models/")
