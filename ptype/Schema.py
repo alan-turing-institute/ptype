@@ -8,26 +8,32 @@ class Schema:
         cols,
     ):
         self.df = df
-        self.cols = cols
+        self._cols = cols  # make private so we can document via a property
 
-    missing_placeholder = "ε"
+    _missing_placeholder = "ε"
+
+    @property
+    def cols(self):
+        """A string-indexed dictionary of Column objects, each containing type information inferred by ptype."""
+        return self._cols
 
     @staticmethod
-    def missing_empty_to_placeholder(str):
-        return str if str != "" else Schema.missing_placeholder
+    def _missing_empty_to_placeholder(str):
+        return str if str != "" else Schema._missing_placeholder
 
     @staticmethod
-    def show_missing_values(xs):
-        return list(map(Schema.missing_empty_to_placeholder, xs))
+    def _show_missing_values(xs):
+        return list(map(Schema._missing_empty_to_placeholder, xs))
 
     def show(self):
+        """Show the schema, as a dataframe."""
         df = self.df.iloc[0:0, :].copy()
-        df.loc[0] = [col.type for _, col in self.cols.items()]
-        df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        xss = [col.get_na_values() for _, col in self.cols.items()]
-        df.loc[2] = [Schema.show_missing_values(xs) for xs in xss]
-        df.loc[3] = [col.get_an_values() for _, col in self.cols.items()]
-        placeholders = [Schema.missing_placeholder if "" in xs else "" for xs in xss]
+        df.loc[0] = [col.type for _, col in self._cols.items()]
+        df.loc[1] = [col.get_normal_values() for _, col in self._cols.items()]
+        xss = [col.get_na_values() for _, col in self._cols.items()]
+        df.loc[2] = [Schema._show_missing_values(xs) for xs in xss]
+        df.loc[3] = [col.get_an_values() for _, col in self._cols.items()]
+        placeholders = [Schema._missing_placeholder if "" in xs else "" for xs in xss]
 
         index = {
             0: "type",
@@ -43,11 +49,12 @@ class Schema:
         return df.rename(index=index)
 
     def show_ratios(self):
+        """Show ratio of normal, missing as anomalous values, as a dataframe."""
         df = self.df.iloc[0:0, :].copy()
-        df.loc[0] = [col.type for _, col in self.cols.items()]
-        df.loc[1] = [col.get_normal_ratio() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_na_ratio() for _, col in self.cols.items()]
-        df.loc[3] = [col.get_an_ratio() for _, col in self.cols.items()]
+        df.loc[0] = [col.type for _, col in self._cols.items()]
+        df.loc[1] = [col.get_normal_ratio() for _, col in self._cols.items()]
+        df.loc[2] = [col.get_na_ratio() for _, col in self._cols.items()]
+        df.loc[3] = [col.get_an_ratio() for _, col in self._cols.items()]
         return df.rename(
             index={
                 0: "type",
@@ -57,24 +64,20 @@ class Schema:
             }
         )
 
-    def as_normal(self):
+    def _as_normal(self):
         def as_normal(col):
-            vs = self.cols[col.name].get_normal_values()  # expensive to recompute inside loop
+            vs = self._cols[col.name].get_normal_values()  # expensive to recompute inside loop
             return col.map(lambda v: v if v in vs else pd.NA)
         return as_normal
 
     def transform(self, df):
-        """Transforms a dataframe according to the schema.
+        """Transform a dataframe according to the schema. The dataframe must be the one used to infer the
+        schema, or one structurally similar to it."
 
-         Parameters
-         ----------
-         df: Pandas dataframe object.
-
-         Returns
-         -------
-         Transformed Pandas dataframe object.
+         :param df: dataframe to transform.
+         :return: Transformed dataframe with appropriately typed columns.
          """
-        df = df.apply(self.as_normal(), axis=0)
+        df = df.apply(self._as_normal(), axis=0)
         ptype_pandas_mapping = {
             "integer": "Int64",
             "date-iso-8601": "datetime64",
@@ -85,7 +88,7 @@ class Schema:
             "float": "float64",
         }
         for col_name in df:
-            new_dtype = ptype_pandas_mapping[self.cols[col_name].type]
+            new_dtype = ptype_pandas_mapping[self._cols[col_name].type]
             if new_dtype == "boolean":
                 df[col_name] = df[col_name].apply(
                     lambda x: False

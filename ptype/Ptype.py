@@ -107,9 +107,11 @@ class Ptype:
         self.machines.anomalous.set_an(an_values, new_probs)
 
     def get_string_alphabet(self):
+        """Get the alphabet associated with the string type."""
         string_index = 2 + self.types.index("string")  # magic numbers
         return self.machines.machines[string_index].alphabet
 
     def set_string_alphabet(self, alphabet):
+        """Set the alphabet associated with the string type."""
         string_index = 2 + self.types.index("string")  # magic numbers
         self.machines.machines[string_index].set_alphabet(alphabet)

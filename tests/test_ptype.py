@@ -39,7 +39,7 @@ def get_predictions(dataset_name, data_folder):
     ptype = Ptype(_types=types)
     schema = ptype.schema_fit(df)
 
-    df_normal = df.apply(schema.as_normal(), axis=0)
+    df_normal = schema.transform(df)
     print(dataset_name)
     print("Original data:\n", df)
     print("Normal:\n", df_normal)
