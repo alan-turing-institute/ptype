@@ -11,7 +11,7 @@ setuptools.setup(
    long_description_content_type="text/x-rst",
    author='Taha Ceritli, Christopher K. I. Williams, James Geddes, Roly Perera',
    author_email='t.y.ceritli@sms.ed.ac.uk, ckiw@inf.ed.ac.uk, jgeddes@turing.ac.uk, rperera@turing.ac.uk',
-   url='https://github.com/alan-turing-institute/ptype-dmkd',
+   url='https://github.com/alan-turing-institute/ptype',
    packages=setuptools.find_packages(),
    classifiers=[
         "Programming Language :: Python :: 3",
