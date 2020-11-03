@@ -19,7 +19,14 @@
            <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
+           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
+                   <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
+           </a>
     </p>
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks
+    :alt: Binder
 
 ============
 Introduction
