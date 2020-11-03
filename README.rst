@@ -1,11 +1,11 @@
 .. raw:: html
 
    <p align="center">
-           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild-publish+branch%3Arelease">
-                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
+           <a href="https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild-publish+branch%3Arelease">
+                   <img src="https://github.com/alan-turing-institute/ptype/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
            </a>
-           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild+branch%3Adevelop">
-                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop" alt="build on develop">
+           <a href="https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild+branch%3Adevelop">
+                   <img src="https://github.com/alan-turing-institute/ptype/workflows/build/badge.svg?branch=develop" alt="build on develop">
            </a>
            <a href="https://badge.fury.io/py/ptype">
                    <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
@@ -16,7 +16,7 @@
            <a href="https://pepy.tech/project/ptype">
                    <img src="https://pepy.tech/badge/ptype" alt="Downloads">
            </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
+           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype/release?filepath=notebooks">
                    <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
            </a>
     </p>
@@ -69,4 +69,4 @@ Usage
 
 See demo notebooks in ``notebooks`` folder. View them online via Binder_.
 
-.. _Binder: https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks
+.. _Binder: https://mybinder.org/v2/gh/alan-turing-institute/ptype/release?filepath=notebooks
