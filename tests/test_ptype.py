@@ -49,8 +49,8 @@ def get_predictions(dataset_name, data_folder):
         {col_name: col.arff_type for col_name, col in schema.cols.items()},
         {
             col_name: {
-                "missing_values": col.get_missing_values(),
-                "anomalous_values": col.get_anomalous_values(),
+                "missing_values": col.get_na_values(),
+                "anomalous_values": col.get_an_values(),
             }
             for col_name, col in schema.cols.items()
         },

@@ -64,11 +64,11 @@ class Column:
         """Get proportion of unique values in the column which are considered neither anomalous nor missing."""
         return round(sum(self.unique_vals_counts[self.normal_indices]) / sum(self.unique_vals_counts), 2)
 
-    def get_missing_ratio(self):
+    def get_na_ratio(self):
         """Get proportion of unique values in the column which are considered 'missing'."""
         return round(sum(self.unique_vals_counts[self.missing_indices]) / sum(self.unique_vals_counts), 2)
 
-    def get_anomalous_ratio(self):
+    def get_an_ratio(self):
         """Get proportion of unique values in the column which are considered 'anomalous'."""
         return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
@@ -76,11 +76,11 @@ class Column:
         """Get list of all values in the column which are considered neither anomalous nor missing."""
         return list(self.unique_vals[self.normal_indices])
 
-    def get_missing_values(self):
+    def get_na_values(self):
         """Get a list of the values in the column which are considered 'missing'."""
         return list(self.unique_vals[self.missing_indices])
 
-    def get_anomalous_values(self):
+    def get_an_values(self):
         """Get a list of the values in the column which are considered 'anomalous'."""
         return list(self.unique_vals[self.anomalous_indices])
 

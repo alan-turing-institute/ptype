@@ -24,9 +24,9 @@ class Schema:
         df = self.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_values() for _, col in self.cols.items()]
-        xss = [col.get_missing_values() for _, col in self.cols.items()]
+        xss = [col.get_na_values() for _, col in self.cols.items()]
         df.loc[2] = [Schema.show_missing_values(xs) for xs in xss]
-        df.loc[3] = [col.get_anomalous_values() for _, col in self.cols.items()]
+        df.loc[3] = [col.get_an_values() for _, col in self.cols.items()]
         placeholders = [Schema.missing_placeholder if "" in xs else "" for xs in xss]
 
         index = {
@@ -46,8 +46,8 @@ class Schema:
         df = self.df.iloc[0:0, :].copy()
         df.loc[0] = [col.type for _, col in self.cols.items()]
         df.loc[1] = [col.get_normal_ratio() for _, col in self.cols.items()]
-        df.loc[2] = [col.get_missing_ratio() for _, col in self.cols.items()]
-        df.loc[3] = [col.get_anomalous_ratio() for _, col in self.cols.items()]
+        df.loc[2] = [col.get_na_ratio() for _, col in self.cols.items()]
+        df.loc[3] = [col.get_an_ratio() for _, col in self.cols.items()]
         return df.rename(
             index={
                 0: "type",
