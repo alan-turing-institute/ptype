@@ -1,10 +1,6 @@
-.. raw:: html
-
-   <p align="center">
-           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild-publish+branch%3Arelease">
-                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
-           </a>
-    </p>
+.. image:: https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release
+    :target: https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild-publish+branch%3Arelease
+    :alt: build-publish on release
 
 .. image:: https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop
     :target: https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild+branch%3Adevelop
