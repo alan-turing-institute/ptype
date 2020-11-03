@@ -9,7 +9,7 @@ ptype: probabilistic type inference
 
 .. toctree::
     :caption: Further documentation
-    :maxdepth: 2
+    :maxdepth: 3
 
     CHANGELOG
     source/modules

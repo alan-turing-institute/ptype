@@ -37,10 +37,10 @@ class Column:
         self.p_z = p_z
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
-        self.initialise_missing_anomalies()
-        self.features = self.get_features(counts)
-        self.arff_type = column2ARFF.get_arff(self.features)[0]
-        self.arff_posterior = column2ARFF.get_arff(self.features)[1]
+        self._initialise_missing_anomalies()
+        features = self._get_features(counts)
+        self.arff_type = column2ARFF.get_arff(features)[0]
+        self.arff_posterior = column2ARFF.get_arff(features)[1]
         self.categorical_values = (
             self.get_normal_values() if self.arff_type == "nominal" else None
         )
@@ -73,7 +73,7 @@ class Column:
         return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_normal_values(self):
-        """Get a list of the values in the column which are considered neither anomalous nor missing."""
+        """Get list of all values in the column which are considered neither anomalous nor missing."""
         return list(self.unique_vals[self.normal_indices])
 
     def get_missing_values(self):
@@ -84,7 +84,19 @@ class Column:
         """Get a list of the values in the column which are considered 'anomalous'."""
         return list(self.unique_vals[self.anomalous_indices])
 
-    def get_features(self, counts):
+    def reclassify(self, new_t):
+        """Assign a different type to the column, and adjust the interpretation of missing/anomalous values
+        accordingly.
+        Args:
+            new_t: the new type, which must be one of the types known to ptype.
+        """
+        if new_t not in self.p_z:
+            raise Exception(f"Type {new_t} is unknown.")
+        self.type = new_t
+        self._initialise_missing_anomalies()
+        # update the arff types?
+
+    def _get_features(self, counts):
         posterior = OrderedDict()
         for t, p in sorted(self.p_t.items()):
             # aggregate date subtypes
@@ -109,18 +121,6 @@ class Column:
             u_ratio_clean = U_clean / N_clean
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
-
-    def reclassify(self, new_t):
-        """Assign a different type to the column, and adjust the interpretation of missing/anomalous values
-        accordingly.
-        Args:
-            new_t: the new type, which must be one of the types known to ptype.
-        """
-        if new_t not in self.p_z:
-            raise Exception(f"Type {new_t} is unknown.")
-        self.type = new_t
-        self.initialise_missing_anomalies()
-        # update the arff types?
 
 
 class Column2ARFF:
