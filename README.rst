@@ -4,13 +4,15 @@
            <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild-publish+branch%3Arelease">
                    <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
            </a>
-           <a href="https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild+branch%3Adevelop">
-                   <img src="https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop" alt="build on develop">
-           </a>
-           <a href="https://badge.fury.io/py/ptype">
-                   <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
-           </a>
     </p>
+
+.. image:: https://github.com/alan-turing-institute/ptype-dmkd/workflows/build/badge.svg?branch=develop
+    :target: https://github.com/alan-turing-institute/ptype-dmkd/actions?query=workflow%3Abuild+branch%3Adevelop
+    :alt: build on develop
+
+.. image:: https://badge.fury.io/py/ptype.svg
+    :target: https://badge.fury.io/py/ptype
+    :alt: PyPI version
 
 .. image:: https://readthedocs.org/projects/ptype/badge/?version=latest
     :target: https://ptype.readthedocs.io/en/docs/index.html
