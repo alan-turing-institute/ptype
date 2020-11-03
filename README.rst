@@ -11,7 +11,7 @@
     :alt: PyPI version
 
 .. image:: https://readthedocs.org/projects/ptype/badge/?version=latest
-    :target: https://ptype.readthedocs.io/en/docs/index.html
+    :target: https://ptype.readthedocs.io/en/latest/
     :alt: Documentation status
 
 .. image:: https://pepy.tech/badge/ptype
