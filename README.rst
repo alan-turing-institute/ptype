@@ -10,19 +10,15 @@
            <a href="https://badge.fury.io/py/ptype">
                    <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
            </a>
-           <a href="https://ptype.readthedocs.io/en/docs/index.html">
-                   <img src="https://readthedocs.org/projects/ptype/badge/?version=latest" alt="Documentation Status">
-           </a>
-           <a href="https://pepy.tech/project/ptype">
-                   <img src="https://pepy.tech/badge/ptype" alt="Downloads">
-           </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
-                   <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
-           </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks">
-                   <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
-           </a>
     </p>
+
+.. image:: https://readthedocs.org/projects/ptype/badge/?version=latest
+    :target: https://ptype.readthedocs.io/en/docs/index.html
+    :alt: Documentation status
+
+.. image:: https://pepy.tech/badge/ptype
+    :target: https://pepy.tech/project/ptype
+    :alt: Downloads
 
 .. image:: https://mybinder.org/badge_logo.svg
     :target: https://mybinder.org/v2/gh/alan-turing-institute/ptype-dmkd/release?filepath=notebooks
