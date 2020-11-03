@@ -48,10 +48,7 @@ class Column:
     def __repr__(self):
         return repr(self.__dict__)
 
-    def inferred_type(self):
-        return max(self.p_t, key=self.p_t.get)
-
-    def initialise_missing_anomalies(self):
+    def _initialise_missing_anomalies(self):
         row_posteriors = self.p_z[self.type]
         max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
@@ -59,32 +56,33 @@ class Column:
         self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
         self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
 
-    def has_missing(self):
-        return self.get_missing_values() != []
-
-    def has_anomalous(self):
-        return self.get_anomalous_values() != []
+    def inferred_type(self):
+        """Get most likely inferred type for the column."""
+        return max(self.p_t, key=self.p_t.get)
 
     def get_normal_ratio(self):
+        """Get proportion of unique values in the column which are considered neither anomalous nor missing."""
         return round(sum(self.unique_vals_counts[self.normal_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_missing_ratio(self):
+        """Get proportion of unique values in the column which are considered 'missing'."""
         return round(sum(self.unique_vals_counts[self.missing_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_anomalous_ratio(self):
+        """Get proportion of unique values in the column which are considered 'anomalous'."""
         return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_normal_values(self):
+        """Get a list of the values in the column which are considered neither anomalous nor missing."""
         return list(self.unique_vals[self.normal_indices])
 
     def get_missing_values(self):
+        """Get a list of the values in the column which are considered 'missing'."""
         return list(self.unique_vals[self.missing_indices])
 
     def get_anomalous_values(self):
+        """Get a list of the values in the column which are considered 'anomalous'."""
         return list(self.unique_vals[self.anomalous_indices])
-
-    def reclassify_normal(self, vs):
-        pass
 
     def get_features(self, counts):
         posterior = OrderedDict()
@@ -113,6 +111,11 @@ class Column:
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
     def reclassify(self, new_t):
+        """Assign a different type to the column, and adjust the interpretation of missing/anomalous values
+        accordingly.
+        Args:
+            new_t: the new type, which must be one of the types known to ptype.
+        """
         if new_t not in self.p_z:
             raise Exception(f"Type {new_t} is unknown.")
         self.type = new_t
