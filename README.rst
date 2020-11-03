@@ -1,25 +1,26 @@
-.. raw:: html
+.. image:: https://github.com/alan-turing-institute/ptype/workflows/build-publish/badge.svg?branch=release
+    :target: https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild-publish+branch%3Arelease
+    :alt: build-publish on release
 
-   <p align="center">
-           <a href="https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild-publish+branch%3Arelease">
-                   <img src="https://github.com/alan-turing-institute/ptype/workflows/build-publish/badge.svg?branch=release" alt="build-publish on release">
-           </a>
-           <a href="https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild+branch%3Adevelop">
-                   <img src="https://github.com/alan-turing-institute/ptype/workflows/build/badge.svg?branch=develop" alt="build on develop">
-           </a>
-           <a href="https://badge.fury.io/py/ptype">
-                   <img src="https://badge.fury.io/py/ptype.svg" alt="PyPI version">
-           </a>
-           <a href="https://ptype.readthedocs.io/en/docs/index.html">
-                   <img src="https://readthedocs.org/projects/ptype/badge/?version=latest" alt="Documentation Status">
-           </a>
-           <a href="https://pepy.tech/project/ptype">
-                   <img src="https://pepy.tech/badge/ptype" alt="Downloads">
-           </a>
-           <a href="https://mybinder.org/v2/gh/alan-turing-institute/ptype/release?filepath=notebooks">
-                   <img src="https://mybinder.org/badge_logo.svg" alt="Binder">
-           </a>
-    </p>
+.. image:: https://github.com/alan-turing-institute/ptype/workflows/build/badge.svg?branch=develop
+    :target: https://github.com/alan-turing-institute/ptype/actions?query=workflow%3Abuild+branch%3Adevelop
+    :alt: build on develop
+
+.. image:: https://badge.fury.io/py/ptype.svg
+    :target: https://badge.fury.io/py/ptype
+    :alt: PyPI version
+
+.. image:: https://readthedocs.org/projects/ptype/badge/?version=latest
+    :target: https://ptype.readthedocs.io/en/docs/index.html
+    :alt: Documentation status
+
+.. image:: https://pepy.tech/badge/ptype
+    :target: https://pepy.tech/project/ptype
+    :alt: Downloads
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/alan-turing-institute/ptype/release?filepath=notebooks
+    :alt: Binder
 
 ============
 Introduction
@@ -31,7 +32,7 @@ Introduction
 
 Type inference refers to the task of inferring the data type (e.g., Boolean, date, integer and string) of a given column of data, which becomes challenging in the presence of missing data and anomalies.
 
-.. figure:: ../notes/motivation.png
+.. figure:: https://raw.githubusercontent.com/alan-turing-institute/ptype/release/notes/motivation.png
     :width: 400
 
     Normal, missing and anomalous values are denoted by green, yellow and red, respectively in the right hand figure.
