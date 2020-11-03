@@ -10,8 +10,8 @@
     :target: https://badge.fury.io/py/ptype
     :alt: PyPI version
 
-.. image:: https://readthedocs.org/projects/ptype/badge/?version=latest
-    :target: https://ptype.readthedocs.io/en/latest/
+.. image:: https://readthedocs.org/projects/ptype/badge/?version=stable
+    :target: https://ptype.readthedocs.io/en/stable/
     :alt: Documentation status
 
 .. image:: https://pepy.tech/badge/ptype
