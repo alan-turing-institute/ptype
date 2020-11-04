@@ -5,7 +5,7 @@ from ptype.Column import (
     MISSING_INDEX,
     TYPE_INDEX,
     Column,
-    get_unique_vals,
+    _get_unique_vals,
 )
 from ptype.Machine import PI
 from ptype.Machines import Machines
@@ -15,8 +15,9 @@ from ptype.utils import normalize_log_probs, LOG_EPS
 
 
 class Ptype:
-    def __init__(self, _types=None):
-        default_types = [
+    """The ptype object."""
+    def __init__(self):
+        self.types = [
             "integer",
             "string",
             "float",
@@ -26,14 +27,14 @@ class Ptype:
             "date-non-std-subtype",
             "date-non-std",
         ]
-        self.types = default_types if _types is None else _types
         self.machines = Machines(self.types)
         self.verbose = False
 
     def schema_fit(self, df):
-        """ Runs inference for each column in a dataframe, and returns a set of analysed columns.
+        """ Run inference for each column in a dataframe.
 
-        :param df:
+        :param df: dataframe loaded by reading values as strings.
+        :return: Schema object with information about each column.
         """
         df = df.applymap(str)  # really?
         self.machines.normalize_params()
@@ -44,17 +45,17 @@ class Ptype:
         # Calculate probabilities for each column and run inference.
         cols = {}
         for _, col_name in enumerate(list(df.columns)):
-            unique_vs, counts = get_unique_vals(df[col_name], return_counts=True)
+            unique_vs, counts = _get_unique_vals(df[col_name], return_counts=True)
             probabilities_dict = self.machines.machine_probabilities(unique_vs)
             probabilities = np.array(
                 [probabilities_dict[str(x_i)] for x_i in unique_vs]
             )
 
-            cols[col_name] = self.column(df, col_name, probabilities, counts)
+            cols[col_name] = self._column(df, col_name, probabilities, counts)
 
         return Schema(df, cols)
 
-    def column(self, df, col_name, logP, counts):
+    def _column(self, df, col_name, logP, counts):
         # Constants
         I, J = logP.shape  # num of rows x num of data types
         K = J - 2  # num of possible column data types (excluding missing and catch-all)
@@ -86,27 +87,31 @@ class Ptype:
         )
 
     def get_na_values(self):
+        """Get list of all values which Ptype considers to mean 'missing' or 'na'."""
         return self.machines.missing.alphabet.copy()
 
     def set_na_values(self, na_values):
+        """Set list of values which Ptype considers to mean 'missing' or 'na'."""
         self.machines.missing.alphabet = na_values
 
-    def get_an_values(self):
+    def get_additional_an_values(self):
+        """Get list of additional values which Ptype should consider to mean 'anomalous'."""
         return self.machines.anomalous.an_values.copy()
 
-    def set_an_values(self, an_values):
+    def set_additional_an_values(self, an_values):
+        """Set list of additional values which Ptype should consider to mean 'anomalous'."""
         probs = self.machines.machine_probabilities(an_values)
-
-        # magic numbers!
-        ratio = PI[0] / PI[2] + 0.1
+        ratio = PI[0] / PI[2] + 0.1  # magic numbers
         new_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}
 
         self.machines.anomalous.set_an(an_values, new_probs)
 
     def get_string_alphabet(self):
-        string_index = 2 + self.types.index("string")
+        """Get the alphabet associated with the string type."""
+        string_index = 2 + self.types.index("string")  # magic numbers
         return self.machines.machines[string_index].alphabet
 
     def set_string_alphabet(self, alphabet):
-        string_index = 2 + self.types.index("string")
+        """Set the alphabet associated with the string type."""
+        string_index = 2 + self.types.index("string")  # magic numbers
         self.machines.machines[string_index].set_alphabet(alphabet)

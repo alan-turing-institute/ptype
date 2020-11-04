@@ -30,18 +30,24 @@ Introduction
 
 .. contents::
 
-Type inference refers to the task of inferring the data type (e.g., Boolean, date, integer and string) of a given column of data, which becomes challenging in the presence of missing data and anomalies.
+ptype is a probabilistic approach to *type inference*, which is the task of identifying the data type (e.g. Boolean, date, integer or string) of a given column of data.
+
+Existing approaches often fail on type inference for messy datasets where data is missing or anomalous. With ptype_, our goal is to develop a robust method that can deal with such data.
 
 .. figure:: https://raw.githubusercontent.com/alan-turing-institute/ptype/release/notes/motivation.png
     :width: 400
 
     Normal, missing and anomalous values are denoted by green, yellow and red, respectively in the right hand figure.
 
-ptype_ is a probabilistic type inference model for tabular data, which aims to robustly infer the data type for each column in a table of data. By taking into account missing data and anomalies, ptype improves over the existing type inference methods. This repository provides an implementation of ptype in Python.
-
 .. _ptype: https://link.springer.com/content/pdf/10.1007/s10618-020-00680-1.pdf
 
-If you use this package, please cite ptype with the following BibTeX entry:
+ptype uses `Probabilistic Finite-State Machines`_ (PFSMs) to model known data types, missing and anomalous data. Given a column of data, we can infer a plausible column type, and also identify any values which (conditional on that type) are deemed missing or anomalous. In contrast to more familiar finite-state machines, such as regular expressions, that either accept or reject a given data value, PFSMs assign probabilities to different values. They therefore offer the advantage of generating weighted predictions when a column of messy data is consistent with more than one type assignment.
+
+.. _`Probabilistic Finite-State Machines`: https://en.wikipedia.org/wiki/Probabilistic_automaton
+
+If you use this package, please cite the `ptype paper`_, using the following BibTeX entry:
+
+.. _`ptype paper`: http://doi.org/10.1007/s10618-020-00680-1
 
 ::
 

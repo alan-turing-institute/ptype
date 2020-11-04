@@ -70,32 +70,6 @@ def plot_column_type_posterior(p_t):
     )
 
 
-def plot_arff_type_posterior(
-    arff_posterior, types=["date", "nominal", "numeric", "string"]
-):
-    plot_bar(
-        types,
-        arff_posterior,
-        title="posterior dist. of column ARFF type",
-        xlabel="type",
-        ylabel="posterior probability",
-    )
-
-
-def plot_row_type_posterior(col, t="missing"):
-    if t == "missing":
-        i = 1
-    elif t == "anomaly":
-        i = 2
-    plot_bar(
-        col.unique_vals,
-        col.p_z[col.type][:, i],
-        title="p(z_i=" + t + "|t,x_i): posterior dist. for row type",
-        xlabel="unique value",
-        ylabel="posterior " + t + " probability",
-    )
-
-
 def confusion_matrix(annotations, predictions, classes):
     """Calculates the confusion matrix of a classifier.
     This function compares a set of true labels and a set of predicted labels
