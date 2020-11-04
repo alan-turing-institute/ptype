@@ -2,6 +2,7 @@ ptype.Trainer module
 ====================
 
 .. automodule:: ptype.Trainer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :undoc-members:
+    :show-inheritance:
+.. autoclass:: ptype.Trainer.Trainer
+    :members: train
