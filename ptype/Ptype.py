@@ -15,8 +15,9 @@ from ptype.utils import normalize_log_probs, LOG_EPS
 
 
 class Ptype:
-    def __init__(self, _types=None):
-        default_types = [
+    """The ptype object."""
+    def __init__(self):
+        self.types = [
             "integer",
             "string",
             "float",
@@ -26,7 +27,6 @@ class Ptype:
             "date-non-std-subtype",
             "date-non-std",
         ]
-        self.types = default_types if _types is None else _types
         self.machines = Machines(self.types)
         self.verbose = False
 
@@ -94,12 +94,12 @@ class Ptype:
         """Set list of values which Ptype considers to mean 'missing' or 'na'."""
         self.machines.missing.alphabet = na_values
 
-    def get_an_values(self):
-        """Get list of all values which Ptype considers to mean 'anomalous'."""
+    def get_additional_an_values(self):
+        """Get list of additional values which Ptype should consider to mean 'anomalous'."""
         return self.machines.anomalous.an_values.copy()
 
-    def set_an_values(self, an_values):
-        """Set list of values which Ptype considers to mean 'anomalous'."""
+    def set_additional_an_values(self, an_values):
+        """Set list of additional values which Ptype should consider to mean 'anomalous'."""
         probs = self.machines.machine_probabilities(an_values)
         ratio = PI[0] / PI[2] + 0.1  # magic numbers
         new_probs = {v: np.log(ratio * np.max(np.exp(probs[v]))) for v in an_values}

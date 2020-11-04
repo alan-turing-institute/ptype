@@ -9,17 +9,6 @@ from ptype.Trainer import Trainer
 from tests.utils import evaluate_predictions
 
 
-types = [
-    "integer",
-    "string",
-    "float",
-    "boolean",
-    "date-iso-8601",
-    "date-eu",
-    "date-non-std-subtype",
-    "date-non-std",
-]
-
 # Associate each dataset with file prefix, encoding and header setting for Pandas read_csv.
 datasets = {
     "accident2016": ("utf-8", "infer"),
@@ -36,7 +25,7 @@ datasets = {
 def get_predictions(dataset_name, data_folder):
     df = read_dataset(dataset_name, data_folder)
 
-    ptype = Ptype(_types=types)
+    ptype = Ptype()
     schema = ptype.schema_fit(df)
 
     df_normal = schema.transform(df)
@@ -104,7 +93,10 @@ def read_dataset(dataset_name, data_folder):
 
 
 def get_inputs(
-    dataset_name, annotations_file="annotations/annotations.json", data_folder="data/"
+    dataset_name,
+    types,
+    annotations_file="annotations/annotations.json",
+    data_folder="data/"
 ):
     annotations = json.load(open(annotations_file))
     df = read_dataset(dataset_name, data_folder)
@@ -173,13 +165,14 @@ def check_expected(actual, filename):
 
 
 def training_tests():
+    ptype = Ptype()
+
     dfs, ys = [], []
     for dataset_name in ["accident2016", "auto", "data_gov_3397_1", "data_gov_10151_1"]:
-        df, y = get_inputs(dataset_name)
+        df, y = get_inputs(dataset_name, ptype.types)
         dfs.append(df)
         ys.append(y)
 
-    ptype = Ptype(_types=types)
     trainer = Trainer(ptype.machines, dfs, ys)
     initial, final, training_error = trainer.train(20, False)
 

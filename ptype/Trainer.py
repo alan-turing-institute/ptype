@@ -10,15 +10,6 @@ from ptype.utils import (
 )
 
 
-def vecnorm(x, ord=2):
-    if ord == np.Inf:
-        return np.amax(np.abs(x))
-    elif ord == -np.Inf:
-        return np.amin(np.abs(x))
-    else:
-        return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
-
-
 def likelihoods(PI, logP, k):
     _, _, _, log_mx, sm = likelihoods_normalize(PI, logP, k)
     return log_mx + np.log(sm)
@@ -39,6 +30,15 @@ def sum_weighted_likelihoods(counts_array, logP, k):
     return (counts_array * likelihoods(PI, logP, k)).sum()
 
 
+def _vecnorm(x, ord=2):
+    if ord == np.Inf:
+        return np.amax(np.abs(x))
+    elif ord == -np.Inf:
+        return np.amin(np.abs(x))
+    else:
+        return np.sum(np.abs(x) ** ord, axis=0) ** (1.0 / ord)
+
+
 # todo: rename
 def wurble(a, b, c):
     return str(a) + "*" + str(b) + "*" + str(c)
@@ -48,6 +48,12 @@ LLHOOD_TYPE_START_INDEX = 2
 
 
 class Trainer:
+    """ A Trainer object.
+
+    :param machines: PFSMs to train.
+    :param dfs: data frames to train with.
+    :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
+    """
     def __init__(self, machines, dfs, labels):
         self.machines = machines
         self.dfs = dfs
@@ -71,14 +77,11 @@ class Trainer:
         }
 
     def train(self, max_iter=20, uniformly=False, threshold=1e-10):
-        """ Train the PFSMs given a set of dataframes and their labels
+        """ Train the PFSMs.
 
-        :param dfs: data frames to train with.
-        :param labels: column types labeled by hand, where _label[i][j] denotes the type of j^th column in i^th dataframe.
         :param max_iter: the maximum number of iterations the optimization algorithm runs as long as it's not converged.
-        :param _test_data:
-        :param _test_labels:
         :param uniformly: a binary variable used to initialize the PFSMs - True allows initializing uniformly rather than using hand-crafted values.
+        :param threshold:
         :return:
         """
         if uniformly:
@@ -144,7 +147,7 @@ class Trainer:
                 w = w + alpha * d[j]
 
                 g.append(self.g_cols(w))
-                gnorm = vecnorm(g[j + 1], ord=np.Inf)
+                gnorm = _vecnorm(g[j + 1], ord=np.Inf)
 
                 beta_j = max(
                     0, np.dot(g[j + 1].T, g[j + 1] - g[j]) / np.dot(g[j], g[j])
