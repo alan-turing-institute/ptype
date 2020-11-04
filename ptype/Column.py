@@ -10,19 +10,19 @@ MISSING_INDEX = 1
 ANOMALIES_INDEX = 2
 
 
-def get_unique_vals(col, return_counts=False):
+def _get_unique_vals(col, return_counts=False):
     """List of the unique values found in a column."""
     return np.unique([str(x) for x in col.tolist()], return_counts=return_counts)
 
 
 # Use same names and values as the constants in Model.py. Could consolidate.
-class Status(Enum):
+class _Status(Enum):
     TYPE = 1
     MISSING = 2
     ANOMALOUS = 3
 
 
-class Feature(Enum):
+class _Feature(Enum):
     U_RATIO = 5
     U_RATIO_CLEAN = 6
     U = 7
@@ -36,11 +36,11 @@ class Column:
         self.p_t_canonical = {}
         self.p_z = p_z
         self.type = self.inferred_type()
-        self.unique_vals, self.unique_vals_counts = get_unique_vals(self.series, return_counts=True)
-        self.initialise_missing_anomalies()
-        self.features = self.get_features(counts)
-        self.arff_type = column2ARFF.get_arff(self.features)[0]
-        self.arff_posterior = column2ARFF.get_arff(self.features)[1]
+        self.unique_vals, self.unique_vals_counts = _get_unique_vals(self.series, return_counts=True)
+        self._initialise_missing_anomalies()
+        features = self._get_features(counts)
+        self.arff_type = _column2ARFF.get_arff(features)[0]
+        self.arff_posterior = _column2ARFF.get_arff(features)[1]
         self.categorical_values = (
             self.get_normal_values() if self.arff_type == "nominal" else None
         )
@@ -48,10 +48,7 @@ class Column:
     def __repr__(self):
         return repr(self.__dict__)
 
-    def inferred_type(self):
-        return max(self.p_t, key=self.p_t.get)
-
-    def initialise_missing_anomalies(self):
+    def _initialise_missing_anomalies(self):
         row_posteriors = self.p_z[self.type]
         max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
@@ -59,34 +56,47 @@ class Column:
         self.missing_indices = list(np.where(max_row_posterior_indices == MISSING_INDEX)[0])
         self.anomalous_indices = list(np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0])
 
-    def has_missing(self):
-        return self.get_missing_values() != []
-
-    def has_anomalous(self):
-        return self.get_anomalous_values() != []
+    def inferred_type(self):
+        """Get most likely inferred type for the column."""
+        return max(self.p_t, key=self.p_t.get)
 
     def get_normal_ratio(self):
+        """Get proportion of unique values in the column which are considered neither anomalous nor missing."""
         return round(sum(self.unique_vals_counts[self.normal_indices]) / sum(self.unique_vals_counts), 2)
 
-    def get_missing_ratio(self):
+    def get_na_ratio(self):
+        """Get proportion of unique values in the column which are considered 'missing'."""
         return round(sum(self.unique_vals_counts[self.missing_indices]) / sum(self.unique_vals_counts), 2)
 
-    def get_anomalous_ratio(self):
+    def get_an_ratio(self):
+        """Get proportion of unique values in the column which are considered 'anomalous'."""
         return round(sum(self.unique_vals_counts[self.anomalous_indices]) / sum(self.unique_vals_counts), 2)
 
     def get_normal_values(self):
+        """Get list of all values in the column which are considered neither anomalous nor missing."""
         return list(self.unique_vals[self.normal_indices])
 
-    def get_missing_values(self):
+    def get_na_values(self):
+        """Get a list of the values in the column which are considered 'missing'."""
         return list(self.unique_vals[self.missing_indices])
 
-    def get_anomalous_values(self):
+    def get_an_values(self):
+        """Get a list of the values in the column which are considered 'anomalous'."""
         return list(self.unique_vals[self.anomalous_indices])
 
-    def reclassify_normal(self, vs):
-        pass
+    def reclassify(self, new_t):
+        """Assign a different type to the column, and adjust the interpretation of missing/anomalous values
+        accordingly.
 
-    def get_features(self, counts):
+        :param new_t: the new type, which must be one of the types known to ptype.
+        """
+        if new_t not in self.p_z:
+            raise Exception(f"Type {new_t} is unknown.")
+        self.type = new_t
+        self._initialise_missing_anomalies()
+        # update the arff types?
+
+    def _get_features(self, counts):
         posterior = OrderedDict()
         for t, p in sorted(self.p_t.items()):
             # aggregate date subtypes
@@ -112,22 +122,15 @@ class Column:
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
 
-    def reclassify(self, new_t):
-        if new_t not in self.p_z:
-            raise Exception(f"Type {new_t} is unknown.")
-        self.type = new_t
-        self.initialise_missing_anomalies()
-        # update the arff types?
 
-
-class Column2ARFF:
+class _Column2ARFF:
     def __init__(self, model_folder="models"):
         self.normalizer = joblib.load(model_folder + "robust_scaler.pkl")
         self.clf = joblib.load(model_folder + "LR.sav")
 
     def get_arff(self, features):
-        features[[Feature.U.value, Feature.U_CLEAN.value]] = self.normalizer.transform(
-            features[[Feature.U.value, Feature.U_CLEAN.value]].reshape(1, -1)
+        features[[_Feature.U.value, _Feature.U_CLEAN.value]] = self.normalizer.transform(
+            features[[_Feature.U.value, _Feature.U_CLEAN.value]].reshape(1, -1)
         )[0]
         arff_type = self.clf.predict(features.reshape(1, -1))[0]
 
@@ -140,4 +143,4 @@ class Column2ARFF:
         return arff_type, arff_type_posterior
 
 
-column2ARFF = Column2ARFF(project_root() + "/../models/")
+_column2ARFF = _Column2ARFF(project_root() + "/../models/")

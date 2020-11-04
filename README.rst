@@ -30,9 +30,9 @@ Introduction
 
 .. contents::
 
-ptype is a probabilistic approach to type inference which is the task of identifying the data type (e.g., Boolean, date, integer and string) of a given column of data.
+ptype is a probabilistic approach to *type inference*, which is the task of identifying the data type (e.g. Boolean, date, integer or string) of a given column of data.
 
-Existing approaches often fail on type inference for messy datasets, as the task becomes challenging in the presence of missing data and anomalies. With ptype_, our goal is to develop a robust method that can deal with such entries.
+Existing approaches often fail on type inference for messy datasets where data is missing or anomalous. With ptype_, our goal is to develop a robust method that can deal with such data.
 
 .. figure:: https://raw.githubusercontent.com/alan-turing-institute/ptype/release/notes/motivation.png
     :width: 400
@@ -41,9 +41,13 @@ Existing approaches often fail on type inference for messy datasets, as the task
 
 .. _ptype: https://link.springer.com/content/pdf/10.1007/s10618-020-00680-1.pdf
 
-ptype is built upon Probabilistic Finite-State Machines (PFSMs) which are used to model known data types, missing and anomalous data. We combine PFSMs such that a data column can be annotated via probabilistic inference in the proposed model, i.e., given a column of data we can infer column type and rows with missing and anomalous values. In contrast to standard use of FSMs (e.g., regular expressions) that either accepts or rejects a given data value, PFSMs provide probabilities and therefore offers the advantage of generating weighted predictions even when a column of data is consistent with more than one type model.
+ptype uses `Probabilistic Finite-State Machines`_ (PFSMs) to model known data types, missing and anomalous data. Given a column of data, we can infer a plausible column type, and also identify any values which (conditional on that type) are deemed missing or anomalous. In contrast to more familiar finite-state machines, such as regular expressions, that either accept or reject a given data value, PFSMs assign probabilities to different values. They therefore offer the advantage of generating weighted predictions when a column of messy data is consistent with more than one type assignment.
 
-If you use this package, please cite ptype with the following BibTeX entry:
+.. _`Probabilistic Finite-State Machines`: https://en.wikipedia.org/wiki/Probabilistic_automaton
+
+If you use this package, please cite the `ptype paper`_, using the following BibTeX entry:
+
+.. _`ptype paper`: http://doi.org/10.1007/s10618-020-00680-1
 
 ::
 
