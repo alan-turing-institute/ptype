@@ -1,3 +1,4 @@
+# Dependencies used for Binder, see setup.py for package dependencies
 joblib>=0.17.0
 jsonpickle>=1.4.0
 clevercsv>=0.6.0
