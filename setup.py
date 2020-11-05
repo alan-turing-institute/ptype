@@ -19,30 +19,23 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "joblib>=0.17.0",
-    "jsonpickle>=1.4.0",
-    "clevercsv>=0.6.0",
     "greenery>=3.2",
+    "joblib>=0.17.0",
     "matplotlib>=3.3.0",
-    "nbval>=0.9.6",
     "numpy>=1.19.0",
     "pandas>=1.1.0",
     "scipy>=1.5.0",
-    "scikit-learn>=0.22.0",
-    "wheel",
 ]
 
-full_require = []
-docs_require = []
-test_require = []
-dev_require = []
+docs_require = ["clevercsv>=0.6.0", "scikit-learn>=0.22.0"]
+test_require = ["jsonpickle>=1.4.0", "nbval>=0.9.6"]
+dev_require = ["wheel"]
 
 # What packages are optional?
 EXTRAS = {
-    "full": full_require,
     "docs": docs_require,
-    "test": test_require + full_require,
-    "dev": docs_require + test_require + dev_require + full_require,
+    "test": test_require,
+    "dev": docs_require + test_require + dev_require,
 }
 
 # The rest you shouldn't have to touch too much :)
