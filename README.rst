@@ -66,9 +66,11 @@ If you use this package, please cite the `ptype paper`_, using the following Bib
 Install requirements
 ====================
 
+You can simply install ptype from PyPI:
+
 .. code:: bash
 
-    pip install -r requirements.txt
+    pip install ptype
 
 =====
 Usage
