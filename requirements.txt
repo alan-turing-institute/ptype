@@ -1,2 +1,2 @@
-# Used for Binder, see setup.py for package dependencies
+# Used for Binder and build/publish, see setup.py for package dependencies
 -e .[dev]
