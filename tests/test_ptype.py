@@ -173,9 +173,9 @@ def training_tests():
     initial, final, training_error = trainer.train(20, False)
 
     all_passed = True
-    all_passed &= check_expected(initial, "models/training_runner_initial")
-    all_passed &= check_expected(final, "models/training_runner_final")
-    all_passed &= check_expected(training_error, "models/training_error")
+    all_passed &= check_expected(initial, "tests/expected/training/runner_initial")
+    all_passed &= check_expected(final, "tests/expected/training/runner_final")
+    all_passed &= check_expected(training_error, "tests/expected/training/error")
     if not all_passed:
         raise Exception("Training tests failed.")
 
