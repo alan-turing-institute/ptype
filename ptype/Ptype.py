@@ -16,6 +16,7 @@ from ptype.utils import normalize_log_probs, LOG_EPS
 
 class Ptype:
     """The ptype object."""
+
     def __init__(self):
         self.types = [
             "integer",
@@ -78,13 +79,9 @@ class Ptype:
             p_z[self.types[k]] = p_z_k / p_z_k.sum(axis=1)[:, np.newaxis]
 
         p_t = normalize_log_probs(p_t)
+        p_t = {t: p for t, p in zip(self.types, p_t)}
 
-        return Column(
-            series=df[col_name],
-            counts=counts,
-            p_t={t: p for t, p in zip(self.types, p_t)},
-            p_z=p_z,
-        )
+        return Column(series=df[col_name], p_t=p_t, p_z=p_z)
 
     def get_na_values(self):
         """Get list of all values which Ptype considers to mean 'missing' or 'na'."""
