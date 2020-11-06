@@ -35,7 +35,6 @@ def get_predictions(dataset_name, data_folder):
 
     return (
         {col_name: col.type for col_name, col in schema.cols.items()},
-        {col_name: col.arff_type for col_name, col in schema.cols.items()},
         {
             col_name: {
                 "missing_values": col.get_na_values(),
@@ -96,7 +95,7 @@ def get_inputs(
     dataset_name,
     types,
     annotations_file="annotations/annotations.json",
-    data_folder="data/"
+    data_folder="data/",
 ):
     annotations = json.load(open(annotations_file))
     df = read_dataset(dataset_name, data_folder)
@@ -120,12 +119,9 @@ def core_tests():
 
     type_predictions = {}
     for dataset_name in datasets:
-        col_predictions, col_arff_types, missing_anomalous = get_predictions(
-            dataset_name, data_folder
-        )
+        col_predictions, missing_anomalous = get_predictions(dataset_name, data_folder)
 
         check_predictions(col_predictions, expected_folder, dataset_name)
-        check_predictions(col_arff_types, expected_folder + "/arff", dataset_name)
         check_predictions(
             missing_anomalous, expected_folder + "/missing_anomalous", dataset_name
         )
