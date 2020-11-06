@@ -2,6 +2,11 @@ Changelog
 =========
 
 
+Version 0.2.11
+--------------
+
+Remove ARFF type inference.
+
 Version 0.2.10
 --------------
 
