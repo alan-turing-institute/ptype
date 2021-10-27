@@ -22,6 +22,9 @@ test () {
   # seems to be included by default, except in GitHub runner or virtualenv
   export PYTHONPATH=.
   time python tests/test_ptype.py
+
+  export PYTHONPATH=.
+  time python tests/test_ptype_cat.py
 }
 
 build

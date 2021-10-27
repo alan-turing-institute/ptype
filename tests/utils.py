@@ -47,22 +47,27 @@ def evaluate_model_type(annotations, predictions):
     return type_rates
 
 
-def evaluate_predictions(annotations, type_predictions):
+def evaluate_predictions(annotations, type_predictions, methods=["ptype"]):
     # the column type counts of the datasets
     [_, _, total_cols] = get_type_counts(type_predictions, annotations)
 
-    Js, overall_accuracy = get_evaluations(annotations, type_predictions)
+    Js, overall_accuracy = get_evaluations(annotations, type_predictions, methods)
     overall_accuracy_to_print = {
         method: {"overall-accuracy": float_2dp(overall_accuracy[method] / total_cols)}
         for method in overall_accuracy
     }
     print("overall accuracy: ", overall_accuracy_to_print)
-    print("Jaccard index values: ", {t: Js[t]["ptype"] for t in Js})
+    print("Jaccard index values: ", {t: Js[t][methods[0]] for t in Js})
 
     df1 = pd.DataFrame.from_dict(Js, orient="index")
     df2 = pd.DataFrame.from_dict(overall_accuracy_to_print, orient="index").T
     df = df2.append(df1)
-    column_type_evaluations = "tests/column_type_evaluations.csv"
+    # this could be simplified!
+    if methods[0] == "ptype":
+        column_type_evaluations = "tests/expected/column_type_evaluations.csv"
+    else:
+        column_type_evaluations = "tests/expected_cat/column_type_evaluations.csv"
+
     expected = pd.read_csv(column_type_evaluations, index_col=0)
     if not expected.equals(df):
         df.to_csv(path_or_buf=column_type_evaluations + ".new")
@@ -74,8 +79,7 @@ def float_2dp(n: float):
     return np.float64("{:.2f}".format(n))
 
 
-def get_evaluations(_annotations, _predictions):
-    methods = ["ptype"]
+def get_evaluations(_annotations, _predictions, methods):
     dataset_names = list(_predictions.keys())
     types = ["boolean", "date", "float", "integer", "string"]
 
