@@ -15,7 +15,7 @@ from ptype.utils import normalize_log_probs, LOG_EPS
 
 
 class Ptype:
-    """The ptype object."""
+    """The Ptype object. It uses the following data types: date, integer, float and string."""
 
     def __init__(self):
         self.types = [
@@ -57,6 +57,7 @@ class Ptype:
         return Schema(df, cols)
 
     def _column(self, df, col_name, logP, counts):
+        """Returns a Column object for a given data column."""
         # Constants
         I, J = logP.shape  # num of rows x num of data types
         K = J - 2  # num of possible column data types (excluding missing and catch-all)

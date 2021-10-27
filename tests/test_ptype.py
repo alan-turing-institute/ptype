@@ -189,10 +189,10 @@ def other_test():
 
 def main():
     np.random.seed(0)
-    other_test()
+    # other_test()
     core_tests()
-    training_tests()
-    notebook_tests()
+    # training_tests()
+    # notebook_tests()
 
 
 if __name__ == "__main__":

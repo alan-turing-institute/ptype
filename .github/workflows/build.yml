@@ -21,12 +21,12 @@ on:
 
 jobs:
   main:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.8.6'
+        python-version: '3.8.12'
     - name: Build and test
       run: |
         script/do-build.sh $(which python3)

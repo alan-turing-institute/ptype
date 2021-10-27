@@ -33,7 +33,6 @@ class Column:
     def __init__(self, series, p_t, p_z):
         self.series = series
         self.p_t = p_t
-        self.p_t_canonical = {}
         self.p_z = p_z
         self.type = self.inferred_type()
         self.unique_vals, self.unique_vals_counts = _get_unique_vals(
@@ -109,6 +108,7 @@ class Column:
 
     def _get_features(self, counts):
         posterior = OrderedDict()
+        # handle equal probs
         for t, p in sorted(self.p_t.items()):
             # aggregate date subtypes
             t_0 = t.split("-")[0]
@@ -132,3 +132,9 @@ class Column:
             u_ratio_clean = U_clean / N_clean
 
         return np.array(list(posterior) + [u_ratio, u_ratio_clean, U, U_clean])
+
+    def set_p_t_cat(self, t_hat, p_cat):
+        self.p_t["categorical"] = self.p_t[t_hat] * p_cat
+        self.p_t[t_hat] = 1 - self.p_t["categorical"]
+        self.type = self.inferred_type()
+
