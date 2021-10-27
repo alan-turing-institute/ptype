@@ -1,12 +1,12 @@
 import joblib
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import RobustScaler
 
 from pathlib import Path
 from ptype import Ptype
 from ptype.Column import Column
 from ptype.Machines import Machines
-
-resource_path = Path(__file__).parent / "../models"
 
 
 class PtypeCat(Ptype.Ptype):
@@ -24,8 +24,8 @@ class PtypeCat(Ptype.Ptype):
         ]
         self.machines = Machines(self.types)
         self.verbose = False
-        self.lr_clf = joblib.load(resource_path.joinpath("LR.sav"))
-        self.scaler = joblib.load(resource_path.joinpath("scaler.pkl"))
+        self.lr_clf = joblib.load(Path(__file__).parent.joinpath("LR.sav"))
+        self.scaler = joblib.load(Path(__file__).parent.joinpath("scaler.pkl"))
 
 
     def _column(self, df, col_name, logP, counts):
