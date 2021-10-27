@@ -62,19 +62,12 @@
     "missing_values": []
   },
   "Provision type": {
-    "anomalous_values": [
-      "Children's Home",
-      "Children's home",
-      "Residential special school (registered as a children's home)",
-      "Secure children's home"
-    ],
+    "anomalous_values": [],
     "missing_values": []
   },
   "Quality of care": {
     "anomalous_values": [],
-    "missing_values": [
-      ""
-    ]
+    "missing_values": []
   },
   "Registration Status": {
     "anomalous_values": [],

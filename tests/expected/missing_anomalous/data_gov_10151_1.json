@@ -7,7 +7,7 @@
   },
   "ARC_State": {
     "anomalous_values": [],
-    "missing_values": [""]
+    "missing_values": []
   },
   "ARC_Street": {
     "anomalous_values": [

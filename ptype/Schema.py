@@ -83,6 +83,7 @@ class Schema:
             "date-iso-8601": "datetime64",
             "date-eu": "datetime64",
             "date-non-std": "datetime64",
+            "Uniform": "string",
             "string": "string",
             "boolean": "boolean",  # will remove boolean later
             "float": "float64",

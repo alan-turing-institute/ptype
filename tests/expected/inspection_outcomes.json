@@ -1,4 +1,4 @@
-{
+﻿{
   "Address 1": "string",
   "Address 2": "string",
   "County": "string",
@@ -13,8 +13,8 @@
   "Overall effectiveness": "string",
   "Places": "integer",
   "Postcode": "string",
-  "Provision type": "integer",
-  "Quality of care": "integer",
+  "Provision type": "Uniform",
+  "Quality of care": "Uniform",
   "Registration Status": "string",
   "Safeguarding children and young people": "string",
   "Sector": "string",

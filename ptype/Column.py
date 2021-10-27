@@ -44,20 +44,28 @@ class Column:
         return repr(self.__dict__)
 
     def _initialise_missing_anomalies(self):
-        row_posteriors = self.p_z[self.type]
-        max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
+        if self.type == "Uniform":
+            self.normal_indices = []
+            self.missing_indices = []
+            self.anomalous_indices = []
+        else:
+            row_posteriors = self.p_z[self.type]
+            max_row_posterior_indices = np.argmax(row_posteriors, axis=1)
 
-        self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
-        self.missing_indices = list(
-            np.where(max_row_posterior_indices == MISSING_INDEX)[0]
-        )
-        self.anomalous_indices = list(
-            np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]
-        )
+            self.normal_indices = list(np.where(max_row_posterior_indices == TYPE_INDEX)[0])
+            self.missing_indices = list(
+                np.where(max_row_posterior_indices == MISSING_INDEX)[0]
+            )
+            self.anomalous_indices = list(
+                np.where(max_row_posterior_indices == ANOMALIES_INDEX)[0]
+            )
 
     def inferred_type(self):
         """Get most likely inferred type for the column."""
-        return max(self.p_t, key=self.p_t.get)
+        if len(np.unique(list(self.p_t.values()))) == 1:
+            return "Uniform"
+        else:
+            return max(self.p_t, key=self.p_t.get)
 
     def get_normal_ratio(self):
         """Get proportion of unique values in the column which are considered neither anomalous nor missing."""
