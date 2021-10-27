@@ -2,6 +2,11 @@ Changelog
 =========
 
 
+Version 0.2.12
+--------------
+
+Add ptype-cat for categorical data type inference.
+
 Version 0.2.11
 --------------
 

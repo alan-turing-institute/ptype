@@ -10,7 +10,7 @@ from ptype.Machines import Machines
 
 
 class PtypeCat(Ptype.Ptype):
-    """The ptype cat object."""
+    """The PtypeCat cat object. It uses the following data types: categorical, date, integer, float and string."""
 
     def __init__(self):
         self.types = [
@@ -29,6 +29,7 @@ class PtypeCat(Ptype.Ptype):
 
 
     def _column(self, df, col_name, logP, counts):
+        """Returns a Column object for a given data column."""
         col = super()._column(df, col_name, logP, counts)
 
         # ptype-cat
