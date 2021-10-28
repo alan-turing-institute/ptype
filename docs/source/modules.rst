@@ -7,5 +7,6 @@ API documentation
 
     Column
     Ptype
+    PtypeCat
     Schema
     Trainer
