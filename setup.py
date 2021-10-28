@@ -24,6 +24,7 @@ REQUIRED = [
     "matplotlib>=3.3.0",
     "numpy>=1.19.0",
     "pandas>=1.1.0",
+    "scikit-learn>=0.24.2"
     "scipy>=1.5.0",
 ]
 
@@ -74,7 +75,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]
+        exclude=["tests", "*.tests", "*.tests.*", "tests.*", ".DS_Store*"]
     ),
     install_requires=REQUIRED,
     extras_require=EXTRAS,
