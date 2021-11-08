@@ -77,7 +77,7 @@ where there are more than two possible values. For example, most existing method
 treat the "``Class Name``" and "``Rating``" columns as integer and string
 rather than categoricals. Therefore, the user needs to manually convert their assigned types.
 
-.. figure:: notes/motivation-ptype-cat.png
+.. figure:: https://raw.githubusercontent.com/alan-turing-institute/ptype/release/notes/motivation-ptype-cat.png
     :width: 600
 
     The data on the left-hand side are sampled from `a dataset about clothing`_.
