@@ -1,6 +1,9 @@
 Changelog
 =========
 
+Version 0.2.15
+--------------
+Added pointers to the ptype-cat paper.
 
 Version 0.2.12
 --------------
