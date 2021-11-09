@@ -70,25 +70,26 @@ If you use this package, please cite the `ptype paper`_, using the following Bib
 +++++++++++++++
 ptype-cat
 +++++++++++++++
-Automatic identification of the categorical type from the data in a column
-is challenging because the values may be encoded as strings or
-integers. Recall that ptype can identify Boolean variables; however, it does not handle non-Boolean categorical variables
-where there are more than two possible values. For example, most existing methods including ptype respectively
-treat the "``Class Name``" and "``Rating``" columns as integer and string
-rather than categoricals. Therefore, the user needs to manually convert their assigned types.
+A weakness of ptype is that it does not handle well type inference for
+categorical variables which are non-Boolean.  For example, most
+existing methods including ptype treat the "Class Name" and "Rating"
+columns in the example below as string and integer types respectively,
+rather than categoricals. Therefore the user needs to manually
+convert their assigned types.
 
 .. figure:: https://raw.githubusercontent.com/alan-turing-institute/ptype/release/notes/motivation-ptype-cat.png
     :width: 600
 
     The data on the left-hand side are sampled from `a dataset about clothing`_.
 
-To (semi-)automate this manual task, we introduce ptype-cat, which is an extension to ptype to detect the general
-categorical type including the non-Boolean categorical variables. ptype-cat combines the output of ptype with
-additional features such as the number of unique values in a column and runs a Logistic Regression classifier to
-determine whether a column denotes a categorical variable or not when a column is labeled with the integer or
-string type by ptype.
-
-
+To (semi-)automate this manual task, we introduce ptype-cat, which is
+an extension of ptype to enable detection of the general categorical
+type, including the non-Boolean categorical variables. ptype-cat
+combines the output of ptype with additional features such as the
+number of unique values in a column, and runs a Logistic Regression
+classifier to determine whether a column denotes a categorical
+variable or not when a column is labeled with the integer or string
+type by ptype.
 
 Please see the `ptype-cat paper`_ for the details of ptype-cat, for which you can use
 the following BibTeX entry to cite:
